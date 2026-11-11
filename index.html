@@ -1,0 +1,1298 @@
+<!doctype html>
+<html lang="fr" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>WASHGO Mobile</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<style>
+/* Mise en page : bandeau gris (en-tête collant + accroche + carte de réservation rapide),
+   puis services, déroulé en 4 étapes, zones, formulaire complet, pied de page.
+   Identité : noir #101713, vert lime #B7F36B, clair #F4F5F2. */
+:root {
+  --ink: #101713;
+  --lime: #B7F36B;
+  --paper: #F4F5F2;
+  /* Site entièrement en noir (toujours, quel que soit le thème du système) */
+  --bg: #000000;
+  --surface: #0e0e0e;
+  --fg: #F4F5F2;
+  --muted: #9b9b9b;
+  --line: #262626;
+  --btn-bg: #B7F36B;
+  --btn-fg: #000000;
+  --sel-line: #B7F36B;
+  --sel-bg: #1b2810;
+  --hero-bg: #000000;
+  --hero-fg: #F4F5F2;
+  --hero-muted: #a6a6a6;
+  --hero-line: #222222;
+  --tag: #B7F36B;
+  --link: #B7F36B;
+  --focus: #B7F36B;
+  --bad: #ff8a98;
+  --warn-bg: #2e2508;
+  --warn-fg: #ffd978;
+  --font-display: "Space Grotesk", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  margin: 0;
+  background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.6;
+  padding-block: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.12; text-wrap: balance; margin: 0; }
+p { margin: 0; }
+a { color: var(--link); }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.wrap { max-width: none; margin-inline: auto; padding-inline: clamp(0px, 3vw, 56px); } /* toute la largeur de l'écran */
+section { padding-block: 60px; }
+.eyebrow { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; font-weight: 600; color: var(--muted); margin-bottom: 10px; }
+h2 { font-size: clamp(26px, 5vw, 38px); margin-bottom: 12px; letter-spacing: -.01em; }
+.lead { color: var(--muted); max-width: 60ch; }
+
+/* en-tête */
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 20; background: var(--hero-bg); }
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; background: var(--hero-bg); border-bottom: 1px solid var(--hero-line);
+  margin-inline: calc(-1 * max(16px, env(safe-area-inset-left, 0px))); padding-inline: max(16px, env(safe-area-inset-left, 0px)); }
+.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 12px; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--hero-fg); }
+.brand .mark { width: clamp(38px, 9vw, 46px); height: clamp(38px, 9vw, 46px); border-radius: 11px; background: var(--lime); display: grid; place-items: center; flex: none; }
+.brand .word { font-family: var(--font-display); font-weight: 700; font-size: clamp(22px, 5.5vw, 28px); letter-spacing: .02em; line-height: 1; }
+.brand .word small { display: block; font-size: 11px; letter-spacing: .34em; font-weight: 500; color: var(--hero-muted); margin-top: 3px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; padding: 10px 22px; border-radius: 10px;
+  font: 600 15px var(--font-body); letter-spacing: .03em; text-decoration: none; border: 0; cursor: pointer; }
+.btn-lime { background: var(--lime); color: var(--ink); }
+.btn-main { background: var(--btn-bg); color: var(--btn-fg); }
+.btn-block { width: 100%; min-height: 54px; font-size: 16px; text-transform: uppercase; }
+.btn[disabled] { opacity: .6; cursor: progress; }
+
+/* accroche */
+.hero { background: var(--hero-bg); color: var(--hero-fg);
+  margin-inline: calc(-1 * max(16px, env(safe-area-inset-left, 0px))); padding-inline: max(16px, env(safe-area-inset-left, 0px)); }
+.hero .wrap { display: grid; grid-template-columns: 1.1fr .9fr; gap: 40px; align-items: center; padding-block: 64px; }
+.tagline { font-family: var(--font-display); font-weight: 500; font-size: 15px; letter-spacing: .06em; color: var(--tag); margin-bottom: 18px; }
+.hero h1 { font-size: clamp(36px, 7.5vw, 64px); letter-spacing: -.02em; }
+.hero h1 em { font-style: normal; background: var(--lime); color: var(--ink); padding: 0 .18em; border-radius: 6px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.hero p.sub { color: var(--hero-muted); margin-top: 20px; max-width: 46ch; font-size: 18px; }
+.zones-line { margin-top: 24px; display: flex; flex-wrap: wrap; gap: 8px 14px; font-weight: 600; font-size: 15px; }
+.zones-line span + span::before { content: "•"; color: var(--tag); margin-inline-end: 14px; }
+
+.hero .wrap { row-gap: 36px; }
+.scene { grid-column: 1 / -1; border-radius: 18px; overflow: hidden; background: #0d140f; border: 1px solid var(--hero-line); direction: ltr; aspect-ratio: 1200 / 360; }
+.scene svg, .scene img { display: block; width: 100%; height: 100%; }
+.scene img { object-fit: cover; }
+@keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+.b { animation: bob 4s ease-in-out infinite; transform-box: fill-box; }
+.b:nth-child(2n) { animation-duration: 5.2s; animation-delay: -1.6s; }
+@media (prefers-reduced-motion: reduce) { .b { animation: none; } }
+.quick { background: var(--surface); color: var(--fg); border-radius: 16px; padding: 24px; display: grid; gap: 14px; min-width: 0; }
+.quick h2 { font-size: 22px; margin: 0; }
+.quick .hint { color: var(--muted); font-size: 14px; margin-top: -8px; }
+
+/* champs */
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+label, legend { font-size: 14px; font-weight: 600; padding: 0; }
+input[type="text"], input[type="tel"], input[type="date"], select, textarea {
+  font: 16px var(--font-body); color: var(--fg); background: var(--bg); border: 1.5px solid var(--line); border-radius: 10px;
+  padding: 10px 12px; min-height: 48px; width: 100%; min-width: 0; }
+textarea { min-height: 88px; resize: vertical; }
+input:focus, select:focus, textarea:focus { border-color: var(--fg); }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.bad input[type="text"], .bad input[type="tel"], .bad input[type="date"], .bad select { border-color: var(--bad); }
+.group { border: 0; padding: 0; margin: 0; min-width: 0; }
+.group.bad legend { color: var(--bad); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.opt { position: relative; min-width: 0; }
+.opt input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.opt span { display: flex; flex-direction: column; justify-content: center; min-height: 48px; padding: 8px 16px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--bg); font-size: 15px; }
+.opt input:checked + span { border-color: var(--sel-line); background: var(--sel-bg); font-weight: 600; }
+.opt input:focus-visible + span { outline: 3px solid var(--focus); outline-offset: 2px; }
+.opt small { color: var(--muted); font-size: 13px; font-weight: 400; }
+.opts.cols { display: grid; grid-template-columns: 1fr 1fr; }
+.btn-line { background: transparent; color: var(--fg); border: 1.5px solid var(--line); }
+.btn-sm { min-height: 40px; padding: 4px 14px; font-size: 13px; letter-spacing: 0; }
+.mapbox { display: grid; gap: 10px; }
+.maphead { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; }
+#map { height: 300px; border-radius: 12px; border: 1.5px solid var(--line); position: relative; z-index: 0; isolation: isolate; background: var(--bg); }
+.pin { background: none; border: 0; }
+.pin span { display: block; width: 26px; height: 26px; margin: 2px; background: #101713; border: 3px solid #B7F36B; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); box-shadow: 0 2px 6px rgba(0,0,0,.45); }
+.linkbtn { background: none; border: 0; padding: 0; font: 600 14px var(--font-body); color: var(--link); text-decoration: underline; cursor: pointer; }
+.check { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; font-weight: 400; line-height: 1.5; cursor: pointer; }
+.check input { width: 22px; height: 22px; margin: 0; flex: none; accent-color: var(--fg); }
+.bad .check { color: var(--bad); }
+.legal-links { display: flex; flex-wrap: wrap; gap: 6px 22px; }
+.legal-links a { color: var(--hero-fg); }
+.legal { position: fixed; inset: 0; z-index: 100; background: rgba(5, 10, 7, .65); display: flex; justify-content: center; }
+.legal-sheet { background: var(--bg); color: var(--fg); width: min(760px, 100%); height: 100%; overflow-y: auto;
+  padding: calc(20px + env(safe-area-inset-top, 0px)) max(18px, env(safe-area-inset-right, 0px)) calc(36px + env(safe-area-inset-bottom, 0px)) max(18px, env(safe-area-inset-left, 0px)); }
+.legal-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px; }
+.legal-head h2 { font-size: 26px; margin: 0; }
+.legal-body { display: grid; gap: 10px; font-size: 15px; max-width: 65ch; }
+.legal-body h3 { font-size: 18px; margin: 18px 0 0; }
+.legal-body ul { margin: 0; padding-inline-start: 20px; display: grid; gap: 4px; }
+.legal-body a { color: var(--link); }
+mark.todo { background: var(--warn-bg); color: var(--warn-fg); padding: 0 6px; border-radius: 4px; }
+.honey { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); opacity: 0; pointer-events: none; }
+
+/* services */
+.cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 28px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.card.top-pick { background: var(--ink); color: var(--paper); border-color: var(--lime); }
+.card.top-pick .muted { color: var(--hero-muted); }
+.card h3 { font-size: 20px; }
+.muted { color: var(--muted); font-size: 15px; }
+.price { margin-top: auto; padding-top: 12px; font-size: 13px; color: var(--muted); }
+.price b { display: block; font-family: var(--font-display); font-size: 30px; color: var(--fg); line-height: 1.1; }
+.card.top-pick .price, .card.top-pick .price b { color: var(--lime); }
+.fine { margin-top: 16px; font-size: 14px; color: var(--muted); }
+
+/* étapes */
+.steps { list-style: none; padding: 0; margin: 28px 0 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; counter-reset: s; }
+.steps li { counter-increment: s; border-top: 3px solid var(--fg); padding-top: 14px; min-width: 0; }
+.steps li::before { content: "0" counter(s); display: block; font-family: var(--font-display); font-weight: 700; font-size: 14px; color: var(--muted); margin-bottom: 6px; }
+.steps h3 { font-size: 18px; margin-bottom: 6px; }
+.steps p { color: var(--muted); font-size: 15px; }
+
+/* zones */
+.zgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 28px; }
+.zone { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px 22px; min-width: 0; }
+.zone h3 { font-size: 22px; margin-bottom: 6px; }
+.zone p { color: var(--muted); font-size: 15px; }
+
+/* réservation */
+.book { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: clamp(18px, 4vw, 36px); margin-top: 26px; display: grid; gap: 24px; position: relative; }
+.step-title { display: flex; align-items: baseline; gap: 10px; margin-bottom: 2px; }
+.step-title b { font-family: var(--font-display); font-size: 13px; background: var(--ink); color: var(--lime); border-radius: 999px; padding: 1px 9px; }
+.err { color: var(--bad); font-size: 14px; min-height: 20px; }
+.demo { background: var(--warn-bg); color: var(--warn-fg); border-radius: 10px; padding: 10px 14px; font-size: 14px; }
+.done { background: var(--surface); border: 1.5px solid var(--sel-line); border-radius: 18px; padding: clamp(22px, 4vw, 40px); margin-top: 26px; display: grid; gap: 14px; justify-items: start; }
+.done h3 { font-size: 26px; }
+.done .refbox { font-family: var(--font-display); font-weight: 700; font-size: 22px; letter-spacing: .04em; background: var(--sel-bg); border-radius: 10px; padding: 8px 16px; }
+.small { font-size: 14px; color: var(--muted); }
+
+footer { background: var(--hero-bg); color: var(--hero-muted); font-size: 14px;
+  margin-inline: calc(-1 * max(16px, env(safe-area-inset-left, 0px))); padding-inline: max(16px, env(safe-area-inset-left, 0px)); }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 28px; justify-content: space-between; align-items: center; padding-block: 28px 40px; }
+footer strong { color: var(--hero-fg); font-family: var(--font-display); letter-spacing: .04em; }
+footer .lime { color: var(--tag); }
+
+@media (max-width: 900px) {
+  .cards, .steps { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 760px) {
+  .hero .wrap { grid-template-columns: 1fr; gap: 28px; padding-block: 40px; }
+  .scene { aspect-ratio: 390 / 240; order: 2; }
+  .quick { order: 3; }
+  .zgrid { grid-template-columns: 1fr; }
+  section { padding-block: 44px; }
+}
+@media (max-width: 520px) {
+  .cards, .steps, .two, .opts.cols { grid-template-columns: 1fr; }
+}
+
+/* animations (activées par fx.js, désactivées si "réduire les animations") */
+.btn { position: relative; overflow: hidden; transition: transform .15s ease, box-shadow .2s ease, filter .2s ease; }
+.btn:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(16,23,19,.18); }
+.btn:active { transform: translateY(0); }
+.rip { position: absolute; border-radius: 50%; background: currentColor; opacity: .25; transform: scale(0); animation: rip .6s ease-out forwards; pointer-events: none; }
+@keyframes rip { to { transform: scale(1); opacity: 0; } }
+.top { transition: box-shadow .25s ease; }
+.top.scrolled { box-shadow: 0 6px 22px rgba(16,23,19,.12); }
+.card, .zone { transition: transform .25s ease, box-shadow .25s ease; }
+.card:hover, .zone:hover { transform: translateY(-4px); box-shadow: 0 12px 26px rgba(16,23,19,.1); }
+.opt span { transition: border-color .15s ease, background .15s ease, transform .15s ease; }
+.opt:hover span { border-color: var(--sel-line); }
+.opt input:checked + span { animation: pop .28s ease; }
+@keyframes pop { 50% { transform: scale(1.04); } }
+@keyframes rise { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+@keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .35; transform: scale(.8); } }
+.fx .hero .wrap > div:first-child > * { animation: rise .7s cubic-bezier(.2,.7,.2,1) backwards; }
+.fx .hero .wrap > div:first-child > *:nth-child(2) { animation-delay: .08s; }
+.fx .hero .wrap > div:first-child > *:nth-child(3) { animation-delay: .18s; }
+.fx .hero .wrap > div:first-child > *:nth-child(4) { animation-delay: .28s; }
+.fx .quick { animation: rise .8s .2s cubic-bezier(.2,.7,.2,1) backwards; }
+.fx .scene { animation: rise .9s .35s cubic-bezier(.2,.7,.2,1) backwards; }
+.fx .scene svg g[fill="#B7F36B"] path { animation: pulse 2.6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.fx .scene svg g[fill="#B7F36B"] path:nth-child(2) { animation-delay: -.9s; }
+.fx .scene svg g[fill="#B7F36B"] path:nth-child(3) { animation-delay: -1.7s; }
+.fx .rv { opacity: 0; transform: translateY(26px); transition: opacity .7s ease var(--d, 0ms), transform .7s cubic-bezier(.2,.7,.2,1) var(--d, 0ms); }
+.fx .rv.in { opacity: 1; transform: none; }
+.fx .card.rv.in:hover, .fx .zone.rv.in:hover { transform: translateY(-4px); transition-delay: 0ms; }
+.fx .done { animation: rise .5s ease; }
+.confetti { position: absolute; height: 0; pointer-events: none; z-index: 50; overflow: visible; }
+.confetti i { position: absolute; top: 0; display: block; border-radius: 2px; }
+@media (prefers-reduced-motion: reduce) { .btn, .card, .zone, .opt span { transition: none; } .opt input:checked + span { animation: none; } }
+
+/* langues */
+.top-actions { display: flex; align-items: center; gap: 10px; }
+.lang { display: flex; gap: 2px; border: 1px solid var(--hero-line); border-radius: 10px; padding: 2px; direction: ltr; }
+.lang button { font: 600 13px var(--font-body); min-height: 34px; min-width: 36px; padding: 0 8px; border: 0; border-radius: 8px; background: transparent; color: var(--hero-fg); cursor: pointer; }
+.lang button[aria-pressed="true"] { background: var(--ink); color: var(--lime); }
+.opt b { font-weight: inherit; }
+:root[lang="ar"] { --font-body: "Cairo", "Segoe UI", Tahoma, system-ui, sans-serif; --font-display: "Cairo", "Segoe UI", Tahoma, system-ui, sans-serif; }
+:root[lang="ar"] body * { letter-spacing: 0 !important; }
+:root[lang="ar"] .eyebrow { text-transform: none; }
+:root[lang="ar"] h1, :root[lang="ar"] h2, :root[lang="ar"] h3 { line-height: 1.3; }
+:root[lang="ar"] .hero p.sub, :root[lang="ar"] body { line-height: 1.75; }
+.brand { direction: ltr; }
+@media (max-width: 520px) {
+  .top-actions { gap: 6px; }
+  .top .btn { min-height: 40px; padding: 6px 12px; font-size: 14px; }
+  .lang button { min-width: 32px; padding: 0 6px; font-size: 12px; }
+}
+
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+/* compte client */
+.btn-acct { background: transparent; color: var(--hero-fg); border: 1.5px solid #444; }
+.acct { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between;
+  border: 1.5px solid var(--sel-line); background: var(--sel-bg); border-radius: 12px; padding: 12px 16px; font-size: 15px; }
+.acct.guest { border-style: dashed; border-color: var(--line); background: transparent; }
+.acct b { font-family: var(--font-display); }
+.acct .acct-links { display: flex; flex-wrap: wrap; gap: 6px 16px; }
+@media (max-width: 520px) { .btn-acct { padding: 6px 10px; font-size: 13px; } }
+
+/* accroche : texte + réservation à gauche, illustration à droite */
+.hero .wrap { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "text scene" "quick scene"; align-items: start; column-gap: clamp(24px, 4vw, 64px); row-gap: 28px; }
+.hero .wrap > div:first-child { grid-area: text; }
+.hero .quick { grid-area: quick; grid-template-columns: 1fr 1fr; align-items: end; }
+.hero .quick > h2, .hero .quick > .hint, .hero .quick > .two, .hero .quick > button { grid-column: 1 / -1; }
+.hero .quick .hint { margin-top: -6px; }
+.hero .scene { grid-area: scene; grid-column: auto; align-self: center; aspect-ratio: 720 / 320; }
+@media (max-width: 760px) {
+  .hero .wrap { grid-template-columns: minmax(0, 1fr); grid-template-areas: "text" "quick" "scene"; }
+  .hero .quick { grid-template-columns: 1fr; }
+  .hero .scene { aspect-ratio: 720 / 320; }
+}
+
+/* ===== nouvelle page d'accueil ===== */
+:root { --check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5' fill='none' stroke='%23000' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+section { padding-block: clamp(56px, 8vw, 96px); }
+h2 { font-size: clamp(28px, 4.6vw, 44px); }
+
+/* menu */
+.nav { display: flex; gap: 4px clamp(12px, 2vw, 28px); margin-inline: auto; }
+.nav a { position: relative; color: var(--hero-muted); text-decoration: none; font-weight: 500; font-size: 15px; padding: 6px 0; transition: color .2s ease; }
+.nav a::after { content: ""; position: absolute; inset: auto 0 0; height: 2px; border-radius: 2px; background: var(--lime); transform: scaleX(0); transition: transform .25s ease; }
+.nav a:hover { color: var(--hero-fg); }
+.nav a:hover::after { transform: scaleX(1); }
+@media (max-width: 1040px) { .nav { display: none; } }
+
+/* accroche : atouts */
+.perks { list-style: none; padding: 0; margin: 22px 0 0; display: flex; flex-wrap: wrap; gap: 10px; }
+.perks li { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; padding: 7px 14px 7px 8px; border-radius: 999px;
+  background: rgba(183,243,107,.08); border: 1px solid rgba(183,243,107,.35); color: var(--hero-fg); }
+.perks li::before { content: ""; width: 20px; height: 20px; border-radius: 50%; flex: none; background: var(--lime) var(--check) center / 13px no-repeat; }
+
+/* pourquoi */
+.feats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; margin-top: 32px; }
+.feat { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 24px 22px; display: grid; gap: 8px; align-content: start; min-width: 0;
+  transition: transform .25s ease, box-shadow .25s ease; }
+.feat:hover { transform: translateY(-4px); box-shadow: 0 16px 34px rgba(0,0,0,.12); }
+.feat .ic { width: 50px; height: 50px; border-radius: 14px; background: #000; display: grid; place-items: center; margin-bottom: 8px; }
+.feat .ic svg { width: 25px; height: 25px; fill: none; stroke: var(--lime); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.feat h3 { font-size: 18px; }
+.feat p { color: var(--muted); font-size: 15px; }
+@media (max-width: 1100px) { .feats { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 700px) { .feats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 440px) { .feats { grid-template-columns: minmax(0, 1fr); } }
+
+/* tarifs : véhicules */
+.vehicles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-top: 32px; }
+.veh { font: inherit; color: var(--fg); background: var(--surface); border: 1.5px solid var(--line); border-radius: 20px; padding: 22px 16px 18px; cursor: pointer;
+  display: grid; justify-items: center; gap: 2px; text-align: center; min-width: 0;
+  transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease, background .2s ease; }
+.veh svg { width: 100%; max-width: 250px; height: auto; aspect-ratio: 320 / 140; margin-bottom: 10px; transition: transform .4s cubic-bezier(.2,.8,.2,1); }
+.veh b { font-family: var(--font-display); font-size: 20px; }
+.veh small { color: var(--muted); font-size: 13px; }
+.veh:hover { transform: translateY(-3px); border-color: #5a5a5a; }
+.veh:hover svg { transform: translateX(8px); }
+.veh[aria-pressed="true"] { border-color: var(--lime); box-shadow: 0 0 0 4px rgba(183,243,107,.16), 0 18px 40px rgba(0,0,0,.3);
+  background: radial-gradient(120% 80% at 50% 0%, rgba(183,243,107,.16), transparent 70%), var(--surface); --car-body: url(#wg-body-lime); }
+.sub-h { font-size: clamp(20px, 2.6vw, 26px); margin: 48px 0 0; }
+.sub-h span { color: var(--tag); }
+@media (max-width: 760px) { .vehicles { grid-template-columns: repeat(2, minmax(0, 1fr)); } .veh { padding: 16px 10px 14px; } .veh b { font-size: 17px; } }
+
+/* tarifs : formules */
+.cards { margin-top: 20px; }
+.pkg { padding: 26px 22px 22px; gap: 10px; }
+.pkg h3 { font-size: 21px; padding-right: 90px; }
+.pkg .incl { list-style: none; padding: 0; margin: 6px 0 0; display: grid; gap: 8px; font-size: 15px; }
+.pkg .incl li { display: flex; gap: 10px; align-items: center; }
+.pkg .incl li::before { content: ""; width: 18px; height: 18px; flex: none; border-radius: 50%; background: var(--lime) var(--check) center / 11px no-repeat; }
+.pkg .pkg-go { width: 100%; margin-top: 10px; }
+.cards .pkg.top-pick { border: 1.5px solid var(--lime); box-shadow: 0 20px 44px rgba(0,0,0,.4); }
+.pkg .badge { position: absolute; top: 18px; right: 18px; background: var(--lime); color: #000; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; }
+
+/* étapes */
+.steps { gap: 16px; }
+.steps li { background: var(--surface); border: 1px solid var(--line); border-top-width: 3px; border-radius: 18px; padding: 24px 22px; }
+.steps li::before { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: #000; color: var(--lime); font-size: 15px; margin-bottom: 16px; }
+
+/* FAQ */
+.faq { margin-top: 32px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
+.faq details { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 0 22px; transition: border-color .2s ease, box-shadow .2s ease; min-width: 0; }
+.faq details[open] { border-color: var(--fg); box-shadow: 0 10px 26px rgba(0,0,0,.08); }
+.faq summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 20px 0;
+  font-family: var(--font-display); font-weight: 700; font-size: 17px; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; flex: none; width: 32px; height: 32px; border-radius: 50%; background: #000; color: var(--lime);
+  display: grid; place-items: center; font: 500 22px/1 var(--font-body); transition: transform .25s ease; }
+.faq details[open] summary::after { transform: rotate(45deg); }
+.faq details p { color: var(--muted); padding-bottom: 20px; }
+@media (max-width: 860px) { .faq { grid-template-columns: minmax(0, 1fr); } }
+
+/* appel à l'action */
+.cta { position: relative; overflow: hidden; isolation: isolate; background: #000; color: #f2f2f2; border-radius: 28px; padding: clamp(28px, 5vw, 64px);
+  display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 28px; align-items: center; }
+.cta::before { content: ""; position: absolute; z-index: -1; width: 640px; height: 640px; right: -160px; top: -260px; background: radial-gradient(circle, rgba(183,243,107,.3), transparent 62%); }
+.cta h2 { font-size: clamp(28px, 4.4vw, 48px); margin: 0; }
+.cta h2 em { font-style: normal; color: var(--lime); }
+.cta p { color: #b0b0b0; margin-top: 14px; max-width: 46ch; font-size: 17px; }
+.cta-acts { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+.btn-ghost { background: transparent; color: #f2f2f2; border: 1.5px solid #4a4a4a; }
+.btn-ghost:hover { border-color: var(--lime); }
+.cta-car { width: 100%; height: auto; aspect-ratio: 320 / 140; --car-body: url(#wg-body-lime); }
+@media (max-width: 760px) { .cta { grid-template-columns: minmax(0, 1fr); } }
+
+.top .btn { white-space: nowrap; }
+@media (max-width: 420px) {
+  .brand { gap: 8px; }
+  .brand .mark { width: 36px; height: 36px; }
+  .brand .word { font-size: 20px; }
+  .top-actions { gap: 6px; }
+  .top .btn { padding: 6px 10px; font-size: 13px; min-height: 38px; }
+}
+.fx .veh.rv.in:hover, .fx .feat.rv.in:hover { transform: translateY(-4px); transition-delay: 0ms; }
+
+/* formulaire : véhicules illustrés */
+.opts.cars { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.opts.cars .opt span { align-items: center; text-align: center; padding: 12px 10px; gap: 4px; }
+.opts.cars svg { width: 100%; max-width: 150px; height: auto; aspect-ratio: 320 / 140; }
+.opts.cars input:checked + span { --car-body: url(#wg-body-lime); }
+@media (max-width: 620px) { .opts.cars { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* pied de page */
+footer .wrap { display: block; padding-block: 56px 28px; }
+.f-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 32px; }
+.f-grid > nav, .f-grid > div { display: flex; flex-direction: column; gap: 9px; align-items: flex-start; }
+footer h3 { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--hero-fg); margin-bottom: 6px; }
+.f-grid a { color: var(--hero-muted); text-decoration: none; transition: color .2s ease; }
+.f-grid a:hover { color: var(--lime); }
+.f-logo { font-family: var(--font-display); font-size: 24px; letter-spacing: .03em; }
+.f-brand p { max-width: 34ch; }
+.f-copy { border-top: 1px solid #222; margin-top: 40px; padding-top: 20px; font-size: 13px; }
+@media (max-width: 760px) { .f-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 440px) { .f-grid { grid-template-columns: minmax(0, 1fr); } }
+</style>
+<script src="theme.js"></script>
+</head>
+<body>
+
+<!-- Illustrations des véhicules (dessinées pour WASHGO, réutilisées dans toute la page) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="wg-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".55" stop-color="#dcdcdc"/><stop offset="1" stop-color="#a8a8a8"/></linearGradient>
+    <linearGradient id="wg-body-lime" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dcffa8"/><stop offset=".55" stop-color="#B7F36B"/><stop offset="1" stop-color="#83c037"/></linearGradient>
+    <linearGradient id="wg-glass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4a5862"/><stop offset=".5" stop-color="#1b2329"/><stop offset="1" stop-color="#0b0f12"/></linearGradient>
+    <radialGradient id="wg-rim" cx=".4" cy=".35" r=".75"><stop offset="0" stop-color="#f4f4f4"/><stop offset="1" stop-color="#8e8e8e"/></radialGradient>
+    <g id="wg-wheel">
+      <circle r="23" fill="#0e0e0e"/><circle r="20.5" fill="none" stroke="#2a2a2a" stroke-width="2"/>
+      <circle r="14" fill="url(#wg-rim)"/>
+      <g stroke="#6f6f6f" stroke-width="3" stroke-linecap="round"><path d="M0 0V-12M0 0L11.4-3.7M0 0L7.1 9.7M0 0L-7.1 9.7M0 0L-11.4-3.7"/></g>
+      <circle r="4.2" fill="#3a3a3a"/><circle r="14" fill="none" stroke="rgba(0,0,0,.35)"/>
+    </g>
+    <symbol id="car-citadine" viewBox="0 0 320 140">
+      <ellipse cx="164" cy="134" rx="124" ry="5" fill="#000" opacity=".28"/>
+      <path d="M50 104V76Q51 56 70 49L96 41Q104 38 116 38H180Q194 38 204 48L228 70L260 76Q278 80 278 96V104Q278 111 271 111H57Q50 111 50 104Z" style="fill:var(--car-body,url(#wg-body))" stroke="rgba(0,0,0,.28)"/>
+      <path d="M68 70L76 52Q80 46 90 45H130V70Z M138 45H178Q188 45 195 52L213 70H138Z" fill="url(#wg-glass)"/>
+      <path d="M80 50L92 47H104L86 68H72Z" fill="#fff" opacity=".12"/>
+      <path d="M52 94H276" stroke="#B7F36B" stroke-width="3"/>
+      <path d="M134 72V104M52 86H276" stroke="rgba(0,0,0,.18)" stroke-width="1.5" fill="none"/>
+      <rect x="142" y="78" width="14" height="3.4" rx="1.7" fill="#3a3a3a"/><rect x="96" y="78" width="14" height="3.4" rx="1.7" fill="#3a3a3a"/>
+      <path d="M214 70L220 62Q224 60 227 63L226 70Z" fill="#2b2b2b"/>
+      <path d="M262 82Q273 83 277 91H262Z" fill="#fff4c4"/><path d="M50 74H58V87H50Z" fill="#e5383b"/>
+      <path d="M71 111A27 27 0 0 1 125 111Z M203 111A27 27 0 0 1 257 111Z" fill="#141414"/>
+      <use href="#wg-wheel" x="98" y="110"/><use href="#wg-wheel" x="230" y="110"/>
+    </symbol>
+    <symbol id="car-berline" viewBox="0 0 320 140">
+      <ellipse cx="160" cy="134" rx="136" ry="5" fill="#000" opacity=".28"/>
+      <path d="M28 104V88Q28 80 38 78L82 74L116 50Q124 44 138 44H196Q210 44 220 53L244 72L278 78Q292 82 292 97V104Q292 111 285 111H35Q28 111 28 104Z" style="fill:var(--car-body,url(#wg-body))" stroke="rgba(0,0,0,.28)"/>
+      <path d="M98 73L120 55Q126 50 136 50H160V73Z M168 50H194Q204 50 212 57L230 73H168Z" fill="url(#wg-glass)"/>
+      <path d="M118 57L128 51H140L116 72H102Z" fill="#fff" opacity=".12"/>
+      <path d="M30 95H290" stroke="#B7F36B" stroke-width="3"/>
+      <path d="M164 75V104M108 76V104M30 87H290" stroke="rgba(0,0,0,.18)" stroke-width="1.5" fill="none"/>
+      <rect x="172" y="80" width="14" height="3.4" rx="1.7" fill="#3a3a3a"/><rect x="118" y="80" width="14" height="3.4" rx="1.7" fill="#3a3a3a"/>
+      <path d="M232 72L238 65Q242 63 245 66L244 73Z" fill="#2b2b2b"/>
+      <path d="M276 84Q287 86 291 93H276Z" fill="#fff4c4"/><path d="M28 81L39 79V90H28Z" fill="#e5383b"/>
+      <path d="M61 111A27 27 0 0 1 115 111Z M213 111A27 27 0 0 1 267 111Z" fill="#141414"/>
+      <use href="#wg-wheel" x="88" y="110"/><use href="#wg-wheel" x="240" y="110"/>
+    </symbol>
+    <symbol id="car-suv" viewBox="0 0 320 140">
+      <ellipse cx="160" cy="134" rx="138" ry="5" fill="#000" opacity=".28"/>
+      <path d="M70 21H196" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/>
+      <path d="M28 104V62Q28 46 42 40L62 28Q68 24 78 24H196Q210 24 220 34L244 58L276 64Q292 68 292 86V104Q292 111 285 111H35Q28 111 28 104Z" style="fill:var(--car-body,url(#wg-body))" stroke="rgba(0,0,0,.28)"/>
+      <path d="M48 58L66 32Q69 30 74 30H128V58Z M136 30H194Q204 30 211 38L230 58H136Z" fill="url(#wg-glass)"/>
+      <rect x="89" y="30" width="6" height="28" fill="#2b2b2b"/>
+      <path d="M100 32H114L96 56H82Z" fill="#fff" opacity=".12"/>
+      <path d="M28 97H292V104Q292 111 285 111H35Q28 111 28 104Z" fill="#2a2a2a"/>
+      <path d="M30 89H290" stroke="#B7F36B" stroke-width="3"/>
+      <path d="M132 60V97M30 78H290" stroke="rgba(0,0,0,.18)" stroke-width="1.5" fill="none"/>
+      <rect x="140" y="66" width="15" height="3.6" rx="1.8" fill="#3a3a3a"/><rect x="100" y="66" width="15" height="3.6" rx="1.8" fill="#3a3a3a"/>
+      <path d="M232 57L238 49Q242 47 245 50L244 58Z" fill="#2b2b2b"/>
+      <path d="M276 70Q288 72 291 80H276Z" fill="#fff4c4"/><path d="M28 50L37 48V64H28Z" fill="#e5383b"/>
+      <path d="M60 111A30 30 0 0 1 120 111Z M206 111A30 30 0 0 1 266 111Z" fill="#141414"/>
+      <use href="#wg-wheel" transform="translate(90 109) scale(1.12)"/><use href="#wg-wheel" transform="translate(236 109) scale(1.12)"/>
+    </symbol>
+    <symbol id="car-utilitaire" viewBox="0 0 320 140">
+      <ellipse cx="160" cy="134" rx="140" ry="5" fill="#000" opacity=".28"/>
+      <path d="M24 104V30Q24 18 37 18H208Q221 18 229 28L256 62L280 70Q294 74 294 90V104Q294 111 287 111H31Q24 111 24 104Z" style="fill:var(--car-body,url(#wg-body))" stroke="rgba(0,0,0,.28)"/>
+      <path d="M214 26Q219 26 225 33L246 62H208V32Q208 26 214 26Z" fill="url(#wg-glass)"/>
+      <path d="M216 29H224L212 52V33Z" fill="#fff" opacity=".14"/>
+      <path d="M24 98H294V104Q294 111 287 111H31Q24 111 24 104Z" fill="#2a2a2a"/>
+      <path d="M26 88H292" stroke="#B7F36B" stroke-width="3"/>
+      <path d="M150 22V98M204 22V98M26 78H292" stroke="rgba(0,0,0,.18)" stroke-width="1.5" fill="none"/>
+      <rect x="156" y="62" width="16" height="3.6" rx="1.8" fill="#3a3a3a"/><rect x="212" y="68" width="15" height="3.6" rx="1.8" fill="#3a3a3a"/>
+      <path d="M248 61L254 53Q258 51 261 54L260 62Z" fill="#2b2b2b"/>
+      <path d="M280 74Q291 77 293 85H280Z" fill="#fff4c4"/><path d="M24 40H31V70H24Z" fill="#e5383b"/>
+      <path d="M53 111A27 27 0 0 1 107 111Z M215 111A27 27 0 0 1 269 111Z" fill="#141414"/>
+      <use href="#wg-wheel" x="80" y="110"/><use href="#wg-wheel" x="242" y="110"/>
+    </symbol>
+  </defs>
+</svg>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#haut" aria-label="WASHGO Mobile, accueil" data-ta="aria-label:aria_home">
+      <span class="mark" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 28 28"><path d="M14 2C14 2 5 12 5 18a9 9 0 0 0 18 0C23 12 14 2 14 2Z" fill="#101713"/></svg></span>
+      <span class="word">WASHGO<small>MOBILE</small></span>
+    </a>
+    <nav class="nav" aria-label="Menu">
+      <a href="#tarifs">Tarifs</a><a href="#pourquoi">Pourquoi nous</a><a href="#comment">Comment ça marche</a><a href="#zones">Zones</a><a href="#faq">FAQ</a>
+    </nav>
+    <div class="top-actions">
+      <a class="btn btn-acct" href="compte.html" id="nav-acct">Mon compte</a>
+      <a class="btn btn-lime" href="#reserver" data-t="nav_book">Réserver</a>
+    </div>
+  </div>
+</header>
+
+<main id="haut">
+  <div class="hero">
+    <div class="wrap">
+      <div>
+        <div class="tagline"><bdi>Your Car. Our Care.</bdi></div>
+        <h1 data-t="h1">Votre voiture, votre adresse, <em>notre professionnel.</em></h1>
+        <p class="sub" data-t="sub">Lavage professionnel à domicile. Le professionnel vient chez vous, au bureau ou au parking, avec son eau et son matériel.</p>
+        <div class="zones-line"><span data-t="c_rabat">Rabat</span><span data-t="c_sale">Salé</span><span data-t="c_salej">Salé Al Jadida</span></div>
+        <ul class="perks">
+          <li>Eau et matériel inclus</li>
+          <li>Paiement après le lavage</li>
+          <li>Réservation en ligne</li>
+        </ul>
+      </div>
+
+      <form class="quick" id="quick" novalidate>
+        <h2 data-t="q_title">Réservez votre lavage</h2>
+        <p class="hint" data-t="q_hint">Quatre choix, puis on termine sur la page de réservation.</p>
+        <div class="field">
+          <label for="q-ville" data-t="q_city">Ville</label>
+          <select id="q-ville"><option value="" data-t="q_city_ph">Choisir votre ville</option><option value="Rabat" data-t="c_rabat">Rabat</option><option value="Salé" data-t="c_sale">Salé</option><option value="Salé Al Jadida" data-t="c_salej">Salé Al Jadida</option></select>
+        </div>
+        <div class="field">
+          <label for="q-vehicule" data-t="q_veh">Véhicule</label>
+          <select id="q-vehicule"><option value="" data-t="q_veh_ph">Choisir votre véhicule</option><option value="Citadine" data-t="v_cit">Citadine</option><option value="Berline" data-t="v_ber">Berline</option><option value="SUV / 4x4" data-t="v_suv">SUV / 4x4</option><option value="Utilitaire" data-t="v_uti">Utilitaire</option></select>
+        </div>
+        <div class="two">
+          <div class="field"><label for="q-date" data-t="date">Date</label><input id="q-date" type="date"></div>
+          <div class="field"><label for="q-heure" data-t="time">Heure</label>
+            <select id="q-heure"><option value="" data-t="time">Heure</option></select>
+          </div>
+        </div>
+        <button class="btn btn-main btn-block" type="submit" data-t="q_btn">Réserver maintenant</button>
+      </form>
+
+      <div class="scene" id="scene">
+        <svg viewBox="300 40 720 320" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration : un professionnel WASHGO lave une voiture avec un nettoyeur haute pression" data-ta="aria-label:scene_aria">
+          <defs>
+            <radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#B7F36B" stop-opacity=".28"/><stop offset="1" stop-color="#B7F36B" stop-opacity="0"/></radialGradient>
+          </defs>
+          <circle cx="560" cy="190" r="200" fill="url(#glow)"/>
+          <rect y="328" width="1200" height="32" fill="#16201a"/>
+          <path d="M0 328H1200" stroke="#B7F36B" stroke-opacity=".4" stroke-width="2"/>
+          <g stroke="#2b3a33" stroke-width="4" stroke-linecap="round"><path d="M60 346h70M250 346h70M440 346h70M630 346h70M820 346h70M1010 346h70"/></g>
+          <ellipse cx="520" cy="330" rx="260" ry="9" fill="#000" opacity=".4"/>
+
+          <!-- voiture -->
+          <g transform="translate(-50 0)">
+            <path d="M335 270V232Q335 214 355 210L420 196L500 186L560 138Q570 130 588 130H690Q712 130 725 146L760 196L775 200Q792 204 792 224V270Z" fill="#F4F5F2"/>
+            <path d="M335 246H792V272H335Z" fill="#cfd6cc"/>
+            <circle cx="430" cy="290" r="47" fill="#0d140f"/><circle cx="700" cy="290" r="47" fill="#0d140f"/>
+            <path d="M515 186L566 146H600V186Z" fill="#26352d"/>
+            <path d="M612 146H688Q700 146 708 156L736 186H612Z" fill="#26352d"/>
+            <path d="M524 180L563 150" stroke="#B7F36B" stroke-opacity=".6" stroke-width="3" stroke-linecap="round"/>
+            <path d="M604 150V262" stroke="#aab4ab" stroke-width="2"/>
+            <rect x="618" y="198" width="26" height="6" rx="3" fill="#aab4ab"/>
+            <rect x="337" y="220" width="16" height="9" rx="3" fill="#B7F36B"/>
+            <circle cx="430" cy="290" r="38" fill="#101713"/><circle cx="430" cy="290" r="21" fill="#aeb8b0"/><circle cx="430" cy="290" r="7" fill="#101713"/>
+            <circle cx="700" cy="290" r="38" fill="#101713"/><circle cx="700" cy="290" r="21" fill="#aeb8b0"/><circle cx="700" cy="290" r="7" fill="#101713"/>
+            <!-- mousse -->
+            <g fill="#ffffff" stroke="#B7F36B" stroke-opacity=".55" stroke-width="1.5">
+              <circle cx="625" cy="126" r="12"/><circle cx="647" cy="121" r="15"/><circle cx="670" cy="127" r="11"/><circle cx="656" cy="112" r="9"/><circle cx="634" cy="112" r="8"/>
+              <circle cx="445" cy="190" r="10"/><circle cx="466" cy="183" r="12"/><circle cx="487" cy="186" r="9"/><circle cx="456" cy="175" r="7"/>
+              <circle cx="752" cy="197" r="9"/><circle cx="770" cy="200" r="10"/>
+              <circle cx="560" cy="228" r="8"/><circle cx="676" cy="236" r="9"/>
+            </g>
+            <g stroke="#bcd0ff" stroke-opacity=".7" stroke-width="3" stroke-linecap="round"><path d="M640 150v44M668 152v30M556 214v22M690 206v26"/></g>
+          </g>
+
+          <!-- jet d'eau -->
+          <g fill="none" stroke="#bcd0ff" stroke-linecap="round">
+            <path d="M786 220Q740 130 652 128" stroke-width="5" opacity=".95"/>
+            <path d="M786 222Q742 140 656 134" stroke-width="2.5" opacity=".6" stroke-dasharray="2 9"/>
+            <path d="M784 218Q736 122 650 122" stroke-width="2.5" opacity=".6" stroke-dasharray="2 9"/>
+          </g>
+          <g fill="#bcd0ff" opacity=".85"><circle cx="646" cy="140" r="3"/><circle cx="634" cy="150" r="2.5"/><circle cx="700" cy="112" r="3"/><circle cx="716" cy="124" r="2.5"/><circle cx="690" cy="152" r="2"/></g>
+
+          <!-- professionnel -->
+          <g transform="translate(-40 36)">
+            <ellipse cx="900" cy="294" rx="40" ry="7" fill="#000" opacity=".35"/>
+            <rect x="880" y="226" width="18" height="64" rx="8" fill="#2b3a33"/><rect x="904" y="226" width="18" height="64" rx="8" fill="#2b3a33"/>
+            <rect x="873" y="280" width="29" height="13" rx="6" fill="#0b0f0d"/><rect x="902" y="280" width="29" height="13" rx="6" fill="#0b0f0d"/>
+            <path d="M868 212C892 240 912 236 934 264" fill="none" stroke="#7f9086" stroke-width="6" stroke-linecap="round"/>
+            <rect x="932" y="254" width="42" height="38" rx="7" fill="#B7F36B"/><rect x="939" y="261" width="20" height="12" rx="2" fill="#101713" opacity=".85"/>
+            <circle cx="942" cy="294" r="6" fill="#0b0f0d"/><circle cx="966" cy="294" r="6" fill="#0b0f0d"/>
+            <path d="M878 172L860 206" stroke="#9ed653" stroke-width="12" stroke-linecap="round"/><circle cx="858" cy="208" r="6" fill="#c98f60"/>
+            <rect x="872" y="156" width="56" height="78" rx="16" fill="#B7F36B"/>
+            <rect x="872" y="196" width="56" height="8" fill="#101713" opacity=".85"/>
+            <rect x="894" y="146" width="12" height="12" fill="#c98f60"/>
+            <circle cx="900" cy="134" r="16" fill="#c98f60"/>
+            <path d="M883 130Q884 112 902 112Q918 112 918 128V131H883Z" fill="#101713"/>
+            <path d="M883 124H918" stroke="#B7F36B" stroke-width="3"/>
+            <path d="M884 129L868 132Q866 135 870 135L886 135Z" fill="#101713"/>
+            <path d="M866 210L826 184" stroke="#cfd6cc" stroke-width="5" stroke-linecap="round"/>
+            <path d="M862 207L848 198" stroke="#101713" stroke-width="8" stroke-linecap="round"/>
+            <circle cx="826" cy="184" r="4" fill="#B7F36B"/>
+            <path d="M880 170L846 200" stroke="#a5e04f" stroke-width="12" stroke-linecap="round"/><circle cx="844" cy="202" r="6.5" fill="#c98f60"/>
+          </g>
+
+          <!-- reflets et bulles -->
+          <g fill="#B7F36B">
+            <path d="M305 196l3-7 7-3-7-3-3-7-3 7-7 3 7 3z"/>
+            <path d="M590 100l2.5-6 6-2.5-6-2.5-2.5-6-2.5 6-6 2.5 6 2.5z"/>
+            <path d="M706 168l2-5 5-2-5-2-2-5-2 5-5 2 5 2z"/>
+          </g>
+          <g fill="none" stroke="#bcd0ff" stroke-width="2" opacity=".6">
+            <circle class="b" cx="600" cy="62" r="9"/><circle class="b" cx="690" cy="80" r="6"/><circle class="b" cx="540" cy="90" r="5"/>
+            <circle class="b" cx="745" cy="64" r="8"/><circle class="b" cx="500" cy="60" r="4"/><circle class="b" cx="810" cy="96" r="5"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <section id="pourquoi">
+      <div class="eyebrow">Pourquoi WASHGO</div>
+      <h2>Le lavage vient à vous</h2>
+      <p class="lead">Pas de file d'attente, pas de déplacement. Un professionnel lave votre voiture là où elle est garée.</p>
+      <div class="feats">
+        <div class="feat"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></svg></span>
+          <h3>Nous venons chez vous</h3><p>À la maison, au bureau ou au parking, à Rabat, Salé et Salé Al Jadida.</p></div>
+        <div class="feat"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3s-6 6.7-6 11a6 6 0 0 0 12 0c0-4.3-6-11-6-11Z"/><path d="M9.5 14.5a2.5 2.5 0 0 0 2.5 2.5"/></svg></span>
+          <h3>Eau et matériel inclus</h3><p>Le professionnel arrive avec son eau, ses produits et son matériel.</p></div>
+        <div class="feat"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12V4h8l10 10-8 8L3 12Z"/><circle cx="7.5" cy="8.5" r="1.5"/></svg></span>
+          <h3>Prix clairs</h3><p>Les tarifs de départ sont affichés. Le prix final vous est confirmé avant le lavage.</p></div>
+        <div class="feat"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h3"/></svg></span>
+          <h3>Vous payez après</h3><p>Le paiement se fait directement avec le professionnel, une fois le lavage terminé.</p></div>
+        <div class="feat"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg></span>
+          <h3>Votre compte</h3><p>Vos informations sont enregistrées : la prochaine réservation se fait en quelques clics.</p></div>
+      </div>
+    </section>
+
+    <section id="tarifs">
+      <div class="eyebrow">Tarifs</div>
+      <h2>Choisissez votre véhicule</h2>
+      <p class="lead">Touchez votre type de véhicule, puis la formule qui vous convient. Votre choix est repris dans le formulaire de réservation.</p>
+      <div class="vehicles" role="group" aria-label="Type de véhicule">
+        <button class="veh" type="button" data-veh="Citadine" aria-pressed="true"><svg viewBox="0 0 320 140" aria-hidden="true"><use href="#car-citadine"/></svg><b>Citadine</b><small>Clio, 208, Picanto…</small></button>
+        <button class="veh" type="button" data-veh="Berline" aria-pressed="false"><svg viewBox="0 0 320 140" aria-hidden="true"><use href="#car-berline"/></svg><b>Berline</b><small>Logan, Accent, Corolla…</small></button>
+        <button class="veh" type="button" data-veh="SUV / 4x4" aria-pressed="false"><svg viewBox="0 0 320 140" aria-hidden="true"><use href="#car-suv"/></svg><b>SUV / 4x4</b><small>Duster, Tucson, Sportage…</small></button>
+        <button class="veh" type="button" data-veh="Utilitaire" aria-pressed="false"><svg viewBox="0 0 320 140" aria-hidden="true"><use href="#car-utilitaire"/></svg><b>Utilitaire</b><small>Kangoo, Berlingo, Partner…</small></button>
+      </div>
+
+      <h3 class="sub-h">Choisissez votre formule <span id="veh-label">pour Citadine</span></h3>
+      <div class="cards" id="services">
+        <article class="card pkg"><h3 data-t="sv1">Lavage extérieur</h3><p class="muted" data-t="sv1d">Nettoyage carrosserie et vitres</p>
+          <ul class="incl"><li>Carrosserie</li><li>Vitres</li></ul>
+          <div class="price"><span data-t="from">à partir de</span> <b data-t="p80">80 DH</b></div>
+          <button class="btn btn-line pkg-go" type="button" data-service="Lavage extérieur">Réserver</button></article>
+        <article class="card pkg"><h3 data-t="sv2">Lavage intérieur</h3><p class="muted" data-t="sv2d">Aspiration et nettoyage intérieur</p>
+          <ul class="incl"><li>Aspiration</li><li>Nettoyage de l'habitacle</li></ul>
+          <div class="price"><span data-t="from">à partir de</span> <b data-t="p100">100 DH</b></div>
+          <button class="btn btn-line pkg-go" type="button" data-service="Lavage intérieur">Réserver</button></article>
+        <article class="card pkg top-pick"><span class="badge">Recommandé</span><h3 data-t="sv3">Lavage complet</h3><p class="muted" data-t="sv3d">Intérieur + extérieur</p>
+          <ul class="incl"><li>Tout le lavage extérieur</li><li>Tout le lavage intérieur</li></ul>
+          <div class="price"><span data-t="from">à partir de</span> <b data-t="p120">120 DH</b></div>
+          <button class="btn btn-lime pkg-go" type="button" data-service="Lavage complet">Réserver</button></article>
+        <article class="card pkg"><h3 data-t="sv4">Premium</h3><p class="muted" data-t="sv4d">Nettoyage approfondi</p>
+          <ul class="incl"><li>Lavage complet</li><li>Nettoyage approfondi</li></ul>
+          <div class="price"><span data-t="from">à partir de</span> <b data-t="p180">180 DH</b></div>
+          <button class="btn btn-line pkg-go" type="button" data-service="Nettoyage premium">Réserver</button></article>
+      </div>
+      <p class="fine" data-t="s_fine">Tarifs indicatifs, à ajuster selon le véhicule et son état.</p>
+    </section>
+
+    <section id="comment">
+      <div class="eyebrow" data-t="h_eyebrow">Comment ça marche</div>
+      <h2 data-t="h_h2">De votre demande à la voiture propre</h2>
+      <ol class="steps">
+        <li><h3 data-t="h1t">Vous réservez</h3><p data-t="h1d">Ville, service, véhicule, adresse, jour et heure.</p></li>
+        <li><h3 data-t="h2t">WASHGO confirme</h3><p data-t="h2d">Nous choisissons le professionnel disponible dans votre zone.</p></li>
+        <li><h3 data-t="h3t">Le pro se déplace</h3><p data-t="h3d">Il arrive avec son eau et son matériel et lave sur place.</p></li>
+        <li><h3 data-t="h4t">Vous payez le pro</h3><p data-t="h4d">Le paiement se fait directement avec le professionnel, une fois le lavage terminé.</p></li>
+      </ol>
+    </section>
+
+    <section id="zones">
+      <div class="eyebrow" data-t="z_eyebrow">Zones</div>
+      <h2 data-t="z_h2">Rabat, Salé, Salé Al Jadida</h2>
+      <p class="lead" data-t="z_lead">Nous démarrons à Rabat et nous étendons la zone au fur et à mesure. Votre quartier n'est pas cité ? Indiquez-le dans le formulaire, nous vérifions la disponibilité.</p>
+      <div class="zgrid">
+        <div class="zone"><h3 data-t="c_rabat">Rabat</h3><p data-t="z_rabat">Agdal, Hay Riad, Souissi, Océan, Hassan</p></div>
+        <div class="zone"><h3 data-t="c_sale">Salé</h3><p data-t="z_sale">Tabriquet, Hay Salam, Bettana</p></div>
+        <div class="zone"><h3 data-t="c_salej">Salé Al Jadida</h3><p data-t="z_salej">Tous les quartiers de Salé Al Jadida</p></div>
+      </div>
+    </section>
+
+    <section id="faq">
+      <div class="eyebrow">FAQ</div>
+      <h2>Questions fréquentes</h2>
+      <div class="faq">
+        <details><summary>Comment se passe un lavage WASHGO ?</summary>
+          <p>Vous réservez en ligne. WASHGO choisit un professionnel disponible dans votre zone et vous contacte pour confirmer. Le professionnel vient à l'adresse indiquée et lave la voiture sur place.</p></details>
+        <details><summary>Dois-je fournir de l'eau ou des produits ?</summary>
+          <p>Non. Le professionnel vient avec son eau, ses produits et son matériel.</p></details>
+        <details><summary>Où intervenez-vous ?</summary>
+          <p>À Rabat, Salé et Salé Al Jadida. Si votre quartier n'est pas cité, indiquez-le dans le formulaire : nous vérifions la disponibilité.</p></details>
+        <details><summary>À quelles heures ?</summary>
+          <p>Vous choisissez un créneau entre 08:00 et 19:00, le jour qui vous arrange.</p></details>
+        <details><summary>Comment je paie ?</summary>
+          <p>Directement au professionnel, une fois le lavage terminé. Le prix final vous est confirmé avant le lavage.</p></details>
+        <details><summary>Pourquoi créer un compte ?</summary>
+          <p>Votre nom, votre téléphone, votre adresse et votre véhicule sont enregistrés. À la prochaine réservation, vous choisissez seulement le service, le jour et l'heure. Vous suivez aussi vos réservations depuis <a href="compte.html">votre compte</a>.</p></details>
+      </div>
+    </section>
+
+    <section id="reserver">
+      <div class="eyebrow" data-t="b_eyebrow">Réservation</div>
+      <h2 data-t="q_title">Réservez votre lavage</h2>
+      <p class="lead" data-t="b_lead">Remplissez le formulaire. WASHGO reçoit votre demande et vous contacte pour confirmer.</p>
+
+      <form class="book" id="form" novalidate>
+        <div class="acct" id="acct" hidden></div>
+        <p class="demo" id="demo" data-t="demo" hidden>Mode démo : cette réservation reste dans ce navigateur et n'est envoyée à personne.</p>
+
+        <fieldset class="group" id="g-ville">
+          <legend><span class="step-title"><b>1</b> <span data-t="l_city">Où voulez-vous le lavage ?</span></span></legend>
+          <div class="opts">
+            <label class="opt"><input type="radio" name="ville" value="Rabat"><span data-t="c_rabat">Rabat</span></label>
+            <label class="opt"><input type="radio" name="ville" value="Salé"><span data-t="c_sale">Salé</span></label>
+            <label class="opt"><input type="radio" name="ville" value="Salé Al Jadida"><span data-t="c_salej">Salé Al Jadida</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="group" id="g-service">
+          <legend><span class="step-title"><b>2</b> <span data-t="l_service">Quel service ?</span></span></legend>
+          <div class="opts cols">
+            <label class="opt"><input type="radio" name="service" value="Lavage extérieur"><span><b data-t="sv1">Lavage extérieur</b><small data-t="f80">dès 80 DH</small></span></label>
+            <label class="opt"><input type="radio" name="service" value="Lavage intérieur"><span><b data-t="sv2">Lavage intérieur</b><small data-t="f100">dès 100 DH</small></span></label>
+            <label class="opt"><input type="radio" name="service" value="Lavage complet"><span><b data-t="sv3">Lavage complet</b><small data-t="f120">dès 120 DH</small></span></label>
+            <label class="opt"><input type="radio" name="service" value="Nettoyage premium"><span><b data-t="sv4r">Nettoyage premium</b><small data-t="f180">dès 180 DH</small></span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="group" id="g-vehicule">
+          <legend><span class="step-title"><b>3</b> <span data-t="l_vehicle">Type de véhicule</span></span></legend>
+          <div class="opts cars">
+            <label class="opt"><input type="radio" name="vehicule" value="Citadine"><span><svg viewBox="0 0 320 140" aria-hidden="true"><use href="#car-citadine"/></svg><b data-t="v_cit">Citadine</b></span></label>
+            <label class="opt"><input type="radio" name="vehicule" value="Berline"><span><svg viewBox="0 0 320 140" aria-hidden="true"><use href="#car-berline"/></svg><b data-t="v_ber">Berline</b></span></label>
+            <label class="opt"><input type="radio" name="vehicule" value="SUV / 4x4"><span><svg viewBox="0 0 320 140" aria-hidden="true"><use href="#car-suv"/></svg><b data-t="v_suv">SUV / 4x4</b></span></label>
+            <label class="opt"><input type="radio" name="vehicule" value="Utilitaire"><span><svg viewBox="0 0 320 140" aria-hidden="true"><use href="#car-utilitaire"/></svg><b data-t="v_uti">Utilitaire</b></span></label>
+          </div>
+        </fieldset>
+
+        <div class="field" id="g-adresse">
+          <label for="adresse"><span class="step-title"><b>4</b> <span data-t="l_address">Adresse</span></span></label>
+          <input id="adresse" type="text" autocomplete="street-address" maxlength="300" placeholder="Ex. Agdal, rue Oued Fès, parking de l&#x27;immeuble" data-tp="ph_address">
+        </div>
+
+        <!--MAP-->
+        <div class="mapbox" id="mapbox">
+          <div class="maphead">
+            <span class="small"><b data-t="map_t">Repère sur la carte</b><span data-t="map_o"> (facultatif, mais ça aide le professionnel)</span></span>
+            <button type="button" class="btn btn-line btn-sm" id="geo" data-t="geo">Utiliser ma position</button>
+          </div>
+          <div id="map" role="application" aria-label="Carte pour placer le repère" data-ta="aria-label:map_aria"></div>
+          <p class="small"><span id="pin-txt"></span> <button type="button" class="linkbtn" id="pin-clear" data-t="pin_clear" hidden>Retirer le repère</button></p>
+        </div>
+        <!--/MAP-->
+
+        <div class="two">
+          <div class="field" id="g-date">
+            <label for="date"><span class="step-title"><b>5</b> <span data-t="date">Date</span></span></label>
+            <input id="date" type="date">
+          </div>
+          <div class="field" id="g-heure">
+            <label for="heure"><span class="step-title" data-t="time">Heure</span></label>
+            <select id="heure"><option value="" data-t="choose">Choisir</option></select>
+          </div>
+        </div>
+
+        <div class="two">
+          <div class="field" id="g-nom">
+            <label for="nom"><span class="step-title"><b>6</b> <span data-t="l_name">Votre nom (facultatif)</span></span></label>
+            <input id="nom" type="text" autocomplete="name" maxlength="100" placeholder="Ex. Youssef Benali" data-tp="ph_name">
+          </div>
+          <div class="field" id="g-tel">
+            <label for="tel"><span class="step-title" data-t="l_phone">Téléphone</span></label>
+            <input id="tel" type="tel" inputmode="tel" autocomplete="tel" maxlength="30" placeholder="Ex. 06 12 34 56 78" data-tp="ph_phone" dir="auto">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="notes" data-t="l_notes">Notes (facultatif)</label>
+          <textarea id="notes" maxlength="600" placeholder="Ex. Code de la résidence, emplacement de la voiture, état particulier" data-tp="ph_notes"></textarea>
+        </div>
+
+        <div class="field" id="g-consent">
+          <label class="check" for="consent"><input type="checkbox" id="consent"><span data-t="consent">J'accepte que WASHGO utilise ces informations pour traiter ma réservation et me contacter à ce sujet. <a href="#confidentialite">Politique de confidentialité</a></span></label>
+        </div>
+
+        <div class="honey" aria-hidden="true"><label>Ne pas remplir<input id="website" type="text" tabindex="-1" autocomplete="off"></label></div>
+
+        <p class="err" id="err" role="alert"></p>
+        <button class="btn btn-main btn-block" id="send" type="submit" data-t="send">Envoyer ma réservation</button>
+        <p class="small" data-t="b_note">Nous ne confirmons ni le rendez-vous ni le prix final avant d'avoir trouvé un professionnel disponible.</p>
+      </form>
+
+      <div class="done" id="done" hidden>
+        <h3 data-t="d_title">Merci !</h3>
+        <p data-t="d_text">Votre demande a bien été reçue. WASHGO vous contactera pour confirmer votre réservation.</p>
+        <div class="refbox" id="ref"></div>
+        <p class="small" data-t="d_keep">Gardez ce numéro de réservation, il vous sera utile si vous nous contactez.</p>
+        <button class="btn btn-main" id="again" type="button" data-t="d_again">Nouvelle réservation</button>
+      </div>
+    </section>
+
+    <section id="go">
+      <div class="cta">
+        <div class="cta-txt">
+          <h2>Votre voiture propre, <em>sans bouger de chez vous.</em></h2>
+          <p>Réservez maintenant. Avec un compte, la prochaine réservation se fait en quelques clics.</p>
+          <div class="cta-acts">
+            <a class="btn btn-lime" href="#reserver">Réserver un lavage</a>
+            <a class="btn btn-ghost" href="compte.html">Créer un compte</a>
+          </div>
+        </div>
+        <svg class="cta-car" viewBox="0 0 320 140" aria-hidden="true"><use href="#car-utilitaire"/></svg>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <div class="wrap">
+      <div class="f-grid">
+        <div class="f-brand">
+          <span class="f-logo"><strong>WASHGO</strong> <span class="lime">MOBILE</span></span>
+          <p><bdi>Your Car. Our Care.</bdi></p>
+          <p>Lavage de voiture à domicile, avec un professionnel qui vient chez vous.</p>
+        </div>
+        <nav aria-label="Pages">
+          <h3>Le site</h3>
+          <a href="#tarifs">Tarifs</a><a href="#comment">Comment ça marche</a><a href="#faq">FAQ</a><a href="#reserver">Réserver</a><a href="compte.html">Mon compte</a>
+        </nav>
+        <div>
+          <h3>Zones</h3>
+          <span data-t="c_rabat">Rabat</span><span data-t="c_sale">Salé</span><span data-t="c_salej">Salé Al Jadida</span>
+        </div>
+        <nav class="legal-links" aria-label="Informations légales" data-ta="aria-label:f_nav">
+          <h3>Informations</h3>
+          <a href="#confidentialite" data-t="f_priv">Politique de confidentialité</a><a href="#mentions-legales" data-t="f_ment">Mentions légales</a>
+        </nav>
+      </div>
+      <p class="f-copy">© <span id="year">2026</span> WASHGO Mobile</p>
+    </div>
+  </footer>
+</main>
+
+<script src="config.js"></script>
+<script src="legal.js"></script>
+<script src="i18n.js"></script>
+<script src="data.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var qsa = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  var W = window.WASHGO;
+  var T = (window.WASHGO_I18N && window.WASHGO_I18N.T) || { fr: {} };
+
+  // ---------- langue ----------
+  // Site en français seulement. Pour réactiver l'arabe et l'anglais : remettre le sélecteur .lang (boutons data-lang) dans l'en-tête.
+  var lang = "fr";
+  function t(k, n) {
+    var v = T[lang] && T[lang][k];
+    if (v == null) v = T.fr[k];
+    if (v == null) v = k;
+    return n != null ? v.replace("%n", n) : v;
+  }
+  window.WASHGO_T = function (k) { return t(k); };
+
+  var form = $("form"), err = $("err"), send = $("send");
+  var errState = null, pinState = "hint", geoBusy = false, sendBusy = false, lastRef = null;
+
+  function renderErr() { err.textContent = errState ? t(errState.k, errState.n) : ""; }
+  function renderPin() { $("pin-txt").textContent = t("pin_" + pinState); }
+  function renderGeo() { $("geo").textContent = t(geoBusy ? "geo_busy" : "geo"); }
+  function renderSend() { send.textContent = t(sendBusy ? "sending" : "send"); }
+  function renderRef() {
+    if (!lastRef) return;
+    $("ref").innerHTML = t("d_ref") + " <bdi></bdi>";
+    $("ref").lastChild.textContent = lastRef;
+  }
+
+  function applyLang() {
+    var root = document.documentElement;
+    root.lang = lang; root.dir = lang === "ar" ? "rtl" : "ltr";
+    qsa("[data-t]").forEach(function (el) { el.innerHTML = t(el.getAttribute("data-t")); });
+    qsa("[data-tp]").forEach(function (el) { el.placeholder = t(el.getAttribute("data-tp")); });
+    qsa("[data-ta]").forEach(function (el) {
+      el.getAttribute("data-ta").split(";").forEach(function (p) { var a = p.split(":"); el.setAttribute(a[0], t(a[1])); });
+    });
+    qsa("[data-lang]").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-lang") === lang ? "true" : "false"); });
+    var sc = $("scene"); if (sc) { var im = sc.querySelector("img"); if (im) im.alt = t("scene_alt"); }
+    renderErr(); renderPin(); renderGeo(); renderSend(); renderRef();
+    document.dispatchEvent(new CustomEvent("wg:lang", { detail: lang }));
+  }
+  qsa("[data-lang]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      lang = b.getAttribute("data-lang");
+      try { localStorage.setItem("wg_lang", lang); } catch (x) {}
+      applyLang();
+    });
+  });
+
+  // ---------- heures ----------
+  ["q-heure", "heure"].forEach(function (id) {
+    var sel = $(id);
+    for (var h = 8; h <= 19; h++) {
+      var o = document.createElement("option");
+      o.textContent = (h < 10 ? "0" : "") + h + ":00";
+      sel.appendChild(o);
+    }
+  });
+
+  (function () {
+    var img = new Image();
+    img.onload = function () {
+      var sc = $("scene"); if (!sc) return;
+      img.alt = t("scene_alt");
+      sc.innerHTML = ""; sc.appendChild(img);
+    };
+    img.src = "hero.jpg";
+  })();
+
+  var d = new Date(), pad = function (n) { return String(n).padStart(2, "0"); };
+  var today = d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+  $("date").min = today; $("q-date").min = today;
+  $("demo").hidden = !!(W && W.live);
+
+  function radio(name) { var r = document.querySelector('input[name="' + name + '"]:checked'); return r ? r.value : ""; }
+  function setRadio(name, value) {
+    var all = document.querySelectorAll('input[name="' + name + '"]');
+    for (var i = 0; i < all.length; i++) { all[i].checked = all[i].value === value; }
+  }
+  function val(id) { return ($(id).value || "").trim(); }
+
+  var checks = [
+    { box: "g-ville", ok: function () { return !!radio("ville"); } },
+    { box: "g-service", ok: function () { return !!radio("service"); } },
+    { box: "g-vehicule", ok: function () { return !!radio("vehicule"); } },
+    { box: "g-adresse", ok: function () { return val("adresse").length >= 3; }, focus: "adresse" },
+    { box: "g-date", ok: function () { return !!val("date"); }, focus: "date" },
+    { box: "g-heure", ok: function () { return !!val("heure"); }, focus: "heure" },
+    { box: "g-tel", ok: function () { return val("tel").replace(/\D/g, "").length >= 9; }, focus: "tel" },
+    { box: "g-consent", ok: function () { return $("consent").checked; }, focus: "consent" }
+  ];
+  function missing() { return checks.filter(function (c) { return !c.ok(); }); }
+
+  // ---------- carte (Leaflet + OpenStreetMap) ----------
+  var map = null, pin = null, lat = null, lng = null;
+  var CENTERS = { "Rabat": [34.0209, -6.8416], "Salé": [34.0531, -6.7985] };
+  function hideMap() { var mb = $("mapbox"); if (mb) mb.hidden = true; }
+  function setPin(la, lo, move) {
+    lat = Math.round(la * 1e6) / 1e6; lng = Math.round(lo * 1e6) / 1e6;
+    if (!pin) {
+      pin = L.marker([lat, lng], { draggable: true, icon: L.divIcon({ className: "pin", html: "<span></span>", iconSize: [30, 38], iconAnchor: [15, 36] }) }).addTo(map);
+      pin.on("dragend", function () { var p = pin.getLatLng(); setPin(p.lat, p.lng, false); });
+    } else { pin.setLatLng([lat, lng]); }
+    if (move) map.setView([lat, lng], Math.max(map.getZoom(), 16));
+    pinState = "set"; renderPin();
+    $("pin-clear").hidden = false;
+  }
+  function clearPin() {
+    if (pin && map) { map.removeLayer(pin); }
+    pin = null; lat = null; lng = null;
+    pinState = "hint"; renderPin(); $("pin-clear").hidden = true;
+  }
+  function centerOn(city) { if (map && CENTERS[city]) map.setView(CENTERS[city], 13); }
+  if ($("map") && window.L) {
+    try {
+      map = L.map($("map"), { scrollWheelZoom: false }).setView([34.03, -6.82], 11);
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap" }).addTo(map);
+      map.on("click", function (ev) { setPin(ev.latlng.lat, ev.latlng.lng, false); });
+      $("pin-clear").addEventListener("click", clearPin);
+      $("geo").addEventListener("click", function () {
+        var b = $("geo");
+        if (!navigator.geolocation) { pinState = "na"; renderPin(); return; }
+        b.disabled = true; geoBusy = true; renderGeo();
+        navigator.geolocation.getCurrentPosition(function (p) {
+          b.disabled = false; geoBusy = false; renderGeo();
+          setPin(p.coords.latitude, p.coords.longitude, true);
+        }, function () {
+          b.disabled = false; geoBusy = false; renderGeo();
+          pinState = "fail"; renderPin();
+        }, { enableHighAccuracy: true, timeout: 10000 });
+      });
+    } catch (x) { map = null; hideMap(); }
+  } else { hideMap(); }
+  form.addEventListener("change", function (e) { if (e.target && e.target.name === "ville") centerOn(e.target.value); });
+
+  form.addEventListener("input", function () { if (errState) { errState = null; renderErr(); } });
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var m = missing();
+    checks.forEach(function (c) { $(c.box).classList.toggle("bad", m.indexOf(c) !== -1); });
+    if (m.length) {
+      errState = m.length === 1 ? { k: "e_one" } : { k: "e_many", n: m.length }; renderErr();
+      try { $(m[0].box).scrollIntoView({ block: "center" }); if (m[0].focus) $(m[0].focus).focus(); } catch (x) {}
+      return;
+    }
+    if (val("website")) { showDone("WG-" + today.replace(/-/g, "").slice(2) + "-0000"); return; }
+    if (!W) { errState = { k: "e_down" }; renderErr(); return; }
+
+    send.disabled = true; sendBusy = true; renderSend();
+    var booking = {
+      city: radio("ville"),
+      service: radio("service"),
+      vehicle: radio("vehicule"),
+      address: val("adresse"),
+      scheduled_date: val("date"),
+      scheduled_time: val("heure"),
+      phone: val("tel"),
+      customer_name: val("nom") || null,
+      notes: val("notes") || null,
+      latitude: lat,
+      longitude: lng,
+      consent_at: new Date().toISOString()
+    };
+    if (meUser) booking.user_id = meUser.id;
+    W.createBooking(booking).then(function (ref) {
+      showDone(ref);
+      // client connecté : on garde les dernières infos pour la prochaine réservation
+      if (meUser && C) {
+        var upd = { full_name: booking.customer_name, phone: booking.phone, city: booking.city, vehicle: booking.vehicle,
+          address: booking.address, latitude: booking.latitude, longitude: booking.longitude };
+        me = Object.assign({}, me, upd);
+        C.saveProfile(upd).catch(function () {});
+      }
+    }).catch(function () {
+      errState = { k: "e_fail" }; renderErr();
+      send.disabled = false; sendBusy = false; renderSend();
+    });
+  });
+
+  function showDone(ref) {
+    lastRef = ref; renderRef();
+    form.hidden = true;
+    $("done").hidden = false;
+    try { $("done").scrollIntoView({ block: "center" }); } catch (x) {}
+  }
+  $("again").addEventListener("click", function () {
+    form.reset();
+    clearPin();
+    fillFromProfile();
+    lastRef = null;
+    errState = null; renderErr();
+    checks.forEach(function (c) { $(c.box).classList.remove("bad"); });
+    send.disabled = false; sendBusy = false; renderSend();
+    $("done").hidden = true;
+    form.hidden = false;
+    try { form.scrollIntoView({ block: "start" }); } catch (x) {}
+    if (map) { setTimeout(function () { map.invalidateSize(); }, 50); }
+  });
+
+  $("quick").addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (form.hidden) $("again").click();
+    if ($("q-ville").value) { setRadio("ville", $("q-ville").value); centerOn($("q-ville").value); }
+    if ($("q-vehicule").value) setRadio("vehicule", $("q-vehicule").value);
+    if ($("q-date").value) $("date").value = $("q-date").value;
+    if ($("q-heure").value) $("heure").value = $("q-heure").value;
+    try { $("reserver").scrollIntoView({ behavior: "smooth", block: "start" }); } catch (x) { location.hash = "reserver"; }
+  });
+
+  // ---------- compte client : formulaire rempli automatiquement ----------
+  var C = W && W.customer, me = null, meUser = null;
+  function fillFromProfile() {
+    if (!me) return;
+    if (me.full_name && !val("nom")) $("nom").value = me.full_name;
+    if (me.phone && !val("tel")) $("tel").value = me.phone;
+    if (me.city && !radio("ville")) { setRadio("ville", me.city); centerOn(me.city); }
+    if (me.vehicle && !radio("vehicule")) setRadio("vehicule", me.vehicle);
+    if (me.address && !val("adresse")) $("adresse").value = me.address;
+    if (map && lat == null && me.latitude != null && me.longitude != null) setPin(me.latitude, me.longitude, true);
+    if (me.city && !$("q-ville").value) $("q-ville").value = me.city;
+    if (me.vehicle && !$("q-vehicule").value) $("q-vehicule").value = me.vehicle;
+    // consentement déjà donné à la création du compte
+    if (me.consent_at) { $("consent").checked = true; $("g-consent").hidden = true; }
+    if (me.vehicle) document.dispatchEvent(new CustomEvent("wg:vehicle", { detail: me.vehicle }));
+  }
+  function renderAcct() {
+    var box = $("acct");
+    box.hidden = false;
+    if (meUser) {
+      box.className = "acct";
+      box.innerHTML = '<span>Bonjour <b></b>, vos informations sont déjà remplies. Choisissez le service, le jour et l\'heure.</span>' +
+        '<span class="acct-links"><a href="compte.html">Mon compte</a><button type="button" class="linkbtn" id="acct-out">Se déconnecter</button></span>';
+      box.querySelector("b").textContent = (me && me.full_name) || meUser.email;
+      $("acct-out").addEventListener("click", function () { C.signOut().then(function () { location.reload(); }); });
+    } else {
+      box.className = "acct guest";
+      box.innerHTML = '<span>Avec un compte, vos informations se remplissent toutes seules à chaque réservation.</span>' +
+        '<span class="acct-links"><a href="compte.html?connexion&amp;retour=reserver">Se connecter</a><a href="compte.html">Créer un compte</a></span>';
+    }
+  }
+  if (C) {
+    C.current().then(function (u) {
+      meUser = u;
+      if (!u) { renderAcct(); return; }
+      return C.getProfile().then(function (p) { me = p || {}; fillFromProfile(); renderAcct(); });
+    }).catch(function () { meUser = null; renderAcct(); });
+  }
+
+  applyLang();
+})();
+
+</script>
+<script>
+// ---------- tarifs : choix du véhicule et de la formule, repris dans le formulaire ----------
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var vehs = Array.prototype.slice.call(document.querySelectorAll(".veh"));
+  var current = "Citadine";
+
+  function pickVeh(v, fromForm) {
+    if (!v) return;
+    current = v;
+    vehs.forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-veh") === v ? "true" : "false"); });
+    $("veh-label").textContent = "pour " + v;
+    if (fromForm) return;
+    var r = document.querySelector('input[name="vehicule"][value="' + v + '"]');
+    if (r) { r.checked = true; $("g-vehicule").classList.remove("bad"); }
+    if ($("q-vehicule")) $("q-vehicule").value = v;
+  }
+
+  vehs.forEach(function (b) { b.addEventListener("click", function () { pickVeh(b.getAttribute("data-veh")); }); });
+
+  Array.prototype.forEach.call(document.querySelectorAll(".pkg-go"), function (b) {
+    b.addEventListener("click", function () {
+      if ($("form").hidden) $("again").click();
+      pickVeh(current);
+      var s = document.querySelector('input[name="service"][value="' + b.getAttribute("data-service") + '"]');
+      if (s) { s.checked = true; $("g-service").classList.remove("bad"); }
+      try { $("reserver").scrollIntoView({ behavior: "smooth", block: "start" }); } catch (x) { location.hash = "reserver"; }
+    });
+  });
+
+  // le formulaire et la réservation rapide mettent aussi à jour la carte choisie
+  $("form").addEventListener("change", function (e) { if (e.target && e.target.name === "vehicule") pickVeh(e.target.value, true); });
+  if ($("q-vehicule")) $("q-vehicule").addEventListener("change", function () { pickVeh(this.value, true); });
+  document.addEventListener("wg:vehicle", function (e) { pickVeh(e.detail, true); });
+
+  if ($("year")) $("year").textContent = new Date().getFullYear();
+})();
+</script>
+<script>
+// ---------- animations (l'essentiel reste lisible sans JavaScript ou avec "réduire les animations") ----------
+(function () {
+  var root = document.documentElement;
+  var still = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var qsa = function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
+  if (still) return;
+  root.classList.add("fx");
+
+  // 1) apparition au défilement, avec un léger décalage entre frères
+  var targets = qsa(".eyebrow, main > .wrap > section > h2, .lead, .card, .steps li, .zone, .fine, .book, .feat, .veh, .sub-h, .faq details, .cta");
+  targets.forEach(function (el) {
+    el.classList.add("rv");
+    var sibs = qsa(".rv", el.parentNode).filter(function (x) { return x.parentNode === el.parentNode; });
+    el.style.setProperty("--d", Math.min(sibs.indexOf(el), 4) * 90 + "ms");
+  });
+  function countUp(el) {
+    var m = /^(\d+)(.*)$/.exec(el.textContent.trim());
+    if (!m) return;
+    var end = +m[1], suf = m[2], t0 = null;
+    function step(ts) {
+      if (t0 === null) t0 = ts;
+      var k = Math.min(1, (ts - t0) / 900), e = 1 - Math.pow(1 - k, 3);
+      el.textContent = Math.round(end * e) + suf;
+      if (k < 1) requestAnimationFrame(step); else el.textContent = end + suf;
+    }
+    requestAnimationFrame(step);
+  }
+  if ("IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (en) {
+        if (!en.isIntersecting) return;
+        en.target.classList.add("in");
+        qsa(".price b", en.target).forEach(countUp);
+        io.unobserve(en.target);
+      });
+    }, { threshold: 0.15, rootMargin: "0px 0px -6% 0px" });
+    targets.forEach(function (el) { io.observe(el); });
+  } else { targets.forEach(function (el) { el.classList.add("in"); }); }
+
+  // 2) en-tête : ombre quand on défile
+  var top = document.querySelector(".top");
+  function onScroll() { if (top) top.classList.toggle("scrolled", (window.pageYOffset || 0) > 8); }
+  window.addEventListener("scroll", onScroll, { passive: true }); onScroll();
+
+  // 3) la voiture arrive dans la scène
+  try {
+    var car = document.querySelector("#scene svg > g");
+    if (car && car.animate) {
+      car.animate([{ transform: "translate(-330px, 0)", opacity: 0 }, { transform: "translate(-50px, 0)", opacity: 1 }],
+        { duration: 1300, easing: "cubic-bezier(.2,.8,.2,1)", delay: 250, fill: "backwards" });
+    }
+  } catch (x) {}
+
+  // 4) effet de vague sous le doigt sur les boutons
+  document.addEventListener("pointerdown", function (e) {
+    var b = e.target.closest && e.target.closest(".btn");
+    if (!b || b.disabled) return;
+    var r = b.getBoundingClientRect(), s = Math.max(r.width, r.height) * 2;
+    var rp = document.createElement("span");
+    rp.className = "rip";
+    rp.style.cssText = "width:" + s + "px;height:" + s + "px;left:" + (e.clientX - r.left - s / 2) + "px;top:" + (e.clientY - r.top - s / 2) + "px";
+    b.appendChild(rp);
+    setTimeout(function () { if (rp.parentNode) rp.parentNode.removeChild(rp); }, 650);
+  }, { passive: true });
+
+  // 5) confettis quand la réservation est envoyée
+  var done = document.getElementById("done");
+  if (done && "MutationObserver" in window) {
+    new MutationObserver(function () { if (!done.hidden) burst(done); }).observe(done, { attributes: true, attributeFilter: ["hidden"] });
+  }
+  function burst(host) {
+    if (!host.animate) return;
+    var cols = ["#B7F36B", "#101713", "#8fd13f", "#cfd6cc"], r = host.getBoundingClientRect();
+    var layer = document.createElement("div");
+    layer.className = "confetti";
+    layer.style.cssText = "left:" + (r.left + window.pageXOffset) + "px;top:" + (r.top + window.pageYOffset) + "px;width:" + r.width + "px";
+    document.body.appendChild(layer);
+    for (var i = 0; i < 36; i++) {
+      var p = document.createElement("i");
+      p.style.cssText = "left:" + (Math.random() * 100) + "%;background:" + cols[i % cols.length] + ";width:" + (6 + Math.random() * 6) + "px;height:" + (8 + Math.random() * 8) + "px";
+      layer.appendChild(p);
+      p.animate([
+        { transform: "translate(0,0) rotate(0)", opacity: 1 },
+        { transform: "translate(" + (Math.random() * 120 - 60) + "px," + (180 + Math.random() * 220) + "px) rotate(" + (Math.random() * 720 - 360) + "deg)", opacity: 0 }
+      ], { duration: 1400 + Math.random() * 900, delay: Math.random() * 250, easing: "cubic-bezier(.2,.6,.4,1)", fill: "forwards" });
+    }
+    setTimeout(function () { if (layer.parentNode) layer.parentNode.removeChild(layer); }, 2800);
+  }
+})();
+
+</script>
+<div class="legal" id="legal" hidden>
+  <div class="legal-sheet" id="legal-sheet" role="dialog" aria-modal="true" aria-labelledby="legal-title">
+    <div class="legal-head"><h2 id="legal-title"></h2><button class="btn btn-line btn-sm" id="legal-close" type="button" data-t="close">Fermer</button></div>
+    <p class="small" id="legal-updated" data-t="updated">Dernière mise à jour : 11 novembre 2026</p>
+    <div class="legal-body" id="legal-body"></div>
+  </div>
+</div>
+<script>
+// ---------- pages légales (politique de confidentialité, mentions légales), 3 langues ----------
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var L = window.WASHGO_LEGAL || {};
+  var I = window.WASHGO_I18N || { T: {}, legal: {} };
+  function lang() { return I.legal[document.documentElement.lang] ? document.documentElement.lang : "fr"; }
+  function tr(k) { var T = I.T[lang()] || {}; return T[k] != null ? T[k] : (I.T.fr[k] || k); }
+  function e(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  // valeur de legal.js dans la langue courante (repli : français), sinon repère "à compléter"
+  function n(k, labelKey) {
+    var v = L[k + "_" + lang()] || L[k];
+    return v ? e(v) : '<mark class="todo">[' + e(tr("todo")) + " : " + e(tr(labelKey)) + "]</mark>";
+  }
+
+  var PAGES = { "confidentialite": { title: "f_priv", fn: "privacy" }, "mentions-legales": { title: "f_ment", fn: "mentions" } };
+  var current = null, lastScroll = 0;
+
+  function render() {
+    if (!current) return;
+    var p = PAGES[current];
+    $("legal-title").textContent = tr(p.title);
+    $("legal-body").innerHTML = I.legal[lang()][p.fn](n);
+  }
+  function open(key) {
+    if (!PAGES[key]) return;
+    if ($("legal").hidden) { lastScroll = window.pageYOffset || 0; }
+    current = key; render();
+    $("legal").hidden = false;
+    $("legal-sheet").scrollTop = 0;
+    document.body.style.overflow = "hidden";
+    try { $("legal-close").focus(); } catch (x) {}
+  }
+  function close() {
+    if ($("legal").hidden) return;
+    $("legal").hidden = true; current = null;
+    document.body.style.overflow = "";
+    try { history.replaceState(null, "", location.pathname + location.search); } catch (x) { try { location.hash = ""; } catch (y) {} }
+    try { window.scrollTo(0, lastScroll); } catch (x) {}
+  }
+  function route() {
+    var k = (location.hash || "").replace("#", "");
+    if (PAGES[k]) open(k);
+    else if (!$("legal").hidden) { $("legal").hidden = true; current = null; document.body.style.overflow = ""; }
+  }
+  $("legal-close").addEventListener("click", close);
+  $("legal").addEventListener("click", function (ev) { if (ev.target === $("legal")) close(); });
+  document.addEventListener("keydown", function (ev) { if (ev.key === "Escape") close(); });
+  $("legal-body").addEventListener("click", function (ev) {
+    var a = ev.target.closest("[data-legal-link]");
+    if (a) { ev.preventDefault(); open("confidentialite"); }
+  });
+  document.addEventListener("wg:lang", render);
+  window.addEventListener("hashchange", route);
+  route();
+})();
+
+</script>
+</body>
+</html>

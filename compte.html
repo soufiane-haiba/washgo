@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="fr" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>WASHGO Mon compte</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<style>
+/* Compte client : inscription / connexion, puis profil enregistré + historique des réservations.
+   Couleurs : définies dans theme.js (gris clair + barre noire). */
+:root {
+  --ink: #000000; --lime: #B7F36B;
+  --bg: #e8e8e8; --surface: #ffffff; --fg: #111111; --muted: #555555; --line: #cccccc;
+  --btn-bg: #111111; --btn-fg: #B7F36B; --focus: #111111; --link: #111111; --bad: #c62d3f;
+  --warn-bg: #fff1cc; --warn-fg: #6b4a00; --ok-bg: #d9f5c2; --ok-fg: #1d5a0a;
+  --font-display: "Space Grotesk", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 var(--font-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.15; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+a { color: var(--link); }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.wrap { margin-inline: auto; padding-inline: clamp(0px, 3vw, 56px); }
+
+/* en-tête noir */
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 20; background: #000; }
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; background: #000; color: #f2f2f2;
+  margin-inline: calc(-1 * max(16px, env(safe-area-inset-left, 0px))); padding-inline: max(16px, env(safe-area-inset-left, 0px)); }
+.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 12px; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: #f2f2f2; }
+.brand .mark { width: clamp(38px, 9vw, 46px); height: clamp(38px, 9vw, 46px); border-radius: 11px; background: var(--lime); display: grid; place-items: center; flex: none; }
+.brand .word { font-family: var(--font-display); font-weight: 700; font-size: clamp(22px, 5.5vw, 28px); letter-spacing: .02em; line-height: 1; }
+.brand .word small { display: block; font-size: 11px; letter-spacing: .34em; font-weight: 500; color: #a8a8a8; margin-top: 3px; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; padding: 10px 22px; border-radius: 10px;
+  font: 600 15px var(--font-body); letter-spacing: .02em; text-decoration: none; border: 0; cursor: pointer; transition: transform .15s ease, box-shadow .2s ease; }
+.btn:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(0,0,0,.15); }
+.btn[disabled] { opacity: .6; cursor: progress; transform: none; }
+.btn-lime { background: var(--lime); color: #000; }
+.btn-main { background: var(--btn-bg); color: var(--btn-fg); }
+.btn-line { background: transparent; color: var(--fg); border: 1.5px solid var(--line); }
+.btn-block { width: 100%; min-height: 54px; font-size: 16px; text-transform: uppercase; }
+.linkbtn { background: none; border: 0; padding: 0; font: 600 14px var(--font-body); color: var(--link); text-decoration: underline; cursor: pointer; }
+
+main { padding-block: 36px 70px; }
+.box { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: clamp(20px, 4vw, 36px); min-width: 0; }
+.auth { max-width: 560px; margin-inline: auto; display: grid; gap: 20px; }
+.auth h1 { font-size: clamp(26px, 5vw, 34px); }
+.lead { color: var(--muted); }
+.tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: var(--bg); border-radius: 12px; padding: 4px; }
+.tab { font: 600 15px var(--font-body); border: 0; border-radius: 9px; min-height: 44px; background: transparent; color: var(--muted); cursor: pointer; }
+.tab[aria-selected="true"] { background: var(--btn-bg); color: var(--btn-fg); }
+
+form { display: grid; gap: 16px; }
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+label { font-size: 14px; font-weight: 600; }
+.opt-l { font-weight: 400; color: var(--muted); }
+input[type="text"], input[type="tel"], input[type="email"], input[type="password"], select {
+  font: 16px var(--font-body); color: var(--fg); background: #f4f4f4; border: 1.5px solid var(--line); border-radius: 10px;
+  padding: 10px 12px; min-height: 48px; width: 100%; min-width: 0; }
+input:focus, select:focus { border-color: var(--fg); }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.check { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; font-weight: 400; line-height: 1.5; cursor: pointer; }
+.check input { width: 22px; height: 22px; margin: 0; flex: none; accent-color: var(--fg); }
+.hint { font-size: 13px; color: var(--muted); }
+.err { color: var(--bad); font-size: 14px; min-height: 20px; }
+.ok { background: var(--ok-bg); color: var(--ok-fg); border-radius: 10px; padding: 10px 14px; font-size: 14px; }
+.demo { background: var(--warn-bg); color: var(--warn-fg); border-radius: 10px; padding: 10px 14px; font-size: 14px; }
+.sep { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 13px; }
+.sep::before, .sep::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+/* espace client */
+.me { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 20px; align-items: start; }
+.hello { grid-column: 1 / -1; background: #000; color: #f2f2f2; border-radius: 18px; padding: clamp(22px, 4vw, 40px);
+  display: flex; flex-wrap: wrap; gap: 18px 28px; align-items: center; justify-content: space-between; }
+.hello h1 { font-size: clamp(26px, 5vw, 40px); }
+.hello h1 em { font-style: normal; color: var(--lime); }
+.hello p { color: #b0b0b0; margin-top: 6px; }
+.hello .acts { display: flex; flex-wrap: wrap; gap: 10px; }
+.hello .btn-line { color: #f2f2f2; border-color: #444; }
+.box h2 { font-size: 22px; margin-bottom: 4px; }
+.box > .hint { margin-bottom: 16px; }
+.list { display: grid; gap: 10px; }
+.bk { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 4px; }
+.bk .row { display: flex; flex-wrap: wrap; gap: 6px 12px; justify-content: space-between; align-items: baseline; }
+.bk b { font-family: var(--font-display); }
+.bk .ref { font-size: 12px; color: var(--muted); letter-spacing: .04em; }
+.pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: #ececec; color: #333; white-space: nowrap; }
+.pill.go { background: #e6f8c8; color: #2d5a06; }
+.pill.done { background: #111; color: var(--lime); }
+.pill.no { background: #f6d9dd; color: #8a1f2c; }
+.empty { color: var(--muted); font-size: 15px; }
+.again { margin-top: 4px; }
+
+@media (max-width: 860px) { .me { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 520px) { .two { grid-template-columns: 1fr; } .top .btn { min-height: 40px; padding: 6px 12px; font-size: 14px; } }
+</style>
+<script src="theme.js"></script>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="index.html" aria-label="WASHGO Mobile, accueil">
+      <span class="mark" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 28 28"><path d="M14 2C14 2 5 12 5 18a9 9 0 0 0 18 0C23 12 14 2 14 2Z" fill="#101713"/></svg></span>
+      <span class="word">WASHGO<small>MOBILE</small></span>
+    </a>
+    <a class="btn btn-lime" href="index.html#reserver">Réserver</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="demo" id="demo" hidden>Mode démo : le compte est enregistré seulement dans ce navigateur. Rien n'est envoyé.</p>
+
+  <!-- ===== Connexion / inscription ===== -->
+  <section class="auth" id="v-auth" hidden>
+    <div>
+      <h1>Votre compte WASHGO</h1>
+      <p class="lead">Enregistrez vos informations une seule fois. Ensuite, pour réserver, vous choisissez juste le service, le jour et l'heure.</p>
+    </div>
+    <div class="box">
+      <div class="tabs" role="tablist">
+        <button class="tab" type="button" role="tab" id="t-up" aria-selected="true">Créer un compte</button>
+        <button class="tab" type="button" role="tab" id="t-in" aria-selected="false">Se connecter</button>
+      </div>
+
+      <form id="f-up" novalidate style="margin-top:20px">
+        <div class="field"><label for="u-mail">Email</label><input id="u-mail" type="email" autocomplete="email" required></div>
+        <div class="field"><label for="u-pass">Mot de passe</label><input id="u-pass" type="password" autocomplete="new-password" minlength="8" required>
+          <span class="hint">8 caractères minimum.</span></div>
+        <div class="sep">Vos informations de réservation</div>
+        <div class="two">
+          <div class="field"><label for="u-nom">Nom</label><input id="u-nom" type="text" autocomplete="name" maxlength="100" placeholder="Ex. Youssef Benali"></div>
+          <div class="field"><label for="u-tel">Téléphone</label><input id="u-tel" type="tel" inputmode="tel" autocomplete="tel" maxlength="30" placeholder="Ex. 06 12 34 56 78"></div>
+        </div>
+        <div class="two">
+          <div class="field"><label for="u-ville">Ville</label>
+            <select id="u-ville"><option value="">Choisir</option><option>Rabat</option><option>Salé</option><option>Salé Al Jadida</option></select></div>
+          <div class="field"><label for="u-veh">Véhicule</label>
+            <select id="u-veh"><option value="">Choisir</option><option>Citadine</option><option>Berline</option><option>SUV / 4x4</option><option>Utilitaire</option></select></div>
+        </div>
+        <div class="field"><label for="u-adr">Adresse <span class="opt-l">(quartier, rue, repère)</span></label>
+          <input id="u-adr" type="text" autocomplete="street-address" maxlength="300" placeholder="Ex. Agdal, rue Oued Fès, parking de l'immeuble"></div>
+        <label class="check" for="u-consent"><input type="checkbox" id="u-consent">
+          <span>J'accepte que WASHGO enregistre ces informations pour mes réservations et me contacte à leur sujet. <a href="index.html#confidentialite">Politique de confidentialité</a></span></label>
+        <p class="err" id="up-err" role="alert"></p>
+        <button class="btn btn-main btn-block" id="up-btn" type="submit">Créer mon compte</button>
+      </form>
+
+      <form id="f-in" novalidate style="margin-top:20px" hidden>
+        <div class="field"><label for="i-mail">Email</label><input id="i-mail" type="email" autocomplete="email" required></div>
+        <div class="field"><label for="i-pass">Mot de passe</label><input id="i-pass" type="password" autocomplete="current-password" required></div>
+        <p class="err" id="in-err" role="alert"></p>
+        <button class="btn btn-main btn-block" id="in-btn" type="submit">Se connecter</button>
+        <p><button class="linkbtn" type="button" id="forgot">Mot de passe oublié ?</button></p>
+      </form>
+    </div>
+  </section>
+
+  <!-- ===== Email à confirmer ===== -->
+  <section class="auth" id="v-check" hidden>
+    <div class="box" style="display:grid;gap:14px">
+      <h1>Vérifiez votre email</h1>
+      <p>Nous avons envoyé un lien à <b id="check-mail"></b>. Cliquez dessus pour activer votre compte, puis revenez ici pour vous connecter.</p>
+      <p class="hint">Pas reçu ? Regardez dans les spams, ou attendez une minute.</p>
+      <button class="btn btn-line" type="button" id="check-back">Retour à la connexion</button>
+    </div>
+  </section>
+
+  <!-- ===== Nouveau mot de passe (lien reçu par email) ===== -->
+  <section class="auth" id="v-recover" hidden>
+    <div class="box">
+      <h1 style="font-size:26px;margin-bottom:16px">Nouveau mot de passe</h1>
+      <form id="f-pw" novalidate>
+        <div class="field"><label for="p-new">Mot de passe</label><input id="p-new" type="password" autocomplete="new-password" minlength="8">
+          <span class="hint">8 caractères minimum.</span></div>
+        <p class="err" id="pw-err" role="alert"></p>
+        <button class="btn btn-main btn-block" type="submit" id="pw-btn">Enregistrer</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ===== Espace client ===== -->
+  <section class="me" id="v-me" hidden>
+    <div class="hello">
+      <div>
+        <h1>Bonjour <em id="me-name"></em></h1>
+        <p>Vos informations sont enregistrées. Il ne reste qu'à choisir le service, le jour et l'heure.</p>
+      </div>
+      <div class="acts">
+        <a class="btn btn-lime" href="index.html#reserver">Réserver un lavage</a>
+        <button class="btn btn-line" type="button" id="logout">Se déconnecter</button>
+      </div>
+    </div>
+
+    <div class="box">
+      <h2>Mes informations</h2>
+      <p class="hint">Elles remplissent automatiquement le formulaire de réservation. Connecté avec <b id="me-mail"></b>.</p>
+      <form id="f-me" novalidate>
+        <div class="field"><label for="m-nom">Nom</label><input id="m-nom" type="text" autocomplete="name" maxlength="100"></div>
+        <div class="field"><label for="m-tel">Téléphone</label><input id="m-tel" type="tel" inputmode="tel" autocomplete="tel" maxlength="30"></div>
+        <div class="two">
+          <div class="field"><label for="m-ville">Ville</label>
+            <select id="m-ville"><option value="">Choisir</option><option>Rabat</option><option>Salé</option><option>Salé Al Jadida</option></select></div>
+          <div class="field"><label for="m-veh">Véhicule</label>
+            <select id="m-veh"><option value="">Choisir</option><option>Citadine</option><option>Berline</option><option>SUV / 4x4</option><option>Utilitaire</option></select></div>
+        </div>
+        <div class="field"><label for="m-adr">Adresse</label><input id="m-adr" type="text" autocomplete="street-address" maxlength="300"></div>
+        <p class="err" id="me-err" role="alert"></p>
+        <p class="ok" id="me-ok" hidden>Informations enregistrées.</p>
+        <button class="btn btn-main" type="submit" id="me-btn">Enregistrer</button>
+      </form>
+    </div>
+
+    <div class="box">
+      <h2>Mes réservations</h2>
+      <p class="hint">Le statut se met à jour quand WASHGO traite votre demande.</p>
+      <div class="list" id="bk-list"><p class="empty">Chargement…</p></div>
+    </div>
+  </section>
+</main>
+
+<script src="config.js"></script>
+<script src="data.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var W = window.WASHGO, C = W && W.customer;
+  var views = ["v-auth", "v-check", "v-recover", "v-me"];
+  function show(id) { views.forEach(function (v) { $(v).hidden = v !== id; }); window.scrollTo(0, 0); }
+  function val(id) { return ($(id).value || "").trim(); }
+  function busy(btn, on, txt) { btn.disabled = on; if (txt) btn.textContent = txt; }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  var mailOk = function (m) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(m); };
+
+  if (!C) { document.querySelector("main").innerHTML = '<p class="err">Le service de compte est indisponible pour le moment.</p>'; return; }
+  $("demo").hidden = !!W.live;
+
+  // ---------- onglets ----------
+  function tab(up) {
+    $("t-up").setAttribute("aria-selected", up ? "true" : "false");
+    $("t-in").setAttribute("aria-selected", up ? "false" : "true");
+    $("f-up").hidden = !up; $("f-in").hidden = up;
+  }
+  $("t-up").addEventListener("click", function () { tab(true); });
+  $("t-in").addEventListener("click", function () { tab(false); });
+  $("check-back").addEventListener("click", function () { tab(false); show("v-auth"); });
+
+  // ---------- inscription ----------
+  $("f-up").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var err = $("up-err"), mail = val("u-mail"), pass = $("u-pass").value;
+    if (!mailOk(mail)) { err.textContent = "Entrez une adresse email valide."; $("u-mail").focus(); return; }
+    if (pass.length < 8) { err.textContent = "Le mot de passe doit faire au moins 8 caractères."; $("u-pass").focus(); return; }
+    if (val("u-tel") && val("u-tel").replace(/\D/g, "").length < 9) { err.textContent = "Vérifiez le numéro de téléphone."; $("u-tel").focus(); return; }
+    if (!$("u-consent").checked) { err.textContent = "Cochez la case pour accepter l'enregistrement de vos informations."; $("u-consent").focus(); return; }
+    err.textContent = "";
+    var btn = $("up-btn"); busy(btn, true, "Création…");
+    C.signUp(mail, pass, {
+      full_name: val("u-nom"), phone: val("u-tel"), city: val("u-ville"), vehicle: val("u-veh"), address: val("u-adr"),
+      consent_at: new Date().toISOString()
+    }).then(function (r) {
+      busy(btn, false, "Créer mon compte");
+      if (r.confirm) { $("check-mail").textContent = mail; show("v-check"); }
+      else openMe();
+    }).catch(function (x) {
+      busy(btn, false, "Créer mon compte");
+      err.textContent = x && x.code === "exists" ? "Un compte existe déjà avec cet email. Connectez-vous."
+        : /password/i.test(x && x.message) ? "Mot de passe trop faible. Choisissez-en un plus long."
+        : "La création du compte a échoué. Vérifiez votre connexion et réessayez.";
+    });
+  });
+
+  // ---------- connexion ----------
+  $("f-in").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var err = $("in-err"), mail = val("i-mail"), pass = $("i-pass").value;
+    if (!mailOk(mail) || !pass) { err.textContent = "Entrez votre email et votre mot de passe."; return; }
+    err.textContent = "";
+    var btn = $("in-btn"); busy(btn, true, "Connexion…");
+    C.signIn(mail, pass).then(function () {
+      busy(btn, false, "Se connecter");
+      // retour vers la réservation si on vient du formulaire
+      if (/[?&]retour=reserver/.test(location.search)) { location.href = "index.html#reserver"; return; }
+      openMe();
+    }).catch(function (x) {
+      busy(btn, false, "Se connecter");
+      err.textContent = x && x.code === "unconfirmed" ? "Confirmez d'abord votre email avec le lien reçu."
+        : "Email ou mot de passe incorrect.";
+    });
+  });
+
+  $("forgot").addEventListener("click", function () {
+    var err = $("in-err"), mail = val("i-mail");
+    if (!mailOk(mail)) { err.textContent = "Entrez d'abord votre email ci-dessus, puis appuyez de nouveau."; $("i-mail").focus(); return; }
+    if (!W.live) { err.textContent = "En mode démo, aucun email n'est envoyé."; return; }
+    C.resetPassword(mail).then(function () {
+      err.textContent = ""; $("check-mail").textContent = mail; show("v-check");
+    }).catch(function () { err.textContent = "L'envoi a échoué. Réessayez dans une minute."; });
+  });
+
+  // ---------- nouveau mot de passe ----------
+  var recovering = /type=recovery/.test(location.hash);
+  C.onRecovery(function () { recovering = true; show("v-recover"); });
+  $("f-pw").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var err = $("pw-err"), p = $("p-new").value;
+    if (p.length < 8) { err.textContent = "8 caractères minimum."; return; }
+    var btn = $("pw-btn"); busy(btn, true, "Enregistrement…");
+    C.updatePassword(p).then(function () {
+      recovering = false; busy(btn, false, "Enregistrer");
+      try { history.replaceState(null, "", location.pathname); } catch (x) {}
+      openMe();
+    }).catch(function () { busy(btn, false, "Enregistrer"); err.textContent = "Le lien a expiré. Redemandez un nouveau lien."; });
+  });
+
+  // ---------- espace client ----------
+  var STATUS = {
+    "New": ["Reçue", ""], "Assigned": ["Professionnel choisi", "go"], "Accepted": ["Confirmée", "go"],
+    "On the way": ["Le pro arrive", "go"], "In progress": ["Lavage en cours", "go"],
+    "Completed": ["Terminée", "done"], "Cancelled": ["Annulée", "no"]
+  };
+  function fmtDate(iso) {
+    try { return new Date(iso + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "long" }); } catch (x) { return iso; }
+  }
+
+  function openMe() {
+    show("v-me");
+    C.current().then(function (u) { $("me-mail").textContent = u ? u.email : ""; });
+    C.getProfile().then(function (p) {
+      p = p || {};
+      $("me-name").textContent = (p.full_name || "").split(" ")[0] || "";
+      $("m-nom").value = p.full_name || ""; $("m-tel").value = p.phone || "";
+      $("m-ville").value = p.city || ""; $("m-veh").value = p.vehicle || ""; $("m-adr").value = p.address || "";
+    }).catch(function () { $("me-err").textContent = "Impossible de charger vos informations. Rechargez la page."; });
+    loadBookings();
+  }
+
+  function loadBookings() {
+    var box = $("bk-list");
+    C.bookings().then(function (list) {
+      if (!list.length) { box.innerHTML = '<p class="empty">Aucune réservation pour le moment.</p><a class="btn btn-main again" href="index.html#reserver">Réserver mon premier lavage</a>'; return; }
+      box.innerHTML = list.map(function (b) {
+        var s = STATUS[b.status] || [b.status, ""];
+        return '<div class="bk"><div class="row"><b>' + esc(b.service) + '</b><span class="pill ' + s[1] + '">' + esc(s[0]) + '</span></div>' +
+          '<div>' + esc(fmtDate(b.scheduled_date)) + ' à ' + esc(b.scheduled_time) + ' · ' + esc(b.vehicle) + (b.price ? ' · <b>' + esc(b.price) + ' DH</b>' : '') + '</div>' +
+          '<div class="hint">' + esc(b.city) + ', ' + esc(b.address) + '</div>' +
+          '<div class="ref">' + esc(b.ref) + '</div></div>';
+      }).join("");
+    }).catch(function () { box.innerHTML = '<p class="err">Impossible de charger vos réservations.</p>'; });
+  }
+
+  $("f-me").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var err = $("me-err"), ok = $("me-ok");
+    ok.hidden = true;
+    if (val("m-tel") && val("m-tel").replace(/\D/g, "").length < 9) { err.textContent = "Vérifiez le numéro de téléphone."; return; }
+    err.textContent = "";
+    var btn = $("me-btn"); busy(btn, true, "Enregistrement…");
+    C.saveProfile({ full_name: val("m-nom"), phone: val("m-tel"), city: val("m-ville"), vehicle: val("m-veh"), address: val("m-adr") })
+      .then(function () {
+        busy(btn, false, "Enregistrer"); ok.hidden = false;
+        $("me-name").textContent = val("m-nom").split(" ")[0];
+        setTimeout(function () { ok.hidden = true; }, 3000);
+      })
+      .catch(function () { busy(btn, false, "Enregistrer"); err.textContent = "L'enregistrement a échoué. Réessayez."; });
+  });
+
+  $("logout").addEventListener("click", function () {
+    C.signOut().then(function () { tab(false); show("v-auth"); });
+  });
+
+  // ---------- démarrage ----------
+  if (/[?&]connexion/.test(location.search)) tab(false);
+  C.current().then(function (u) {
+    if (recovering) { show("v-recover"); return; }
+    if (u) openMe(); else show("v-auth");
+  }).catch(function () { show("v-auth"); });
+})();
+</script>
+</body>
+</html>

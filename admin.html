@@ -1,0 +1,617 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="robots" content="noindex, nofollow">
+<title>WASHGO Admin</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<style>
+/* Mise en page : barre noire (marque, compte), onglets, rangée de chiffres du jour,
+   puis la vue active (réservations en tableau, panneau latéral de détail).
+   Identité : noir #101713, vert lime #B7F36B, clair #F4F5F2. */
+:root {
+  --ink: #101713;
+  --lime: #B7F36B;
+  --bg: #F4F5F2;
+  --surface: #ffffff;
+  --fg: #101713;
+  --muted: #56625a;
+  --line: #d6dcd3;
+  --btn-bg: #101713;
+  --btn-fg: #B7F36B;
+  --sel-bg: #e6f8c8;
+  --bar-bg: #101713;
+  --bar-fg: #F4F5F2;
+  --bar-muted: #a8b4ab;
+  --link: #101713;
+  --focus: #101713;
+  --bad: #c62d3f;
+  --warn-bg: #fff1cc; --warn-fg: #6b4a00;
+  --info-bg: #dce9ff; --info-fg: #0f3a85;
+  --ok-bg: #d9f5c2; --ok-fg: #1d5a0a;
+  --off-bg: #e6e9e4; --off-fg: #4a544d;
+  --font-display: "Space Grotesk", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+/* Site entièrement en noir (toujours, quel que soit le thème du système) */
+:root {
+  --bg: #000000; --surface: #0e0e0e; --fg: #F4F5F2; --muted: #9b9b9b; --line: #262626;
+  --btn-bg: #B7F36B; --btn-fg: #000000; --sel-bg: #1b2810;
+  --bar-bg: #000000; --bar-fg: #F4F5F2; --bar-muted: #a6a6a6;
+  --link: #B7F36B; --focus: #B7F36B; --bad: #ff8a98;
+  --warn-bg: #2e2508; --warn-fg: #ffd978;
+  --info-bg: #14264a; --info-fg: #9fc0ff;
+  --ok-bg: #1d3512; --ok-fg: #b7f36b;
+  --off-bg: #1c1c1c; --off-fg: #a3a3a3;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.5;
+  padding-block: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.15; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+a { color: var(--link); }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.wrap { max-width: none; margin-inline: auto; padding-inline: clamp(0px, 2vw, 40px); } /* toute la largeur de l'écran */
+[hidden] { display: none !important; }
+
+/* barre */
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 60; background: var(--bar-bg); }
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 40; background: var(--bar-bg); color: var(--bar-fg);
+  margin-inline: calc(-1 * max(16px, env(safe-area-inset-left, 0px))); padding-inline: max(16px, env(safe-area-inset-left, 0px)); }
+.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 12px; }
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand .mark { width: clamp(38px, 9vw, 46px); height: clamp(38px, 9vw, 46px); border-radius: 11px; background: var(--lime); display: grid; place-items: center; flex: none; }
+.brand .word { font-family: var(--font-display); font-weight: 700; font-size: clamp(22px, 5.5vw, 28px); letter-spacing: .02em; line-height: 1; }
+.brand .word small { display: block; font-size: 11px; letter-spacing: .2em; font-weight: 500; color: var(--bar-muted); margin-top: 3px; text-transform: uppercase; }
+.who { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--bar-muted); min-width: 0; }
+.who span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 200px; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 8px 18px; border-radius: 10px;
+  font: 600 14px var(--font-body); border: 0; cursor: pointer; text-decoration: none; }
+.btn-main { background: var(--btn-bg); color: var(--btn-fg); }
+.btn-line { background: transparent; color: var(--fg); border: 1.5px solid var(--line); }
+.btn-top { background: transparent; color: var(--bar-fg); border: 1.5px solid #3a4a3f; min-height: 36px; padding: 4px 12px; }
+.btn-danger { background: transparent; color: var(--bad); border: 1.5px solid var(--bad); }
+.btn-sm { min-height: 36px; padding: 4px 12px; font-size: 13px; }
+.btn[disabled] { opacity: .5; cursor: default; }
+
+main { padding-block: 24px 60px; }
+.demo { background: var(--warn-bg); color: var(--warn-fg); border-radius: 10px; padding: 10px 14px; margin-bottom: 16px; display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; }
+.demo button { background: transparent; border: 1.5px solid currentColor; color: inherit; border-radius: 8px; padding: 4px 12px; font: 600 13px var(--font-body); cursor: pointer; min-height: 34px; }
+
+/* connexion */
+.login { max-width: 400px; margin: 60px auto 0; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 28px; display: grid; gap: 16px; }
+.login h1 { font-size: 24px; }
+
+/* onglets et chiffres */
+.tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 18px; }
+.tab { flex: none; font: 600 14px var(--font-body); background: transparent; color: var(--muted); border: 1.5px solid transparent; border-radius: 10px; padding: 8px 16px; min-height: 42px; cursor: pointer; }
+.tab[aria-selected="true"] { background: var(--btn-bg); color: var(--btn-fg); }
+.tab .n { display: inline-block; min-width: 20px; padding: 0 6px; margin-left: 6px; border-radius: 999px; background: var(--lime); color: var(--ink); font-size: 12px; text-align: center; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 22px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; min-width: 0; }
+.tile .k { font-size: 12px; color: var(--muted); }
+.tile .v { font-family: var(--font-display); font-weight: 700; font-size: 28px; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.tile.hot { border-color: var(--fg); }
+
+/* barres d'outils */
+.bar { display: flex; flex-wrap: wrap; gap: 10px 12px; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font: 600 13px var(--font-body); background: var(--surface); color: var(--fg); border: 1.5px solid var(--line); border-radius: 999px; padding: 6px 14px; min-height: 36px; cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+input[type="text"], input[type="search"], input[type="tel"], input[type="email"], input[type="password"], input[type="number"], select, textarea {
+  font: 15px var(--font-body); color: var(--fg); background: var(--bg); border: 1.5px solid var(--line); border-radius: 10px;
+  padding: 8px 12px; min-height: 44px; width: 100%; min-width: 0; }
+textarea { min-height: 80px; resize: vertical; }
+input:focus, select:focus, textarea:focus { border-color: var(--fg); }
+.search { max-width: 280px; }
+label.l { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+
+/* tableaux */
+.tablewrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 780px; }
+th { text-align: left; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 10px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+tbody tr[data-open] { cursor: pointer; }
+tbody tr[data-open]:hover td { background: color-mix(in srgb, var(--fg) 4%, transparent); }
+tr.is-new td:first-child { box-shadow: inset 4px 0 0 var(--fg); }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.sub { font-size: 12px; color: var(--muted); }
+.clip { max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.linklike { background: none; border: 0; padding: 0; font: 600 13px var(--font-display); color: var(--fg); cursor: pointer; letter-spacing: .02em; text-align: left; }
+.pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 999px; white-space: nowrap; }
+.pill.warn { background: var(--warn-bg); color: var(--warn-fg); }
+.pill.info { background: var(--info-bg); color: var(--info-fg); }
+.pill.ok { background: var(--ok-bg); color: var(--ok-fg); }
+.pill.off { background: var(--off-bg); color: var(--off-fg); }
+.empty { padding: 36px 20px; text-align: center; color: var(--muted); }
+tfoot td { font-weight: 600; background: color-mix(in srgb, var(--fg) 4%, transparent); }
+
+/* professionnels */
+.pgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.pcard { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; display: grid; gap: 8px; min-width: 0; align-content: start; }
+.pcard h3 { font-size: 17px; display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.pcard .row { font-size: 13px; color: var(--muted); }
+.pcard .row b { color: var(--fg); font-weight: 600; }
+
+/* panneau */
+.overlay { position: fixed; inset: 0; z-index: 70; background: rgba(5, 10, 7, .6); display: flex; justify-content: flex-end; }
+.sheet { background: var(--bg); width: min(540px, 100%); height: 100%; overflow-y: auto;
+  padding: calc(22px + env(safe-area-inset-top, 0px)) max(18px, env(safe-area-inset-right, 0px)) calc(28px + env(safe-area-inset-bottom, 0px)) 22px; display: grid; gap: 16px; align-content: start; }
+.sheet h2 { font-size: 22px; }
+.sheet .head { display: flex; justify-content: space-between; gap: 12px; align-items: start; }
+.info { display: grid; grid-template-columns: 110px 1fr; gap: 6px 12px; font-size: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+.info dt { color: var(--muted); }
+.info dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.fgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.fgrid .full { grid-column: 1 / -1; }
+.checks { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+.checks label { display: flex; gap: 8px; align-items: center; font-size: 14px; font-weight: 500; min-height: 32px; }
+.checks input { width: 18px; height: 18px; margin: 0; }
+.err { color: var(--bad); font-size: 14px; min-height: 18px; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.note { font-size: 13px; color: var(--muted); margin-top: 10px; }
+
+@media (max-width: 560px) {
+  .fgrid { grid-template-columns: 1fr; }
+  .info { grid-template-columns: 1fr; gap: 0; }
+  .info dt { margin-top: 8px; font-size: 12px; }
+  .who span { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+<script src="theme.js"></script>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <span class="mark" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 28 28"><path d="M14 2C14 2 5 12 5 18a9 9 0 0 0 18 0C23 12 14 2 14 2Z" fill="#101713"/></svg></span>
+      <span class="word">WASHGO<small>Admin</small></span>
+    </div>
+    <div class="who" id="who" hidden>
+      <span id="who-mail"></span>
+      <button class="btn btn-top" id="logout" type="button">Déconnexion</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <form class="login" id="login" hidden>
+    <h1>Connexion</h1>
+    <p class="sub">Espace réservé à l'équipe WASHGO.</p>
+    <div><label class="l" for="l-mail">Email</label><input id="l-mail" type="email" autocomplete="username" required></div>
+    <div><label class="l" for="l-pass">Mot de passe</label><input id="l-pass" type="password" autocomplete="current-password" required></div>
+    <p class="err" id="l-err" role="alert"></p>
+    <button class="btn btn-main" id="l-go" type="submit">Se connecter</button>
+  </form>
+
+  <div id="app" hidden>
+    <div class="demo" id="demo" hidden>
+      <span>Mode démo : ce sont des exemples enregistrés dans ce navigateur. Aucune vraie réservation n'est affichée.</span>
+      <button type="button" id="reset-demo">Remettre les exemples</button>
+    </div>
+
+    <section class="tiles" id="tiles" aria-label="Chiffres clés"></section>
+
+    <div class="tabs" role="tablist" id="tabs">
+      <button class="tab" role="tab" data-tab="bookings" aria-selected="true">Réservations<span class="n" id="n-new" hidden></span></button>
+      <button class="tab" role="tab" data-tab="pros" aria-selected="false">Professionnels</button>
+      <button class="tab" role="tab" data-tab="comm" aria-selected="false">Commissions</button>
+      <button class="tab" role="tab" data-tab="clients" aria-selected="false">Clients</button>
+    </div>
+
+    <section id="v-bookings">
+      <div class="bar">
+        <div class="chips" id="chips"></div>
+        <input class="search" id="q" type="search" placeholder="Chercher (réf., nom, téléphone, quartier)" aria-label="Chercher une réservation">
+      </div>
+      <div class="tablewrap" id="bk-list"></div>
+      <p class="note" id="updated"></p>
+    </section>
+
+    <section id="v-pros" hidden>
+      <div class="bar">
+        <p class="sub">Vous assignez les réservations aux professionnels depuis la fiche de chaque réservation.</p>
+        <button class="btn btn-main" id="pro-add" type="button">Ajouter un professionnel</button>
+      </div>
+      <div class="pgrid" id="pro-list"></div>
+    </section>
+
+    <section id="v-comm" hidden>
+      <div class="bar">
+        <div>
+          <label class="l" for="period">Période</label>
+          <select id="period"><option value="week">Cette semaine</option><option value="month" selected>Ce mois</option><option value="all">Tout</option></select>
+        </div>
+        <p class="sub">Seules les réservations terminées comptent.</p>
+      </div>
+      <div class="tablewrap" id="comm-list"></div>
+      <p class="note">La commission est calculée avec le taux actuel de chaque professionnel. Le client paie le professionnel directement, le professionnel reverse ensuite la commission à WASHGO.</p>
+    </section>
+
+    <section id="v-clients" hidden>
+      <div class="tablewrap" id="cl-list"></div>
+    </section>
+  </div>
+
+  <div class="overlay" id="overlay" hidden>
+    <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Détail"></div>
+  </div>
+</main>
+
+<script src="config.js"></script>
+<script src="data.js"></script>
+<script>
+(function () {
+  var D = window.WASHGO;
+  var $ = function (id) { return document.getElementById(id); };
+
+  var STATUS = [
+    ["New", "Nouveau", "warn"], ["Assigned", "Assigné", "info"], ["Accepted", "Accepté", "info"],
+    ["On the way", "En route", "info"], ["In progress", "En cours", "info"], ["Completed", "Terminé", "ok"], ["Cancelled", "Annulé", "off"]
+  ];
+  var NEEDS_PRO = ["Assigned", "Accepted", "On the way", "In progress", "Completed"];
+  var SERVICES = ["Lavage extérieur", "Lavage intérieur", "Lavage complet", "Nettoyage premium"];
+  var CITIES = ["Rabat", "Salé", "Salé Al Jadida"];
+  var AVAIL = { available: "Disponible", busy: "Occupé", unavailable: "Indisponible" };
+  var AVAIL_CLS = { available: "ok", busy: "warn", unavailable: "off" };
+
+  var state = { bookings: [], pros: [], tab: "bookings", filter: "all", q: "", period: "month", settleAsk: null, ready: false };
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function stat(key) { return STATUS.filter(function (s) { return s[0] === key; })[0] || [key, key, "off"]; }
+  function pill(key) { var s = stat(key); return '<span class="pill ' + s[2] + '">' + esc(s[1]) + "</span>"; }
+  function pad(n) { return String(n).padStart(2, "0"); }
+  function fmtDate(iso) { if (!iso) return ""; var p = String(iso).slice(0, 10).split("-"); return p[2] + "/" + p[1] + "/" + p[0]; }
+  function fmtDT(iso) { var d = new Date(iso); return isNaN(d) ? "" : pad(d.getDate()) + "/" + pad(d.getMonth() + 1) + " " + pad(d.getHours()) + ":" + pad(d.getMinutes()); }
+  function money(n) { return (Math.round((Number(n) || 0) * 100) / 100).toLocaleString("fr-FR") + " DH"; }
+  function todayIso() { var d = new Date(); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+  function waLink(phone) {
+    var p = String(phone || "").replace(/\D/g, "");
+    if (p.charAt(0) === "0" && p.length === 10) p = "212" + p.slice(1);
+    return "https://wa.me/" + p;
+  }
+  function mapLinks(b) {
+    var la = Number(b.latitude), lo = Number(b.longitude);
+    if (b.latitude == null || b.longitude == null || !isFinite(la) || !isFinite(lo)) return '<span class="sub">Pas de repère</span>';
+    var q = la.toFixed(6) + "," + lo.toFixed(6);
+    return '<a href="https://www.google.com/maps/search/?api=1&amp;query=' + q + '" target="_blank" rel="noopener">Voir sur la carte</a> · <a href="https://www.google.com/maps/dir/?api=1&amp;destination=' + q + '" target="_blank" rel="noopener">Itinéraire</a>';
+  }
+  function proById(id) { return state.pros.filter(function (p) { return p.id === id; })[0] || null; }
+  function commissionOf(b) {
+    var pro = proById(b.professional_id), pct = pro ? Number(pro.commission_pct) : 15;
+    return (Number(b.price) || 0) * pct / 100;
+  }
+
+  // ---------- chargement ----------
+  function refresh() {
+    return Promise.all([D.listBookings(), D.listPros()]).then(function (r) {
+      state.bookings = r[0] || []; state.pros = r[1] || []; state.ready = true;
+      var d = new Date();
+      $("updated").textContent = "Dernière mise à jour à " + pad(d.getHours()) + ":" + pad(d.getMinutes()) + ". La liste se met à jour toute seule.";
+      renderAll();
+    }).catch(function () {
+      $("updated").textContent = "Impossible de charger les données. Vérifiez votre connexion.";
+    });
+  }
+
+  function renderAll() { renderTiles(); renderTabs(); renderBookings(); renderPros(); renderComm(); renderClients(); }
+
+  function renderTiles() {
+    var today = todayIso(), news = 0, todayN = 0, done = 0, comm = 0, avail = 0;
+    state.bookings.forEach(function (b) {
+      if (b.status === "New") news++;
+      if (b.scheduled_date === today && b.status !== "Cancelled") todayN++;
+      if (b.status === "Completed") { done++; comm += commissionOf(b); }
+    });
+    state.pros.forEach(function (p) { if (p.availability === "available") avail++; });
+    function t(k, v, hot) { return '<div class="tile' + (hot ? " hot" : "") + '"><div class="k">' + k + '</div><div class="v">' + v + "</div></div>"; }
+    $("tiles").innerHTML = t("Nouvelles à traiter", news, news > 0) + t("Réservations du jour", todayN) + t("Professionnels disponibles", avail)
+      + t("Lavages terminés", done) + t("Commissions enregistrées", money(comm));
+  }
+  function renderTabs() {
+    var n = state.bookings.filter(function (b) { return b.status === "New"; }).length;
+    $("n-new").textContent = n; $("n-new").hidden = n === 0;
+  }
+
+  // ---------- réservations ----------
+  function visibleBookings() {
+    var q = state.q.trim().toLowerCase();
+    return state.bookings.filter(function (b) {
+      if (state.filter === "open") { if (b.status === "Completed" || b.status === "Cancelled") return false; }
+      else if (state.filter !== "all" && b.status !== state.filter) return false;
+      if (!q) return true;
+      return [b.ref, b.customer_name, b.phone, b.address, b.city, b.service].join(" ").toLowerCase().indexOf(q) !== -1;
+    });
+  }
+  function renderChips() {
+    var defs = [["all", "Toutes"], ["New", "Nouvelles"], ["open", "Ouvertes"], ["Completed", "Terminées"], ["Cancelled", "Annulées"]];
+    function count(k) {
+      return state.bookings.filter(function (b) {
+        if (k === "all") return true;
+        if (k === "open") return b.status !== "Completed" && b.status !== "Cancelled";
+        return b.status === k;
+      }).length;
+    }
+    $("chips").innerHTML = defs.map(function (d) {
+      return '<button class="chip" type="button" data-filter="' + d[0] + '" aria-pressed="' + (state.filter === d[0]) + '">' + d[1] + " (" + count(d[0]) + ")</button>";
+    }).join("");
+  }
+  function renderBookings() {
+    renderChips();
+    var rows = visibleBookings();
+    if (!state.bookings.length) { $("bk-list").innerHTML = '<div class="empty">Aucune réservation pour le moment. Celles envoyées depuis le site apparaîtront ici.</div>'; return; }
+    if (!rows.length) { $("bk-list").innerHTML = '<div class="empty">Aucune réservation ne correspond à ce filtre.</div>'; return; }
+    $("bk-list").innerHTML = "<table><thead><tr><th>Réf.</th><th>Quand</th><th>Client</th><th>Lieu</th><th>Service</th><th>Professionnel</th><th>Statut</th></tr></thead><tbody>"
+      + rows.map(function (b) {
+        var pro = proById(b.professional_id);
+        return '<tr class="' + (b.status === "New" ? "is-new" : "") + '" data-open="' + esc(b.id) + '">'
+          + '<td><button class="linklike" type="button" data-open="' + esc(b.id) + '">' + esc(b.ref) + '</button><div class="sub">reçue ' + esc(fmtDT(b.created_at)) + "</div></td>"
+          + "<td>" + esc(fmtDate(b.scheduled_date)) + '<div class="sub">' + esc(b.scheduled_time) + "</div></td>"
+          + "<td>" + esc(b.customer_name || "Sans nom") + '<div class="sub">' + esc(b.phone) + "</div></td>"
+          + '<td><div class="clip">' + esc(b.city) + '</div><div class="sub clip">' + esc(b.address) + (b.latitude != null ? " · repère" : "") + "</div></td>"
+          + "<td>" + esc(b.service) + '<div class="sub">' + esc(b.vehicle) + "</div></td>"
+          + "<td>" + (pro ? esc(pro.name) : '<span class="sub">À assigner</span>') + "</td>"
+          + "<td>" + pill(b.status) + (b.price ? '<div class="sub">' + esc(money(b.price)) + "</div>" : "") + "</td></tr>";
+      }).join("") + "</tbody></table>";
+  }
+
+  function openSheet(html) { $("sheet").innerHTML = html; $("overlay").hidden = false; $("sheet").scrollTop = 0; }
+  function closeSheet() { $("overlay").hidden = true; $("sheet").innerHTML = ""; }
+
+  function openBooking(id) {
+    var b = state.bookings.filter(function (x) { return x.id === id; })[0];
+    if (!b) return;
+    var sameCity = state.pros.filter(function (p) { return p.city === b.city; });
+    var others = state.pros.filter(function (p) { return p.city !== b.city; });
+    function opt(p) {
+      var hint = p.services && p.services.indexOf(b.service) === -1 ? " · ne propose pas ce service" : "";
+      return '<option value="' + esc(p.id) + '"' + (p.id === b.professional_id ? " selected" : "") + ">" + esc(p.name) + " · " + esc(p.city) + " · " + esc(AVAIL[p.availability] || "") + esc(hint) + "</option>";
+    }
+    var proOpts = '<option value="">Aucun</option>'
+      + (sameCity.length ? '<optgroup label="' + esc(b.city) + '">' + sameCity.map(opt).join("") + "</optgroup>" : "")
+      + (others.length ? '<optgroup label="Autres villes">' + others.map(opt).join("") + "</optgroup>" : "");
+    var statusOpts = STATUS.map(function (s) { return '<option value="' + s[0] + '"' + (s[0] === b.status ? " selected" : "") + ">" + s[1] + "</option>"; }).join("");
+
+    openSheet(
+      '<div class="head"><div><h2>' + esc(b.ref) + '</h2><p class="sub">Reçue le ' + esc(fmtDT(b.created_at)) + "</p></div>" + pill(b.status) + "</div>"
+      + '<dl class="info">'
+      + "<dt>Client</dt><dd>" + esc(b.customer_name || "Sans nom") + "</dd>"
+      + '<dt>Téléphone</dt><dd>' + esc(b.phone) + ' · <a href="' + esc(waLink(b.phone)) + '" target="_blank" rel="noopener">Écrire sur WhatsApp</a></dd>'
+      + "<dt>Ville</dt><dd>" + esc(b.city) + "</dd>"
+      + "<dt>Adresse</dt><dd>" + esc(b.address) + "</dd>"
+      + "<dt>Repère</dt><dd>" + mapLinks(b) + "</dd>"
+      + "<dt>Consentement</dt><dd>" + (b.consent_at ? "Donné le " + esc(fmtDT(b.consent_at)) : '<span class="sub">Non enregistré</span>') + "</dd>"
+      + "<dt>Service</dt><dd>" + esc(b.service) + "</dd>"
+      + "<dt>Véhicule</dt><dd>" + esc(b.vehicle) + "</dd>"
+      + "<dt>Rendez-vous</dt><dd>" + esc(fmtDate(b.scheduled_date)) + " à " + esc(b.scheduled_time) + "</dd>"
+      + "<dt>Notes du client</dt><dd>" + (b.notes ? esc(b.notes) : '<span class="sub">Aucune</span>') + "</dd></dl>"
+      + '<div class="fgrid">'
+      + '<div><label class="l" for="f-status">Statut</label><select id="f-status">' + statusOpts + "</select></div>"
+      + '<div><label class="l" for="f-price">Prix final (DH)</label><input id="f-price" type="number" min="0" step="1" inputmode="decimal" value="' + esc(b.price == null ? "" : b.price) + '"></div>'
+      + '<div class="full"><label class="l" for="f-pro">Professionnel</label><select id="f-pro">' + proOpts + "</select></div>"
+      + '<div class="full"><label class="l" for="f-notes">Notes internes</label><textarea id="f-notes">' + esc(b.admin_notes || "") + "</textarea></div></div>"
+      + '<p class="err" id="f-err" role="alert"></p>'
+      + '<div class="actions"><button class="btn btn-main" id="f-save" type="button" data-save="' + esc(b.id) + '">Enregistrer</button><button class="btn btn-line" type="button" data-close>Fermer</button></div>'
+    );
+  }
+
+  function saveBooking(id) {
+    var b = state.bookings.filter(function (x) { return x.id === id; })[0];
+    if (!b) return;
+    var err = $("f-err");
+    function fail(m) { err.textContent = m; }
+    var status = $("f-status").value, pro = $("f-pro").value || null, raw = $("f-price").value.trim();
+    var price = raw === "" ? null : Number(raw);
+    if (raw !== "" && (isNaN(price) || price < 0)) return fail("Le prix n'est pas valide.");
+    if (pro && status === "New") status = "Assigned";
+    if (!pro && NEEDS_PRO.indexOf(status) !== -1) return fail("Choisissez un professionnel pour ce statut.");
+    if (status === "Completed" && !price) return fail("Entrez le prix final avant de marquer le lavage comme terminé.");
+    var patch = { status: status, professional_id: pro, price: price, admin_notes: $("f-notes").value.trim() || null,
+      completed_at: status === "Completed" ? (b.completed_at || new Date().toISOString()) : null };
+    $("f-save").disabled = true; $("f-save").textContent = "Enregistrement…";
+    D.updateBooking(id, patch).then(function () { closeSheet(); return refresh(); }).catch(function () {
+      fail("L'enregistrement a échoué. Réessayez.");
+      $("f-save").disabled = false; $("f-save").textContent = "Enregistrer";
+    });
+  }
+
+  // ---------- professionnels ----------
+  function renderPros() {
+    if (!state.pros.length) { $("pro-list").innerHTML = '<div class="empty tablewrap" style="grid-column:1/-1">Aucun professionnel. Ajoutez le premier pour pouvoir lui assigner des réservations.</div>'; return; }
+    $("pro-list").innerHTML = state.pros.map(function (p) {
+      return '<article class="pcard"><h3><span>' + esc(p.name) + '</span><span class="pill ' + (AVAIL_CLS[p.availability] || "off") + '">' + esc(AVAIL[p.availability] || "") + "</span></h3>"
+        + '<div class="row"><b>' + esc(p.city) + "</b>" + (p.zones ? " · " + esc(p.zones) : "") + "</div>"
+        + '<div class="row">' + esc(p.phone) + (p.hours ? " · " + esc(p.hours) : "") + "</div>"
+        + '<div class="row">' + esc((p.services || []).join(", ") || "Aucun service") + "</div>"
+        + '<div class="row">Commission <b>' + esc(p.commission_pct) + " %</b> · " + (p.has_equipment ? "matériel" : "sans matériel") + " · " + (p.has_water ? "eau" : "sans eau") + "</div>"
+        + '<div class="actions"><button class="btn btn-line btn-sm" type="button" data-pro="' + esc(p.id) + '">Modifier</button>'
+        + '<a class="btn btn-line btn-sm" target="_blank" rel="noopener" href="' + esc(waLink(p.phone)) + '">WhatsApp</a></div></article>';
+    }).join("");
+  }
+
+  function openPro(id) {
+    var p = id ? proById(id) : null;
+    p = p || { name: "", phone: "", city: "Rabat", zones: "", services: SERVICES.slice(0, 3), hours: "09:00–19:00", has_equipment: true, has_water: true, availability: "available", commission_pct: 15, notes: "" };
+    openSheet(
+      '<div class="head"><h2>' + (id ? "Modifier le professionnel" : "Nouveau professionnel") + "</h2></div>"
+      + '<div class="fgrid">'
+      + '<div class="full"><label class="l" for="p-name">Nom</label><input id="p-name" type="text" value="' + esc(p.name) + '"></div>'
+      + '<div><label class="l" for="p-phone">Téléphone</label><input id="p-phone" type="tel" value="' + esc(p.phone) + '"></div>'
+      + '<div><label class="l" for="p-city">Ville</label><select id="p-city">' + CITIES.map(function (c) { return '<option' + (c === p.city ? " selected" : "") + ">" + c + "</option>"; }).join("") + "</select></div>"
+      + '<div class="full"><label class="l" for="p-zones">Quartiers couverts</label><input id="p-zones" type="text" value="' + esc(p.zones || "") + '" placeholder="Ex. Agdal, Hay Riad"></div>'
+      + '<div class="full"><span class="l" style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">Services proposés</span><div class="checks">'
+      + SERVICES.map(function (s, i) { return '<label><input type="checkbox" name="p-serv" value="' + esc(s) + '"' + ((p.services || []).indexOf(s) !== -1 ? " checked" : "") + ">" + esc(s) + "</label>"; }).join("")
+      + "</div></div>"
+      + '<div><label class="l" for="p-hours">Horaires</label><input id="p-hours" type="text" value="' + esc(p.hours || "") + '"></div>'
+      + '<div><label class="l" for="p-comm">Commission WASHGO (%)</label><input id="p-comm" type="number" min="0" max="100" step="0.5" value="' + esc(p.commission_pct) + '"></div>'
+      + '<div><label class="l" for="p-avail">Disponibilité</label><select id="p-avail">' + Object.keys(AVAIL).map(function (k) { return '<option value="' + k + '"' + (k === p.availability ? " selected" : "") + ">" + AVAIL[k] + "</option>"; }).join("") + "</select></div>"
+      + '<div class="checks" style="align-self:end"><label><input type="checkbox" id="p-eq"' + (p.has_equipment ? " checked" : "") + '>A son matériel</label><label><input type="checkbox" id="p-water"' + (p.has_water ? " checked" : "") + '>Apporte son eau</label></div>'
+      + '<div class="full"><label class="l" for="p-notes">Notes internes</label><textarea id="p-notes">' + esc(p.notes || "") + "</textarea></div></div>"
+      + '<p class="err" id="p-err" role="alert"></p>'
+      + '<div class="actions"><button class="btn btn-main" id="p-save" type="button" data-psave="' + esc(id || "") + '">Enregistrer</button><button class="btn btn-line" type="button" data-close>Fermer</button>'
+      + (id ? '<button class="btn btn-danger" id="p-del" type="button" data-pdel="' + esc(id) + '">Supprimer</button>' : "") + "</div>"
+    );
+  }
+  function savePro(id) {
+    var err = $("p-err");
+    var name = $("p-name").value.trim(), phone = $("p-phone").value.trim(), pct = Number($("p-comm").value);
+    if (!name) { err.textContent = "Entrez le nom du professionnel."; return; }
+    if (phone.replace(/\D/g, "").length < 9) { err.textContent = "Entrez un numéro de téléphone valide."; return; }
+    if (isNaN(pct) || pct < 0 || pct > 100) { err.textContent = "La commission doit être entre 0 et 100 %."; return; }
+    var services = Array.prototype.slice.call(document.querySelectorAll('input[name="p-serv"]:checked')).map(function (c) { return c.value; });
+    var pro = { name: name, phone: phone, city: $("p-city").value, zones: $("p-zones").value.trim() || null, services: services,
+      hours: $("p-hours").value.trim() || null, has_equipment: $("p-eq").checked, has_water: $("p-water").checked,
+      availability: $("p-avail").value, commission_pct: pct, notes: $("p-notes").value.trim() || null };
+    if (id) pro.id = id;
+    $("p-save").disabled = true;
+    D.savePro(pro).then(function () { closeSheet(); return refresh(); }).catch(function () {
+      err.textContent = "L'enregistrement a échoué. Réessayez."; $("p-save").disabled = false;
+    });
+  }
+
+  // ---------- commissions ----------
+  function inPeriod(b) {
+    if (!b.completed_at) return false;
+    if (state.period === "all") return true;
+    var d = new Date(b.completed_at), now = new Date();
+    if (state.period === "week") {
+      var start = new Date(now); start.setDate(now.getDate() - ((now.getDay() + 6) % 7)); start.setHours(0, 0, 0, 0);
+      return d >= start;
+    }
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  }
+  function commRows() {
+    var by = {};
+    state.bookings.forEach(function (b) {
+      if (b.status !== "Completed" || !b.professional_id || !inPeriod(b)) return;
+      var r = by[b.professional_id] || (by[b.professional_id] = { id: b.professional_id, n: 0, ca: 0, comm: 0, due: 0, ids: [] });
+      var c = commissionOf(b);
+      r.n++; r.ca += Number(b.price) || 0; r.comm += c;
+      if (!b.commission_settled) { r.due += c; r.ids.push(b.id); }
+    });
+    return Object.keys(by).map(function (k) { return by[k]; });
+  }
+  function renderComm() {
+    var rows = commRows();
+    if (!rows.length) { $("comm-list").innerHTML = '<div class="empty">Aucun lavage terminé sur cette période.</div>'; return; }
+    var tot = { n: 0, ca: 0, comm: 0, due: 0 };
+    var body = rows.map(function (r) {
+      var pro = proById(r.id);
+      tot.n += r.n; tot.ca += r.ca; tot.comm += r.comm; tot.due += r.due;
+      var asking = state.settleAsk === r.id;
+      return "<tr><td>" + esc(pro ? pro.name : "Professionnel supprimé") + '<div class="sub">taux ' + esc(pro ? pro.commission_pct : 15) + " %</div></td>"
+        + '<td class="num">' + r.n + '</td><td class="num">' + money(r.ca) + '</td><td class="num">' + money(r.comm) + '</td><td class="num">' + money(r.ca - r.comm) + "</td>"
+        + '<td class="num"><b>' + money(r.due) + "</b></td>"
+        + '<td class="num">' + (r.ids.length ? '<button class="btn ' + (asking ? "btn-main" : "btn-line") + ' btn-sm" type="button" data-settle="' + esc(r.id) + '">' + (asking ? "Confirmer le règlement" : "Marquer réglé") + "</button>" : '<span class="pill ok">Réglé</span>') + "</td></tr>";
+    }).join("");
+    $("comm-list").innerHTML = "<table><thead><tr><th>Professionnel</th><th class=\"num\">Lavages</th><th class=\"num\">Chiffre d'affaires</th><th class=\"num\">Commission WASHGO</th><th class=\"num\">Part du pro</th><th class=\"num\">Reste à recevoir</th><th></th></tr></thead><tbody>"
+      + body + '</tbody><tfoot><tr><td>Total</td><td class="num">' + tot.n + '</td><td class="num">' + money(tot.ca) + '</td><td class="num">' + money(tot.comm) + '</td><td class="num">' + money(tot.ca - tot.comm) + '</td><td class="num">' + money(tot.due) + "</td><td></td></tr></tfoot></table>";
+  }
+  function settle(proId) {
+    var row = commRows().filter(function (r) { return r.id === proId; })[0];
+    if (!row || !row.ids.length) return;
+    state.settleAsk = null;
+    D.settle(row.ids).then(refresh).catch(function () { $("updated").textContent = "Le règlement n'a pas été enregistré. Réessayez."; });
+  }
+
+  // ---------- clients ----------
+  function renderClients() {
+    var by = {};
+    state.bookings.forEach(function (b) {
+      var key = String(b.phone || "").replace(/\D/g, "");
+      if (!key) return;
+      var c = by[key] || (by[key] = { phone: b.phone, name: null, n: 0, done: 0, last: "" });
+      c.n++; if (b.status === "Completed") c.done++;
+      if (b.customer_name && !c.name) c.name = b.customer_name;
+      if (!c.last || b.created_at > c.last) c.last = b.created_at;
+    });
+    var rows = Object.keys(by).map(function (k) { return by[k]; }).sort(function (a, b) { return a.last < b.last ? 1 : -1; });
+    if (!rows.length) { $("cl-list").innerHTML = '<div class="empty">Les clients apparaîtront ici après les premières réservations.</div>'; return; }
+    $("cl-list").innerHTML = '<table style="min-width:560px"><thead><tr><th>Client</th><th>Téléphone</th><th class="num">Réservations</th><th class="num">Terminées</th><th>Dernière</th></tr></thead><tbody>'
+      + rows.map(function (c) {
+        return "<tr><td>" + esc(c.name || "Sans nom") + '</td><td><a href="' + esc(waLink(c.phone)) + '" target="_blank" rel="noopener">' + esc(c.phone) + '</a></td><td class="num">' + c.n + '</td><td class="num">' + c.done + "</td><td>" + esc(fmtDT(c.last)) + "</td></tr>";
+      }).join("") + "</tbody></table>";
+  }
+
+  // ---------- événements ----------
+  function showTab(t) {
+    state.tab = t;
+    ["bookings", "pros", "comm", "clients"].forEach(function (k) { $("v-" + k).hidden = k !== t; });
+    Array.prototype.forEach.call(document.querySelectorAll(".tab"), function (el) { el.setAttribute("aria-selected", String(el.getAttribute("data-tab") === t)); });
+  }
+  $("tabs").addEventListener("click", function (e) { var t = e.target.closest("[data-tab]"); if (t) showTab(t.getAttribute("data-tab")); });
+  $("chips").addEventListener("click", function (e) { var c = e.target.closest("[data-filter]"); if (c) { state.filter = c.getAttribute("data-filter"); renderBookings(); } });
+  $("q").addEventListener("input", function () { state.q = $("q").value; renderBookings(); });
+  $("bk-list").addEventListener("click", function (e) { var o = e.target.closest("[data-open]"); if (o) openBooking(o.getAttribute("data-open")); });
+  $("pro-add").addEventListener("click", function () { openPro(null); });
+  $("pro-list").addEventListener("click", function (e) { var b = e.target.closest("[data-pro]"); if (b) openPro(b.getAttribute("data-pro")); });
+  $("period").addEventListener("change", function () { state.period = $("period").value; state.settleAsk = null; renderComm(); });
+  $("comm-list").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-settle]"); if (!b) return;
+    var id = b.getAttribute("data-settle");
+    if (state.settleAsk === id) settle(id); else { state.settleAsk = id; renderComm(); }
+  });
+  $("overlay").addEventListener("click", function (e) {
+    if (e.target === $("overlay") || e.target.closest("[data-close]")) { closeSheet(); return; }
+    var s = e.target.closest("[data-save]"); if (s) { saveBooking(s.getAttribute("data-save")); return; }
+    var ps = e.target.closest("[data-psave]"); if (ps) { savePro(ps.getAttribute("data-psave") || null); return; }
+    var pd = e.target.closest("[data-pdel]");
+    if (pd) {
+      if (pd.getAttribute("data-armed") !== "1") { pd.setAttribute("data-armed", "1"); pd.textContent = "Confirmer la suppression"; return; }
+      D.deletePro(pd.getAttribute("data-pdel")).then(function () { closeSheet(); return refresh(); });
+    }
+  });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !$("overlay").hidden) closeSheet(); });
+  $("reset-demo").addEventListener("click", function () { D.resetDemo().then(refresh); });
+
+  // ---------- connexion ----------
+  function showApp(user) {
+    $("login").hidden = true; $("app").hidden = false; $("who").hidden = !D.live;
+    $("who-mail").textContent = user && user.email ? user.email : "";
+    $("demo").hidden = D.live;
+    refresh();
+    setInterval(function () { if (!document.hidden && $("overlay").hidden && state.ready) refresh(); }, 30000);
+  }
+  function showLogin(msg) {
+    $("app").hidden = true; $("login").hidden = false; $("who").hidden = true;
+    $("l-err").textContent = msg || "";
+  }
+  function afterSignIn(user) {
+    return D.isAdmin().then(function (ok) {
+      if (ok) showApp(user); else { D.signOut(); showLogin("Ce compte n'a pas accès au tableau de bord."); }
+    });
+  }
+  $("login").addEventListener("submit", function (e) {
+    e.preventDefault();
+    $("l-go").disabled = true; $("l-err").textContent = "";
+    D.signIn($("l-mail").value.trim(), $("l-pass").value).then(afterSignIn).catch(function () {
+      $("l-err").textContent = "Email ou mot de passe incorrect.";
+    }).then(function () { $("l-go").disabled = false; });
+  });
+  $("logout").addEventListener("click", function () { D.signOut().then(function () { location.reload(); }); });
+
+  if (!D) { showLogin("Le tableau de bord n'a pas pu démarrer. Rechargez la page."); return; }
+  D.user().then(function (u) { if (u) return afterSignIn(u); showLogin(); }).catch(function () { showLogin(); });
+})();
+</script>
+</body>
+</html>
