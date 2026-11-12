@@ -260,87 +260,163 @@ update public.bookings set price = public.default_price(vehicle, service) where 
 
 -- ===== Notifications par email (Resend) : un email à chaque nouvelle réservation / candidature =====
 -- La clé Resend et votre email sont rangés dans une table que personne ne peut lire depuis le site.
--- Pour les enregistrer (une seule fois, dans SQL Editor, PAS dans ce fichier) :
---   insert into public.notify_settings (id, resend_api_key, notify_email) values (1, 're_xxxxxxxx', 'vous@email.com')
---   on conflict (id) do update set resend_api_key = excluded.resend_api_key, notify_email = excluded.notify_email;
+-- Pour les enregistrer (une seule fois, dans SQL Editor, PAS dans ce fichier) : voir notifications.local.sql.
+-- Facultatif : site_url (ex. https://skincar.ma) ajoute un bouton « Ouvrir le tableau de bord » dans les emails.
 create extension if not exists pg_net with schema extensions;
 
 create table if not exists public.notify_settings (
   id int primary key default 1 check (id = 1),
   resend_api_key text,
   notify_email text,
-  from_email text not null default 'SKINCAR <onboarding@resend.dev>'
+  from_email text not null default 'SKINCAR <onboarding@resend.dev>',
+  site_url text
 );
 alter table public.notify_settings add column if not exists resend_api_key text;
 alter table public.notify_settings add column if not exists notify_email text;
 alter table public.notify_settings add column if not exists from_email text not null default 'SKINCAR <onboarding@resend.dev>';
+alter table public.notify_settings add column if not exists site_url text;
 alter table public.notify_settings enable row level security;
 revoke all on public.notify_settings from anon, authenticated;
 
+-- ---------- petits outils pour écrire les emails ----------
 -- protège le texte envoyé par les visiteurs avant de le mettre dans l'email
 create or replace function public.html_esc(t text)
-returns text
-language sql
-immutable
-as $$
+returns text language sql immutable as $$
   select replace(replace(replace(replace(coalesce(t, ''), '&', '&amp;'), '<', '&lt;'), '>', '&gt;'), '"', '&quot;');
 $$;
 
-create or replace function public.notify_email(subject text, rows text[][])
+-- texte dans une adresse web (Google Maps, WhatsApp)
+create or replace function public.url_q(t text)
+returns text language sql immutable as $$
+  select replace(replace(replace(replace(replace(replace(coalesce(t, ''), '%', '%25'), '&', '%26'), '#', '%23'), '?', '%3F'), '+', '%2B'), ' ', '+');
+$$;
+
+-- 0612345678 -> 212612345678 (pour wa.me)
+create or replace function public.wa_digits(p text)
+returns text language sql immutable as $$
+  select case when d ~ '^0[0-9]{9}$' then '212' || substr(d, 2) else d end
+  from (select regexp_replace(coalesce(p, ''), '\D', '', 'g') as d) x;
+$$;
+
+-- 199.00 -> 199
+create or replace function public.dh(n numeric)
+returns text language sql immutable as $$
+  select case when n is null then '—' else regexp_replace(regexp_replace(n::text, '(\.\d*?)0+$', '\1'), '\.$', '') || ' DH' end;
+$$;
+
+-- 2026-11-29 -> samedi 29 novembre 2026
+create or replace function public.fr_date(d date)
+returns text language sql immutable as $$
+  select (array['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'])[extract(dow from d)::int + 1]
+         || ' ' || extract(day from d)::int || ' '
+         || (array['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'])[extract(month from d)::int]
+         || ' ' || extract(year from d)::int;
+$$;
+
+create or replace function public.email_btn(label text, url text, bg text, fg text)
+returns text language sql immutable as $$
+  select '<a href="' || public.html_esc(url) || '" style="display:inline-block;margin:0 8px 10px 0;padding:12px 18px;border-radius:10px;background:' || bg
+         || ';color:' || fg || ';font-weight:bold;font-size:14px;text-decoration:none;border:1px solid ' || case when bg = '#ffffff' then '#d6d6d6' else bg end || '">'
+         || public.html_esc(label) || '</a>';
+$$;
+
+create or replace function public.email_row(label text, value_html text)
+returns text language sql immutable as $$
+  select '<tr><td style="padding:14px 0;border-top:1px solid #eeeeee;width:118px;vertical-align:top;color:#777777;font-size:13px">' || public.html_esc(label)
+         || '</td><td style="padding:14px 0;border-top:1px solid #eeeeee;vertical-align:top;font-size:15px;color:#111111">' || value_html || '</td></tr>';
+$$;
+
+-- cadre commun : en-tête noir SKINCAR, titre, contenu, pied
+create or replace function public.email_shell(badge text, kicker text, title text, preheader text, body_html text)
+returns text language sql immutable as $$
+  select '<!doctype html><html><body style="margin:0;padding:0;background:#eeeeee">'
+    || '<span style="display:none;max-height:0;overflow:hidden;opacity:0;color:#eeeeee">' || public.html_esc(preheader) || '</span>'
+    || '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eeeeee;padding:24px 12px"><tr><td align="center">'
+    || '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:580px;background:#ffffff;border-radius:16px;overflow:hidden;font-family:Arial,Helvetica,sans-serif;color:#111111">'
+    || '<tr><td style="background:#000000;padding:20px 26px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>'
+    ||   '<td style="font-size:22px;font-weight:bold;letter-spacing:1px;color:#ffffff">SKINCAR<span style="display:block;font-size:10px;letter-spacing:4px;color:#9a9a9a;font-weight:normal;margin-top:2px">MOBILE</span></td>'
+    ||   '<td align="right"><span style="display:inline-block;background:#B7F36B;color:#000000;font-size:12px;font-weight:bold;padding:7px 13px;border-radius:999px">' || public.html_esc(badge) || '</span></td>'
+    || '</tr></table></td></tr>'
+    || '<tr><td style="padding:28px 26px 6px"><div style="font-size:12px;color:#777777;text-transform:uppercase;letter-spacing:1.5px">' || public.html_esc(kicker) || '</div>'
+    ||   '<h1 style="margin:6px 0 0;font-size:24px;line-height:1.25;color:#111111">' || public.html_esc(title) || '</h1></td></tr>'
+    || '<tr><td style="padding:16px 26px 10px">' || body_html || '</td></tr>'
+    || '<tr><td style="padding:18px 26px;background:#f7f7f7;color:#888888;font-size:12px;line-height:1.5">Email automatique envoyé par SKINCAR. Vous le recevez parce que votre adresse est enregistrée pour les notifications du site.</td></tr>'
+    || '</table></td></tr></table></body></html>';
+$$;
+
+-- envoi par Resend (ne bloque jamais l'enregistrement si l'email échoue)
+drop function if exists public.notify_email(text, text[][]);
+create or replace function public.send_email(subject text, html text)
 returns void
 language plpgsql
 security definer
 set search_path = public, extensions
 as $$
-declare s record; body text := ''; i int;
+declare s record;
 begin
   select * into s from public.notify_settings where id = 1;
   if s is null or coalesce(s.resend_api_key, '') = '' or coalesce(s.notify_email, '') = '' then return; end if;
-  for i in 1 .. coalesce(array_length(rows, 1), 0) loop
-    body := body || '<tr><td style="padding:6px 14px 6px 0;color:#666;vertical-align:top">' || public.html_esc(rows[i][1])
-                 || '</td><td style="padding:6px 0;font-weight:600">' || public.html_esc(rows[i][2]) || '</td></tr>';
-  end loop;
   perform net.http_post(
     url := 'https://api.resend.com/emails',
     headers := jsonb_build_object('Authorization', 'Bearer ' || s.resend_api_key, 'Content-Type', 'application/json'),
-    body := jsonb_build_object(
-      'from', s.from_email,
-      'to', jsonb_build_array(s.notify_email),
-      'subject', subject,
-      'html', '<div style="font-family:Arial,sans-serif;font-size:15px;color:#111">'
-              || '<h2 style="margin:0 0 14px">' || public.html_esc(subject) || '</h2>'
-              || '<table style="border-collapse:collapse">' || body || '</table>'
-              || '<p style="margin-top:18px;color:#666">Ouvrez le tableau de bord SKINCAR pour la traiter.</p></div>'
-    )
+    body := jsonb_build_object('from', s.from_email, 'to', jsonb_build_array(s.notify_email), 'subject', subject, 'html', html)
   );
 exception when others then
-  -- un email qui ne part pas ne doit jamais bloquer une réservation
-  raise warning 'notify_email : %', sqlerrm;
+  raise warning 'send_email : %', sqlerrm;
 end;
 $$;
-revoke all on function public.notify_email(text, text[][]) from public, anon, authenticated;
+revoke all on function public.send_email(text, text) from public, anon, authenticated;
 
+create or replace function public.site_url()
+returns text language sql stable security definer set search_path = public as $$
+  select nullif(rtrim(coalesce((select site_url from public.notify_settings where id = 1), ''), '/'), '');
+$$;
+revoke all on function public.site_url() from public, anon, authenticated;
+
+-- ---------- nouvelle réservation ----------
 create or replace function public.bookings_notify()
 returns trigger
 language plpgsql
 security definer
 set search_path = public
 as $$
+declare
+  maps text; wa text; site text; body_html text;
 begin
-  perform public.notify_email(
-    'Nouvelle réservation ' || new.ref || ' — ' || new.service,
-    array[
-      array['Référence', new.ref],
-      array['Service', new.service],
-      array['Véhicule', new.vehicle],
-      array['Prix', coalesce(new.price::text || ' DH', '—')],
-      array['Rendez-vous', to_char(new.scheduled_date, 'DD/MM/YYYY') || ' à ' || new.scheduled_time],
-      array['Ville', new.city],
-      array['Adresse', new.address],
-      array['Client', coalesce(new.customer_name, 'Sans nom')],
-      array['Téléphone', new.phone],
-      array['Notes', coalesce(new.notes, '—')]
-    ]
+  maps := case when new.latitude is not null and new.longitude is not null
+            then 'https://www.google.com/maps/search/?api=1&query=' || new.latitude || ',' || new.longitude
+            else 'https://www.google.com/maps/search/?api=1&query=' || public.url_q(new.address || ', ' || new.city || ', Maroc') end;
+  wa := 'https://wa.me/' || public.wa_digits(new.phone) || '?text='
+        || public.url_q('Bonjour ' || coalesce(new.customer_name, '') || ', ici SKINCAR. Nous confirmons votre réservation ' || new.ref || ' du ' || public.fr_date(new.scheduled_date) || ' à ' || new.scheduled_time || '.');
+  site := public.site_url();
+
+  body_html :=
+       '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f3fde6;border:1px solid #d7f3b0;border-radius:14px"><tr>'
+    || '<td style="padding:18px 20px"><div style="font-size:12px;color:#4d6b1f;text-transform:uppercase;letter-spacing:1px">Rendez-vous</div>'
+    ||   '<div style="font-size:19px;font-weight:bold;margin-top:4px">' || public.html_esc(upper(left(public.fr_date(new.scheduled_date), 1)) || substr(public.fr_date(new.scheduled_date), 2)) || '</div>'
+    ||   '<div style="font-size:16px;margin-top:2px">à <b>' || public.html_esc(new.scheduled_time) || '</b></div></td>'
+    || '<td align="right" style="padding:18px 20px;white-space:nowrap"><div style="font-size:12px;color:#4d6b1f;text-transform:uppercase;letter-spacing:1px">Prix</div>'
+    ||   '<div style="font-size:26px;font-weight:bold;margin-top:4px">' || public.html_esc(public.dh(new.price)) || '</div></td>'
+    || '</tr></table>'
+    || '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px">'
+    || public.email_row('Service', '<b>' || public.html_esc(new.service) || '</b><br><span style="color:#555555">' || public.html_esc(new.vehicle) || '</span>')
+    || public.email_row('Client', '<b>' || public.html_esc(coalesce(new.customer_name, 'Sans nom')) || '</b><br><a href="tel:' || public.html_esc(new.phone) || '" style="color:#111111">' || public.html_esc(new.phone) || '</a>')
+    || public.email_row('Adresse', public.html_esc(new.city) || '<br><span style="color:#555555">' || public.html_esc(new.address) || '</span>'
+         || case when new.latitude is not null then '<br><span style="font-size:13px;color:#4d6b1f">Repère placé sur la carte</span>' else '' end)
+    || case when coalesce(new.notes, '') <> '' then public.email_row('Notes', public.html_esc(new.notes)) else '' end
+    || public.email_row('Référence', '<span style="font-family:monospace;font-size:14px">' || public.html_esc(new.ref) || '</span>')
+    || '</table>'
+    || '<div style="padding-top:18px">'
+    ||   public.email_btn('Appeler le client', 'tel:' || new.phone, '#111111', '#B7F36B')
+    ||   public.email_btn('WhatsApp', wa, '#25D366', '#ffffff')
+    ||   public.email_btn('Itinéraire', maps, '#ffffff', '#111111')
+    ||   case when site is not null then public.email_btn('Ouvrir le tableau de bord', site || '/admin.html', '#ffffff', '#111111') else '' end
+    || '</div>';
+
+  perform public.send_email(
+    'Nouvelle réservation · ' || new.service || ' · ' || to_char(new.scheduled_date, 'DD/MM') || ' à ' || new.scheduled_time,
+    public.email_shell('Nouvelle réservation', 'Réf. ' || new.ref, new.service || ' — ' || new.vehicle,
+      new.city || ', ' || public.fr_date(new.scheduled_date) || ' à ' || new.scheduled_time || ' · ' || public.dh(new.price), body_html)
   );
   return new;
 end;
@@ -349,26 +425,41 @@ drop trigger if exists bookings_notify on public.bookings;
 create trigger bookings_notify after insert on public.bookings
   for each row execute function public.bookings_notify();
 
+-- ---------- nouvelle candidature de professionnel ----------
 create or replace function public.applications_notify()
 returns trigger
 language plpgsql
 security definer
 set search_path = public
 as $$
+declare
+  wa text; site text; body_html text; villes text;
 begin
-  perform public.notify_email(
-    'Nouvelle candidature — ' || new.name,
-    array[
-      array['Nom', new.name],
-      array['Téléphone', new.phone],
-      array['Email', coalesce(new.email, '—')],
-      array['Villes', coalesce(nullif(array_to_string(new.cities, ', '), ''), new.city)],
-      array['Services', coalesce(nullif(array_to_string(new.services, ', '), ''), '—')],
-      array['Expérience', case new.experience when 'oui' then 'Oui' when 'non' then 'Non' else coalesce(new.experience, '—') end],
-      array['Matériel', case when new.has_equipment then 'Oui' else 'Non' end],
-      array['Disponibilités', coalesce(new.availability, '—')],
-      array['Message', coalesce(new.message, '—')]
-    ]
+  villes := coalesce(nullif(array_to_string(new.cities, ', '), ''), new.city);
+  wa := 'https://wa.me/' || public.wa_digits(new.phone) || '?text='
+        || public.url_q('Bonjour ' || new.name || ', ici SKINCAR. Merci pour votre candidature, pouvons-nous en parler ?');
+  site := public.site_url();
+
+  body_html :=
+       '<table role="presentation" width="100%" cellpadding="0" cellspacing="0">'
+    || public.email_row('Téléphone', '<a href="tel:' || public.html_esc(new.phone) || '" style="color:#111111"><b>' || public.html_esc(new.phone) || '</b></a>')
+    || case when coalesce(new.email, '') <> '' then public.email_row('Email', public.html_esc(new.email)) else '' end
+    || public.email_row('Villes', public.html_esc(villes))
+    || public.email_row('Services', public.html_esc(coalesce(nullif(array_to_string(new.services, ', '), ''), '—')))
+    || public.email_row('Expérience', case new.experience when 'oui' then 'Oui' when 'non' then 'Non' else public.html_esc(coalesce(new.experience, '—')) end)
+    || public.email_row('Matériel', case when new.has_equipment then 'A son matériel' else 'N''a pas de matériel' end)
+    || case when coalesce(new.availability, '') <> '' then public.email_row('Disponibilités', public.html_esc(new.availability)) else '' end
+    || case when coalesce(new.message, '') <> '' then public.email_row('Message', public.html_esc(new.message)) else '' end
+    || '</table>'
+    || '<div style="padding-top:18px">'
+    ||   public.email_btn('Appeler', 'tel:' || new.phone, '#111111', '#B7F36B')
+    ||   public.email_btn('WhatsApp', wa, '#25D366', '#ffffff')
+    ||   case when site is not null then public.email_btn('Voir les candidatures', site || '/admin.html', '#ffffff', '#111111') else '' end
+    || '</div>';
+
+  perform public.send_email(
+    'Nouvelle candidature · ' || new.name || ' · ' || villes,
+    public.email_shell('Candidature', 'Devenir partenaire', new.name, villes || ' · ' || new.phone, body_html)
   );
   return new;
 end;
