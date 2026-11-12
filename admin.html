@@ -3,9 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%23B7F36B%27/%3E%3Cpath d=%27M32 10C32 10 16 30 16 41a16 16 0 0 0 32 0C48 30 32 10 32 10Z%27 fill=%27%23101713%27/%3E%3C/svg%3E">
+
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="robots" content="noindex, nofollow">
-<title>WASHGO Admin</title>
+<title>SKINCAR Admin</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <style>
@@ -109,6 +112,7 @@ main { padding-block: 24px 60px; }
 /* connexion */
 .login { max-width: 400px; margin: 60px auto 0; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 28px; display: grid; gap: 16px; }
 .login h1 { font-size: 24px; }
+.ok-msg { background: var(--ok-bg); color: var(--ok-fg); border-radius: 10px; padding: 10px 14px; font-size: 14px; }
 
 /* onglets et chiffres */
 .tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 18px; }
@@ -224,6 +228,18 @@ dl.info dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
   .sheet .actions .btn-danger { margin-left: 0 !important; flex-basis: 100%; }
   .pro-list, #pro-list { grid-template-columns: minmax(0, 1fr); }
 }
+/* candidatures */
+.app-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px; }
+.acard { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px; display: grid; gap: 12px; align-content: start; min-width: 0; }
+.acard.is-new { box-shadow: inset 4px 0 0 var(--fg); }
+.ahead { display: flex; justify-content: space-between; align-items: start; gap: 10px; }
+.ahead h3 { font-size: 18px; }
+.ainfo { margin: 0; display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 6px 12px; font-size: 14px; }
+.ainfo dt { color: var(--muted); }
+.ainfo dd { margin: 0; overflow-wrap: anywhere; }
+.aacts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; }
+.aacts select { width: auto; min-height: 36px; padding: 4px 10px; font-size: 14px; }
+@media (max-width: 700px) { .app-list { grid-template-columns: minmax(0, 1fr); } .ainfo { grid-template-columns: 1fr; gap: 0; } .ainfo dt { margin-top: 6px; font-size: 12px; } }
 </style>
 <script src="theme.js"></script>
 </head>
@@ -233,7 +249,7 @@ dl.info dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
   <div class="wrap">
     <div class="brand">
       <span class="mark" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 28 28"><path d="M14 2C14 2 5 12 5 18a9 9 0 0 0 18 0C23 12 14 2 14 2Z" fill="#101713"/></svg></span>
-      <span class="word">WASHGO<small>Admin</small></span>
+      <span class="word">SKINCAR<small>Admin</small></span>
     </div>
     <div class="who" id="who" hidden>
       <span id="who-mail"></span>
@@ -246,11 +262,24 @@ dl.info dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
 
   <form class="login" id="login" hidden>
     <h1>Connexion</h1>
-    <p class="sub">Espace réservé à l'équipe WASHGO.</p>
+    <p class="sub">Espace réservé à l'équipe SKINCAR.</p>
     <div><label class="l" for="l-mail">Email</label><input id="l-mail" type="email" autocomplete="username" required></div>
     <div><label class="l" for="l-pass">Mot de passe</label><input id="l-pass" type="password" autocomplete="current-password" required></div>
     <p class="err" id="l-err" role="alert"></p>
     <button class="btn btn-main" id="l-go" type="submit">Se connecter</button>
+    <p><button class="linklike" type="button" id="l-forgot" style="font-family:var(--font-body);text-decoration:underline">Mot de passe oublié ?</button></p>
+    <p class="ok-msg" id="l-sent" hidden></p>
+  </form>
+
+  <!-- nouveau mot de passe (lien reçu par email) -->
+  <form class="login" id="recover" hidden>
+    <h1>Nouveau mot de passe</h1>
+    <p class="sub">Choisissez un nouveau mot de passe pour le tableau de bord.</p>
+    <div><label class="l" for="r-pass">Nouveau mot de passe</label><input id="r-pass" type="password" autocomplete="new-password" minlength="8" required>
+      <p class="sub" style="margin-top:4px">8 caractères minimum.</p></div>
+    <div><label class="l" for="r-pass2">Confirmer le mot de passe</label><input id="r-pass2" type="password" autocomplete="new-password" minlength="8" required></div>
+    <p class="err" id="r-err" role="alert"></p>
+    <button class="btn btn-main" id="r-go" type="submit">Enregistrer</button>
   </form>
 
   <div id="app" hidden>
@@ -266,6 +295,7 @@ dl.info dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
       <button class="tab" role="tab" data-tab="pros" aria-selected="false">Professionnels</button>
       <button class="tab" role="tab" data-tab="comm" aria-selected="false">Commissions</button>
       <button class="tab" role="tab" data-tab="clients" aria-selected="false">Clients</button>
+      <button class="tab" role="tab" data-tab="apps" aria-selected="false">Candidatures<span class="n" id="n-apps" hidden></span></button>
     </div>
 
     <section id="v-bookings">
@@ -294,7 +324,12 @@ dl.info dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
         <p class="sub">Seules les réservations terminées comptent.</p>
       </div>
       <div class="tablewrap" id="comm-list"></div>
-      <p class="note">La commission WASHGO est toujours de 20 % du prix final. Le client paie le professionnel directement, le professionnel reverse ensuite la commission à WASHGO. Cliquez sur un professionnel dans l’onglet « Professionnels » pour voir son détail.</p>
+      <p class="note">La commission SKINCAR est toujours de 20 % du prix final. Le client paie le professionnel directement, le professionnel reverse ensuite la commission à SKINCAR. Cliquez sur un professionnel dans l’onglet « Professionnels » pour voir son détail.</p>
+    </section>
+
+    <section id="v-apps" hidden>
+      <p class="sub" style="margin-bottom:14px">Les professionnels qui ont rempli le formulaire « Devenir partenaire » (page rejoindre.html).</p>
+      <div class="app-list" id="app-list"></div>
     </section>
 
     <section id="v-clients" hidden>
@@ -324,7 +359,7 @@ dl.info dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
   var AVAIL = { available: "Disponible", busy: "Occupé", unavailable: "Indisponible" };
   var AVAIL_CLS = { available: "ok", busy: "warn", unavailable: "off" };
 
-  var state = { bookings: [], pros: [], tab: "bookings", filter: "all", q: "", period: "month", settleAsk: null, ready: false };
+  var state = { apps: [], appsMissing: false, pendingApp: null, bookings: [], pros: [], tab: "bookings", filter: "all", q: "", period: "month", settleAsk: null, ready: false };
 
   function esc(s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
@@ -350,13 +385,15 @@ dl.info dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
     return '<a href="https://www.google.com/maps/search/?api=1&amp;query=' + q + '" target="_blank" rel="noopener">Voir sur la carte</a> · <a href="https://www.google.com/maps/dir/?api=1&amp;destination=' + q + '" target="_blank" rel="noopener">Itinéraire</a>';
   }
   function proById(id) { return state.pros.filter(function (p) { return p.id === id; })[0] || null; }
+  // villes d'un professionnel (plusieurs possibles ; anciennes fiches : une seule ville)
+  function proCities(p) { return p && p.cities && p.cities.length ? p.cities : (p && p.city ? [p.city] : []); }
   function proByName(name) {
     var n = String(name || "").trim().toLowerCase();
     return n ? state.pros.filter(function (p) { return String(p.name || "").trim().toLowerCase() === n; })[0] || null : null;
   }
   // Nom affiché : la fiche du professionnel si elle existe, sinon le nom tapé à la main
   function proName(b) { var p = proById(b.professional_id); return p ? p.name : (b.professional_name || ""); }
-  // Commission WASHGO : toujours 20 % du prix final (modifiable ici, à un seul endroit)
+  // Commission SKINCAR : toujours 20 % du prix final (modifiable ici, à un seul endroit)
   var COMMISSION_PCT = 20;
   function commissionOf(b) { return round2((Number(b.price) || 0) * COMMISSION_PCT / 100); }
   function round2(n) { return Math.round(n * 100) / 100; }
@@ -381,8 +418,11 @@ dl.info dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
 
   // ---------- chargement ----------
   function refresh() {
-    return Promise.all([D.listBookings(), D.listPros()]).then(function (r) {
+    // candidatures : si la table n'existe pas encore (setup.sql pas relancé), le reste fonctionne quand même
+    var apps = D.listApplications ? D.listApplications().catch(function () { return null; }) : Promise.resolve(null);
+    return Promise.all([D.listBookings(), D.listPros(), apps]).then(function (r) {
       state.bookings = r[0] || []; state.pros = r[1] || []; state.ready = true;
+      state.apps = r[2] || []; state.appsMissing = r[2] === null;
       var d = new Date();
       $("updated").textContent = "Dernière mise à jour à " + pad(d.getHours()) + ":" + pad(d.getMinutes()) + ". La liste se met à jour toute seule.";
       renderAll();
@@ -391,7 +431,7 @@ dl.info dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
     });
   }
 
-  function renderAll() { renderTiles(); renderTabs(); renderBookings(); renderPros(); renderComm(); renderClients(); }
+  function renderAll() { renderTiles(); renderTabs(); renderBookings(); renderPros(); renderComm(); renderClients(); renderApps(); }
 
   function renderTiles() {
     var today = todayIso(), news = 0, todayN = 0, done = 0, comm = 0, avail = 0;
@@ -408,7 +448,44 @@ dl.info dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
   function renderTabs() {
     var n = state.bookings.filter(function (b) { return b.status === "New"; }).length;
     $("n-new").textContent = n; $("n-new").hidden = n === 0;
+    var na = state.apps.filter(function (a) { return a.status === "new"; }).length;
+    $("n-apps").textContent = na; $("n-apps").hidden = na === 0;
   }
+
+  // ---------- candidatures (professionnels qui veulent travailler avec SKINCAR) ----------
+  var APP_STATUS = [["new", "Nouvelle", "warn"], ["contacted", "Contacté", "info"], ["accepted", "Acceptée", "ok"], ["rejected", "Refusée", "off"]];
+  var EXP = { oui: "A de l'expérience", non: "Pas d'expérience", moins_1: "Moins d'1 an", "1_3": "1 à 3 ans", plus_3: "Plus de 3 ans" };
+  function renderApps() {
+    var box = $("app-list");
+    if (state.appsMissing) {
+      box.innerHTML = '<div class="empty tablewrap">Les candidatures ne sont pas encore activées dans la base. Ouvrez Supabase > SQL Editor, collez tout setup.sql et cliquez Run.</div>';
+      return;
+    }
+    if (!state.apps.length) { box.innerHTML = '<div class="empty tablewrap">Aucune candidature pour le moment. Elles arrivent depuis le lien « Travailler avec nous » en bas de la page d\'accueil.</div>'; return; }
+    box.innerHTML = state.apps.map(function (a) {
+      var st = APP_STATUS.filter(function (s) { return s[0] === a.status; })[0] || APP_STATUS[0];
+      var opts = APP_STATUS.map(function (s) { return '<option value="' + s[0] + '"' + (s[0] === a.status ? " selected" : "") + ">" + s[1] + "</option>"; }).join("");
+      var kit = (a.has_equipment ? "A son matériel" : "N'a pas de matériel") + (a.has_water ? " · apporte l'eau" : "") + (a.has_transport ? " · a un transport" : "");
+      return '<article class="acard' + (a.status === "new" ? " is-new" : "") + '">'
+        + '<div class="ahead"><div><h3>' + esc(a.name) + '</h3><p class="sub">Reçue le ' + esc(fmtDT(a.created_at)) + "</p></div>"
+        + '<span class="pill ' + st[2] + '">' + esc(st[1]) + "</span></div>"
+        + '<dl class="ainfo">'
+        + "<dt>Téléphone</dt><dd>" + esc(a.phone) + ' · <a href="' + esc(waLink(a.phone)) + '" target="_blank" rel="noopener">WhatsApp</a></dd>'
+        + (a.email ? "<dt>Email</dt><dd>" + esc(a.email) + "</dd>" : "")
+        + "<dt>Villes</dt><dd>" + esc((a.cities && a.cities.length ? a.cities : [a.city]).join(", ")) + (a.zones ? " · " + esc(a.zones) : "") + "</dd>"
+        + "<dt>Services</dt><dd>" + esc((a.services || []).join(", ") || "—") + "</dd>"
+        + "<dt>Expérience</dt><dd>" + esc(EXP[a.experience] || "Non précisée") + "</dd>"
+        + "<dt>Matériel</dt><dd>" + esc(kit) + "</dd>"
+        + (a.availability ? "<dt>Disponibilités</dt><dd>" + esc(a.availability) + "</dd>" : "")
+        + (a.message ? "<dt>Message</dt><dd>" + esc(a.message) + "</dd>" : "")
+        + "</dl>"
+        + '<div class="aacts"><label class="sub" for="as-' + esc(a.id) + '">Statut</label><select id="as-' + esc(a.id) + '" data-astatus="' + esc(a.id) + '">' + opts + "</select>"
+        + '<button class="btn btn-main btn-sm" type="button" data-aaccept="' + esc(a.id) + '">Ajouter comme professionnel</button>'
+        + '<button class="btn btn-danger btn-sm" type="button" data-adel="' + esc(a.id) + '">Supprimer</button></div>'
+        + "</article>";
+    }).join("");
+  }
+  function appById(id) { return state.apps.filter(function (a) { return a.id === id; })[0] || null; }
 
   // ---------- réservations ----------
   function visibleBookings() {
@@ -466,7 +543,7 @@ dl.info dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
       var hint = p.services && p.services.length && p.services.indexOf(b.service) === -1 ? " · ne propose pas ce service" : "";
       return '<option value="' + esc(p.id) + '"' + (cur && p.id === cur.id ? " selected" : "") + ">" + esc(p.name) + " · " + esc(AVAIL[p.availability] || "") + esc(hint) + "</option>";
     }
-    var same = state.pros.filter(function (p) { return p.city === b.city; }), other = state.pros.filter(function (p) { return p.city !== b.city; });
+    var same = state.pros.filter(function (p) { return proCities(p).indexOf(b.city) !== -1; }), other = state.pros.filter(function (p) { return proCities(p).indexOf(b.city) === -1; });
     var proOpts = '<option value="" disabled' + (cur || legacyName ? "" : " selected") + ">Choisir le professionnel…</option>"
       + (same.length ? '<optgroup label="' + esc(b.city) + '">' + same.map(opt).join("") + "</optgroup>" : "")
       + (other.length ? '<optgroup label="Autres villes">' + other.map(opt).join("") + "</optgroup>" : "")
@@ -492,7 +569,7 @@ dl.info dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
       + "<dt>Notes du client</dt><dd>" + (b.notes ? esc(b.notes) : '<span class="sub">Aucune</span>') + "</dd></dl>"
       + '<div class="fgrid">'
       + '<div><label class="l" for="f-status">Statut</label><select id="f-status">' + statusOpts + "</select></div>"
-      + '<div><label class="l" for="f-price">Prix final (DH)</label><input id="f-price" type="number" min="0" step="1" inputmode="decimal" value="' + esc(b.price == null ? "" : b.price) + '"></div>'
+      + '<div><label class="l" for="f-price">Prix final (DH) <span class="sub">· tarif du site, modifiable</span></label><input id="f-price" type="number" min="0" step="1" inputmode="decimal" value="' + esc(b.price == null ? "" : b.price) + '"></div>'
       + '<div class="full split" id="f-split"></div>'
       + '<div class="full"><label class="l" for="f-pro">Professionnel qui fait le lavage</label>' + proField + "</div>"
       + '<div class="full"><label class="l" for="f-notes">Notes internes</label><textarea id="f-notes">' + esc(b.admin_notes || "") + "</textarea></div></div>"
@@ -500,12 +577,12 @@ dl.info dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
       + '<div class="actions"><button class="btn btn-main" id="f-save" type="button" data-save="' + esc(b.id) + '">Enregistrer</button><button class="btn btn-line" type="button" data-close>Fermer</button>'
       + '<button class="btn btn-danger" id="f-del" type="button" data-bdel="' + esc(b.id) + '" style="margin-left:auto">Supprimer la réservation</button></div>'
     );
-    // répartition en direct : 20 % pour WASHGO, le reste pour le professionnel
+    // répartition en direct : 20 % pour SKINCAR, le reste pour le professionnel
     function split() {
       var v = Number($("f-price").value);
       $("f-split").innerHTML = $("f-price").value.trim() === "" || isNaN(v) || v < 0
-        ? '<span class="sub">Entrez le prix final : la commission WASHGO de ' + COMMISSION_PCT + " % est calculée automatiquement.</span>"
-        : "<span>Commission WASHGO (" + COMMISSION_PCT + " %) <b>" + esc(money(v * COMMISSION_PCT / 100)) + "</b></span>"
+        ? '<span class="sub">Entrez le prix final : la commission SKINCAR de ' + COMMISSION_PCT + " % est calculée automatiquement.</span>"
+        : "<span>Commission SKINCAR (" + COMMISSION_PCT + " %) <b>" + esc(money(v * COMMISSION_PCT / 100)) + "</b></span>"
           + "<span>Part du professionnel <b>" + esc(money(v - v * COMMISSION_PCT / 100)) + "</b></span>";
     }
     $("f-price").addEventListener("input", split);
@@ -552,7 +629,7 @@ dl.info dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
       var st = proStats(bookingsOfPro(p));
       return '<article class="pcard clickable" data-prostats="' + esc(p.id) + '" tabindex="0" role="button" aria-label="Voir les chiffres de ' + esc(p.name) + '">'
         + '<h3><span>' + esc(p.name) + '</span><span class="pill ' + (AVAIL_CLS[p.availability] || "off") + '">' + esc(AVAIL[p.availability] || "") + "</span></h3>"
-        + '<div class="row"><b>' + esc(p.city) + "</b>" + (p.zones ? " · " + esc(p.zones) : "") + "</div>"
+        + '<div class="row"><b>' + esc(proCities(p).join(", ")) + "</b>" + (p.zones ? " · " + esc(p.zones) : "") + "</div>"
         + '<div class="row">' + esc(p.phone) + (p.hours ? " · " + esc(p.hours) : "") + "</div>"
         + '<div class="kpis"><div><span>Chiffre d\'affaires</span><b>' + esc(money(st.ca)) + "</b></div>"
         + "<div><span>Ma commission (" + COMMISSION_PCT + " %)</span><b class=\"lime-t\">" + esc(money(st.comm)) + "</b></div>"
@@ -592,7 +669,7 @@ dl.info dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
     }).join("") : '<tr><td colspan="5" class="sub">Aucun lavage sur cette période.</td></tr>';
 
     openSheet(
-      '<div class="head"><div><h2>' + esc(p.name) + '</h2><p class="sub">' + esc(p.city) + " · " + esc(p.phone) + "</p></div>" + pill2(p) + "</div>"
+      '<div class="head"><div><h2>' + esc(p.name) + '</h2><p class="sub">' + esc(proCities(p).join(", ")) + " · " + esc(p.phone) + "</p></div>" + pill2(p) + "</div>"
       + '<div class="chips" style="margin-bottom:14px">' + tabs + "</div>"
       + '<div class="kpis big">'
       + "<div><span>Chiffre d'affaires</span><b>" + esc(money(st.ca)) + "</b></div>"
@@ -612,21 +689,24 @@ dl.info dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
   function pill2(p) { return '<span class="pill ' + (AVAIL_CLS[p.availability] || "off") + '">' + esc(AVAIL[p.availability] || "") + "</span>";
   }
 
-  function openPro(id) {
+  function openPro(id, pre) {
+    if (!pre) state.pendingApp = null;
     var p = id ? proById(id) : null;
-    p = p || { name: "", phone: "", city: "Rabat", zones: "", services: SERVICES.slice(0, 3), hours: "09:00–19:00", has_equipment: true, has_water: true, availability: "available", commission_pct: 15, notes: "" };
+    p = p || pre || { name: "", phone: "", city: "Rabat", zones: "", services: SERVICES.slice(0, 3), hours: "09:00–19:00", has_equipment: true, has_water: true, availability: "available", commission_pct: 15, notes: "" };
     openSheet(
       '<div class="head"><h2>' + (id ? "Modifier le professionnel" : "Nouveau professionnel") + "</h2></div>"
       + '<div class="fgrid">'
       + '<div class="full"><label class="l" for="p-name">Nom</label><input id="p-name" type="text" value="' + esc(p.name) + '"></div>'
-      + '<div><label class="l" for="p-phone">Téléphone</label><input id="p-phone" type="tel" value="' + esc(p.phone) + '"></div>'
-      + '<div><label class="l" for="p-city">Ville</label><select id="p-city">' + CITIES.map(function (c) { return '<option' + (c === p.city ? " selected" : "") + ">" + c + "</option>"; }).join("") + "</select></div>"
+      + '<div class="full"><label class="l" for="p-phone">Téléphone</label><input id="p-phone" type="tel" value="' + esc(p.phone) + '"></div>'
+      + '<div class="full" id="p-cities-box"><span class="l" style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">Villes <span class="sub">(une ou plusieurs)</span></span><div class="checks">'
+      + CITIES.map(function (c) { return '<label><input type="checkbox" name="p-city" value="' + esc(c) + '"' + (proCities(p).indexOf(c) !== -1 ? " checked" : "") + ">" + esc(c) + "</label>"; }).join("")
+      + "</div></div>"
       + '<div class="full"><label class="l" for="p-zones">Quartiers couverts</label><input id="p-zones" type="text" value="' + esc(p.zones || "") + '" placeholder="Ex. Agdal, Hay Riad"></div>'
       + '<div class="full"><span class="l" style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">Services proposés</span><div class="checks">'
       + SERVICES.map(function (s, i) { return '<label><input type="checkbox" name="p-serv" value="' + esc(s) + '"' + ((p.services || []).indexOf(s) !== -1 ? " checked" : "") + ">" + esc(s) + "</label>"; }).join("")
       + "</div></div>"
       + '<div><label class="l" for="p-hours">Horaires</label><input id="p-hours" type="text" value="' + esc(p.hours || "") + '"></div>'
-      + '<div><span class="l" style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">Commission WASHGO</span><p style="padding-top:10px"><b>' + COMMISSION_PCT + ' %</b> du prix final</p></div>'
+      + '<div><span class="l" style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">Commission SKINCAR</span><p style="padding-top:10px"><b>' + COMMISSION_PCT + ' %</b> du prix final</p></div>'
       + '<div><label class="l" for="p-avail">Disponibilité</label><select id="p-avail">' + Object.keys(AVAIL).map(function (k) { return '<option value="' + k + '"' + (k === p.availability ? " selected" : "") + ">" + AVAIL[k] + "</option>"; }).join("") + "</select></div>"
       + '<div class="checks" style="align-self:end"><label><input type="checkbox" id="p-eq"' + (p.has_equipment ? " checked" : "") + '>A son matériel</label><label><input type="checkbox" id="p-water"' + (p.has_water ? " checked" : "") + '>Apporte son eau</label></div>'
       + '<div class="full"><label class="l" for="p-notes">Notes internes</label><textarea id="p-notes">' + esc(p.notes || "") + "</textarea></div></div>"
@@ -642,13 +722,29 @@ dl.info dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
     if (phone.replace(/\D/g, "").length < 9) { err.textContent = "Entrez un numéro de téléphone valide."; return; }
     var twin = proByName(name);
     if (twin && twin.id !== id) { err.textContent = "Un professionnel porte déjà ce nom. Ajoutez par exemple l'initiale du nom de famille."; return; }
+    var cities = Array.prototype.slice.call(document.querySelectorAll('input[name="p-city"]:checked')).map(function (c) { return c.value; });
+    if (!cities.length) { err.textContent = "Choisissez au moins une ville."; return; }
     var services = Array.prototype.slice.call(document.querySelectorAll('input[name="p-serv"]:checked')).map(function (c) { return c.value; });
-    var pro = { name: name, phone: phone, city: $("p-city").value, zones: $("p-zones").value.trim() || null, services: services,
+    var pro = { name: name, phone: phone, city: cities[0], cities: cities, zones: $("p-zones").value.trim() || null, services: services,
       hours: $("p-hours").value.trim() || null, has_equipment: $("p-eq").checked, has_water: $("p-water").checked,
       availability: $("p-avail").value, commission_pct: COMMISSION_PCT, notes: $("p-notes").value.trim() || null };
     if (id) pro.id = id;
     $("p-save").disabled = true;
-    D.savePro(pro).then(function () { closeSheet(); return refresh(); }).catch(function (x) {
+    var partial = false;
+    D.savePro(pro).then(function (res) {
+      partial = !!(res && res.partial);
+      // si la fiche vient d'une candidature : on la marque « Acceptée »
+      var ap = state.pendingApp; state.pendingApp = null;
+      return ap && !id && D.updateApplication ? D.updateApplication(ap, { status: "accepted" }).catch(function () {}) : null;
+    }).then(function () {
+      if (partial) {
+        // la base n'a pas encore la colonne des villes : on le dit au lieu de fermer comme si tout allait bien
+        err.textContent = "Enregistré, mais avec une seule ville (" + cities[0] + "). Pour garder plusieurs villes, ouvrez Supabase > SQL Editor, collez tout setup.sql et cliquez Run, puis enregistrez de nouveau.";
+        $("p-save").disabled = false;
+        return refresh();
+      }
+      closeSheet(); return refresh();
+    }).catch(function (x) {
       err.textContent = why(x); $("p-save").disabled = false;
     });
   }
@@ -691,7 +787,7 @@ dl.info dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
         + '<td class="num"><b>' + money(r.due) + "</b></td>"
         + '<td class="num">' + (r.ids.length ? '<button class="btn ' + (asking ? "btn-main" : "btn-line") + ' btn-sm" type="button" data-settle="' + esc(r.id) + '">' + (asking ? "Confirmer le règlement" : "Marquer réglé") + "</button>" : '<span class="pill ok">Réglé</span>') + "</td></tr>";
     }).join("");
-    $("comm-list").innerHTML = "<table><thead><tr><th>Professionnel</th><th class=\"num\">Lavages</th><th class=\"num\">Chiffre d'affaires</th><th class=\"num\">Commission WASHGO</th><th class=\"num\">Part du pro</th><th class=\"num\">Reste à recevoir</th><th></th></tr></thead><tbody>"
+    $("comm-list").innerHTML = "<table><thead><tr><th>Professionnel</th><th class=\"num\">Lavages</th><th class=\"num\">Chiffre d'affaires</th><th class=\"num\">Commission SKINCAR</th><th class=\"num\">Part du pro</th><th class=\"num\">Reste à recevoir</th><th></th></tr></thead><tbody>"
       + body + '</tbody><tfoot><tr><td>Total</td><td class="num">' + tot.n + '</td><td class="num">' + money(tot.ca) + '</td><td class="num">' + money(tot.comm) + '</td><td class="num">' + money(tot.ca - tot.comm) + '</td><td class="num">' + money(tot.due) + "</td><td></td></tr></tfoot></table>";
   }
   function settle(proId) {
@@ -723,7 +819,7 @@ dl.info dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
   // ---------- événements ----------
   function showTab(t) {
     state.tab = t;
-    ["bookings", "pros", "comm", "clients"].forEach(function (k) { $("v-" + k).hidden = k !== t; });
+    ["bookings", "pros", "comm", "clients", "apps"].forEach(function (k) { $("v-" + k).hidden = k !== t; });
     Array.prototype.forEach.call(document.querySelectorAll(".tab"), function (el) { el.setAttribute("aria-selected", String(el.getAttribute("data-tab") === t)); });
   }
   $("tabs").addEventListener("click", function (e) { var t = e.target.closest("[data-tab]"); if (t) showTab(t.getAttribute("data-tab")); });
@@ -731,6 +827,37 @@ dl.info dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
   $("q").addEventListener("input", function () { state.q = $("q").value; renderBookings(); });
   $("bk-list").addEventListener("click", function (e) { var o = e.target.closest("[data-open]"); if (o) openBooking(o.getAttribute("data-open")); });
   $("pro-add").addEventListener("click", function () { openPro(null); });
+  // candidatures : statut, ajout comme professionnel, suppression
+  $("app-list").addEventListener("change", function (e) {
+    var s = e.target.closest("[data-astatus]"); if (!s) return;
+    var id = s.getAttribute("data-astatus"), a = appById(id);
+    s.disabled = true;
+    D.updateApplication(id, { status: s.value }).then(refresh).catch(function () {
+      s.disabled = false; if (a) s.value = a.status; $("updated").textContent = "Le statut n'a pas été enregistré. Réessayez.";
+    });
+  });
+  $("app-list").addEventListener("click", function (e) {
+    var ac = e.target.closest("[data-aaccept]");
+    if (ac) {
+      var a = appById(ac.getAttribute("data-aaccept")); if (!a) return;
+      var twin = proByName(a.name);
+      if (twin) { openPro(twin.id); return; }                           // déjà dans « Professionnels »
+      var cs = (a.cities && a.cities.length ? a.cities : [a.city]).filter(function (c) { return CITIES.indexOf(c) !== -1; });
+      openPro(null, { name: a.name, phone: a.phone, city: cs[0] || "", cities: cs,
+        zones: a.zones || "",
+        services: (a.services || []).slice(), hours: a.availability || "", has_equipment: !!a.has_equipment, has_water: !!a.has_water,
+        availability: "available", commission_pct: COMMISSION_PCT, notes: a.message || "" });
+      state.pendingApp = a.id;
+      return;
+    }
+    var del = e.target.closest("[data-adel]");
+    if (del) {
+      if (del.getAttribute("data-armed") !== "1") { del.setAttribute("data-armed", "1"); del.textContent = "Confirmer la suppression"; del.classList.add("btn-danger-on"); return; }
+      del.disabled = true;
+      D.deleteApplication(del.getAttribute("data-adel")).then(refresh).catch(function () { del.disabled = false; del.textContent = "Échec, réessayez"; });
+    }
+  });
+
   $("pro-list").addEventListener("click", function (e) {
     if (e.target.closest("a")) return;                                   // WhatsApp
     var b = e.target.closest("[data-pro]"); if (b) { openPro(b.getAttribute("data-pro")); return; }
@@ -812,8 +939,50 @@ dl.info dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
   });
   $("logout").addEventListener("click", function () { D.signOut().then(function () { location.reload(); }); });
 
+  // ---------- mot de passe oublié ----------
+  $("l-forgot").addEventListener("click", function () {
+    var mail = $("l-mail").value.trim(), sent = $("l-sent");
+    sent.hidden = true;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(mail)) { $("l-err").textContent = "Entrez d'abord votre email ci-dessus, puis appuyez de nouveau sur « Mot de passe oublié ? »."; $("l-mail").focus(); return; }
+    if (!D || !D.customer) return;
+    if (!D.live) { $("l-err").textContent = "En mode démo, aucun email n'est envoyé."; return; }
+    $("l-err").textContent = ""; $("l-forgot").disabled = true;
+    D.customer.resetPassword(mail, "admin.html").then(function () {
+      sent.textContent = "Si cet email a un compte, un lien vient d'être envoyé. Ouvrez-le pour choisir un nouveau mot de passe (pensez aux spams).";
+      sent.hidden = false;
+    }).catch(function () {
+      $("l-err").textContent = "L'envoi a échoué. Attendez une minute et réessayez.";
+    }).then(function () { $("l-forgot").disabled = false; });
+  });
+
+  var recovering = /type=recovery/.test(location.hash);
+  function showRecover() {
+    recovering = true;
+    $("app").hidden = true; $("login").hidden = true; $("who").hidden = true; $("recover").hidden = false;
+    try { $("r-pass").focus(); } catch (x) {}
+  }
+  $("recover").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var p1 = $("r-pass").value, p2 = $("r-pass2").value, err = $("r-err");
+    if (p1.length < 8) { err.textContent = "Le mot de passe doit faire au moins 8 caractères."; return; }
+    if (p1 !== p2) { err.textContent = "Les deux mots de passe ne sont pas identiques."; return; }
+    err.textContent = ""; $("r-go").disabled = true; $("r-go").textContent = "Enregistrement…";
+    D.customer.updatePassword(p1).then(function () {
+      recovering = false; $("recover").hidden = true;
+      try { history.replaceState(null, "", location.pathname); } catch (x) {}
+      return D.user().then(function (u) { if (u) return afterSignIn(u); showLogin(); });
+    }).catch(function () {
+      err.textContent = "Le lien a expiré. Retournez à la connexion et redemandez « Mot de passe oublié ? ».";
+      $("r-go").disabled = false; $("r-go").textContent = "Enregistrer";
+    });
+  });
+
   if (!D) { showLogin("Le tableau de bord n'a pas pu démarrer. Rechargez la page."); return; }
-  D.user().then(function (u) { if (u) return afterSignIn(u); showLogin(); }).catch(function () { showLogin(); });
+  if (D.customer) D.customer.onRecovery(showRecover);
+  D.user().then(function (u) {
+    if (recovering) { showRecover(); return; }
+    if (u) return afterSignIn(u); showLogin();
+  }).catch(function () { showLogin(); });
 })();
 </script>
 </body>

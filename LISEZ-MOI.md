@@ -1,8 +1,9 @@
-# WASHGO Mobile: site + dashboard admin
+# SKINCAR Mobile: site + dashboard admin
 
 Had l-dossier fih:
 - `index.html` = l-site dyal l-clients (formulaire dyal l-réservation)
 - `compte.html` = l-page fin l-client kaydir compte w kaychouf l-réservations dyalo
+- `rejoindre.html` = page "Devenir partenaire" fin l-laveurs kaysiftou candidature
 - `admin.html` = l-dashboard dyalek (khass login)
 - `theme.js` = l-alwan dyal l-site (k7el w gris)
 - `config.js` = fin tkteb l-clés dyal Supabase
@@ -33,7 +34,7 @@ Ma tkhdemch hta tdir l-khatwat men 1 l 5. Tqdr tjarreb l-design 9bel: 7ell `inde
 2. Hett **nafs l-email** li ktebti f `setup.sql` w mot de passe qwi.
 3. **Authentication** > **Sign In / Providers**: **khlli "Allow new users to sign up" mfto7**, 7it l-clients kaydiro comptes f `compte.html`. Hadchi ma kay3tihomch l-admin: ghir l-email li f table `admins` (f `setup.sql`) li kaydkhol l-dashboard.
 4. Khlli **"Confirm email"** mfto7 (kayn par défaut): l-client kaywslo email fih lien bach y-activi l-compte.
-5. **Authentication** > **URL Configuration**: f **Site URL** 7ett l-lien dyal l-site (mital `https://ton-lien.netlify.app`), w f **Redirect URLs** zid `https://ton-lien.netlify.app/compte.html`. Bla hadchi, l-lien li f l-email ma ghaydikch l l-page dyal compte.
+5. **Authentication** > **URL Configuration**: f **Site URL** 7ett l-lien dyal l-site (mital `https://ton-lien.netlify.app`), w f **Redirect URLs** zid `https://ton-lien.netlify.app/compte.html` w `https://ton-lien.netlify.app/admin.html`. Bla hadchi, l-liens li f l-email (activation w "mot de passe oublié") ma ghaydiwkch l l-page s7i7a.
 
 ## 4) Hett l-clés f `config.js`
 
@@ -53,7 +54,7 @@ Mhimm: **ma tst3mlch l-clé `service_role`** hna, jamais. L-clé `anon` 3adi tba
 ## 5) Nshr l-site
 
 1. Dkhel l **app.netlify.com/drop** (compte majjani).
-2. Jjer l-dossier kaml (kol l-fichiers: index.html, compte.html, admin.html, config.js, legal.js, i18n.js, data.js, theme.js) l dak s-safha.
+2. Jjer l-dossier kaml (kol l-fichiers: index.html, compte.html, rejoindre.html, admin.html, config.js, legal.js, i18n.js, data.js, theme.js) l dak s-safha.
 3. Netlify kay3tik lien. `ton-lien.netlify.app` = l-site dyal l-clients. `ton-lien.netlify.app/admin.html` = l-dashboard dyalek (7fdh had l-lien l-nafsek).
 
 ## 6) Jarreb
@@ -68,7 +69,7 @@ Ila chi 7aja ma khdmatch, goul liya chno ban lik (mital: "Email ou mot de passe 
 
 - **Réservations**: lista, filtre b statut, recherche, w fiche dyal kol réservation (statut, professionnel, prix final, notes, bouton WhatsApp l l-client).
 - **Professionnels**: ajouter / modifier (ville, quartiers, services, horaires, commission %, disponibilité).
-- **Commissions**: kol pro, chhal 3emmel, chhal commission dyal WASHGO, w "Marquer réglé" mnin yjib lik l-commission.
+- **Commissions**: kol pro, chhal 3emmel, chhal commission dyal SKINCAR, w "Marquer réglé" mnin yjib lik l-commission.
 - **Clients**: lista dyal l-clients men l-réservations.
 
 Mazal ma kaynch: Reviews (avis), Settings (prix / villes / commission global), paiement f internet, w notification automatique. Nzidhom mnin tkoun wajed.
@@ -84,7 +85,7 @@ Mazal ma kaynch: Reviews (avis), Settings (prix / villes / commission global), p
 
 Ila kenti deja drti Run l `setup.sql` 9bel, **3awd dir Run** 3la l-version jdida: kayzid table `customers` w colonne `user_id` f `bookings`, w ma kaymsa7 walo.
 
-Mhimm: l-page dyal confidentialité (f `i18n.js`) mazal katgoul ghir 3la l-réservations. Khassek tzid fiha bli kayn comptes w bli l-ma3loumat katb9a mkhzouna 7ta ymsa7 l-client l-compte dyalo (yt-sal b WASHGO). W golha l CNDP f déclaration.
+Mhimm: l-page dyal confidentialité (f `i18n.js`) mazal katgoul ghir 3la l-réservations. Khassek tzid fiha bli kayn comptes w bli l-ma3loumat katb9a mkhzouna 7ta ymsa7 l-client l-compte dyalo (yt-sal b SKINCAR). W golha l CNDP f déclaration.
 
 ## Langue
 
@@ -96,7 +97,7 @@ L-hero w l-footer b **gris clair** (machi noir). Bach tbeddel l-gris, bdel `--he
 
 ## Tswira dyal l-homepage
 
-F l-hero kayn illustration dyal pro kaylaves tomobil (b l-alwan dyal WASHGO). Ila bghiti tswira 7a9i9iya dyalek: 7ett fichier smito **`hero.jpg`** f nafs l-dossier m3a `index.html`, w kat7ell blast l-illustration otomatikiyan. Nsa7ek tswira ofoqiya (3ard > tol), 7ajmha ≤ 300 KB, w ma tkounch fiha wjouh wla plaques dyal nass bla idnhom.
+F l-hero kayn illustration dyal pro kaylaves tomobil (b l-alwan dyal SKINCAR). Ila bghiti tswira 7a9i9iya dyalek: 7ett fichier smito **`hero.jpg`** f nafs l-dossier m3a `index.html`, w kat7ell blast l-illustration otomatikiyan. Nsa7ek tswira ofoqiya (3ard > tol), 7ajmha ≤ 300 KB, w ma tkounch fiha wjouh wla plaques dyal nass bla idnhom.
 
 ## Pages légales (confidentialité + mentions légales)
 
@@ -118,5 +119,5 @@ OpenStreetMap majjani walakin ma yst7a9ch trafic kbir. Ila kberti bzaf, khass pr
 ## Ma3loumat mohima
 
 - Supabase majjani: ila ma kaynch activité chi ayyam, l-project 9d ykoun f "pause", w tkhssk t3awd t-activih men l-dashboard dyal Supabase.
-- Bhal f l-plan dyalek: l-client kay-khlless l-pro mobacharatan, w WASHGO kat7seb l-commission f tab **Commissions**.
+- Bhal f l-plan dyalek: l-client kay-khlless l-pro mobacharatan, w SKINCAR kat7seb l-commission f tab **Commissions**.
 - Jarrebt l-formulaire w l-dashboard f mode démo, walakin ma jarrebthomch m3a compte Supabase 7a9i9i (ma 3ndich l-clés dyalek). Ila ban chi moshkil mnin tdir l-khatwat, goul liya.

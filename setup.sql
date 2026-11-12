@@ -1,4 +1,4 @@
--- WASHGO Mobile : base de données
+-- SKINCAR Mobile : base de données
 -- Supabase > SQL Editor > New query > coller tout ce fichier > Run.
 -- AVANT de lancer: remplacez TON_EMAIL@EXEMPLE.COM (tout en bas) par l'email de votre compte admin.
 
@@ -43,6 +43,13 @@ create table if not exists public.bookings (
   completed_at timestamptz,
   commission_settled boolean not null default false
 );
+
+-- Un professionnel peut travailler dans plusieurs villes (city garde la première, pour compatibilité)
+alter table public.professionals add column if not exists cities text[] not null default '{}';
+update public.professionals set cities = array[city] where cardinality(cities) = 0 and city is not null;
+alter table public.professionals drop constraint if exists professionals_cities_check;
+alter table public.professionals add constraint professionals_cities_check
+  check (cities <@ array['Rabat', 'Salé', 'Salé Al Jadida']::text[]);
 
 -- Repère sur la carte (facultatif)
 alter table public.bookings add column if not exists latitude double precision;
@@ -112,7 +119,7 @@ create policy "site: creer une reservation" on public.bookings
     and status = 'New'
     and professional_id is null
     and professional_name is null
-    and price is null
+    -- le prix est calculé par la base (déclencheur bookings_set_price), jamais celui envoyé par le navigateur
     and admin_notes is null
     and completed_at is null
     and commission_settled = false
@@ -164,6 +171,92 @@ create policy "admin: tout sur les professionnels" on public.professionals
   for all to authenticated
   using (public.is_admin())
   with check (public.is_admin());
+
+-- Candidatures des professionnels (page « Devenir partenaire » : rejoindre.html)
+create table if not exists public.applications (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  name text not null check (char_length(name) between 2 and 100),
+  phone text not null check (char_length(phone) between 6 and 30),
+  email text check (char_length(coalesce(email, '')) <= 200),
+  city text not null check (city in ('Rabat', 'Salé', 'Salé Al Jadida', 'Autre')),
+  zones text check (char_length(coalesce(zones, '')) <= 300),
+  services text[] not null default '{}' check (cardinality(services) <= 4),
+  experience text,
+  has_equipment boolean not null default false,
+  has_water boolean not null default false,
+  has_transport boolean not null default false,
+  availability text check (char_length(coalesce(availability, '')) <= 200),
+  message text check (char_length(coalesce(message, '')) <= 1000),
+  consent_at timestamptz not null,
+  status text not null default 'new' check (status in ('new', 'contacted', 'accepted', 'rejected')),
+  admin_notes text
+);
+create index if not exists applications_created_idx on public.applications (created_at desc);
+-- expérience : « oui » / « non » (les anciennes valeurs restent acceptées)
+alter table public.applications drop constraint if exists applications_experience_check;
+alter table public.applications add constraint applications_experience_check
+  check (experience is null or experience in ('oui', 'non', 'moins_1', '1_3', 'plus_3'));
+-- plusieurs villes possibles par candidature (city garde la première, pour compatibilité)
+alter table public.applications add column if not exists cities text[] not null default '{}';
+alter table public.applications drop constraint if exists applications_cities_check;
+alter table public.applications add constraint applications_cities_check
+  check (cardinality(cities) <= 4 and cities <@ array['Rabat', 'Salé', 'Salé Al Jadida', 'Autre']::text[]);
+
+alter table public.applications enable row level security;
+revoke all on public.applications from anon, authenticated;
+grant insert on public.applications to anon, authenticated;
+grant select, update, delete on public.applications to authenticated;
+
+-- Le public peut seulement ENVOYER une candidature, jamais la lire
+drop policy if exists "site: envoyer une candidature" on public.applications;
+create policy "site: envoyer une candidature" on public.applications
+  for insert to anon, authenticated
+  with check (status = 'new' and admin_notes is null and consent_at is not null);
+
+drop policy if exists "admin: tout sur les candidatures" on public.applications;
+create policy "admin: tout sur les candidatures" on public.applications
+  for all to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+-- Prix automatique : à chaque nouvelle réservation, la base met le prix du site dans « price » (prix final modifiable dans l'admin).
+-- Gardez ces prix identiques à ceux de index.html (objet PRICES).
+create or replace function public.default_price(p_vehicle text, p_service text)
+returns numeric
+language sql
+immutable
+as $$
+  select (case
+    when p_vehicle in ('SUV / 4x4', 'Utilitaire') then
+      case p_service when 'Lavage extérieur' then 99 when 'Lavage intérieur' then 120 when 'Lavage complet' then 199 when 'Nettoyage premium' then 349 end
+    else
+      case p_service when 'Lavage extérieur' then 80 when 'Lavage intérieur' then 100 when 'Lavage complet' then 120 when 'Nettoyage premium' then 180 end
+  end)::numeric;
+$$;
+
+create or replace function public.bookings_set_price()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  -- le public ne peut pas choisir son prix : on applique toujours le tarif du site
+  if not public.is_admin() or new.price is null then
+    new.price := public.default_price(new.vehicle, new.service);
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists bookings_set_price on public.bookings;
+create trigger bookings_set_price
+  before insert on public.bookings
+  for each row execute function public.bookings_set_price();
+
+-- réservations déjà reçues sans prix : on leur met le tarif du site
+update public.bookings set price = public.default_price(vehicle, service) where price is null;
 
 -- Votre compte admin (même email que l'utilisateur créé dans Authentication > Users)
 insert into public.admins (email) values ('soufianehaiba@gmail.com')

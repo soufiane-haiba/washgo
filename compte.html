@@ -3,7 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>WASHGO Mon compte</title>
+<meta name="theme-color" content="#000000">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%23B7F36B%27/%3E%3Cpath d=%27M32 10C32 10 16 30 16 41a16 16 0 0 0 32 0C48 30 32 10 32 10Z%27 fill=%27%23101713%27/%3E%3C/svg%3E">
+
+<title>SKINCAR Mon compte</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <style>
@@ -71,7 +74,7 @@ input:focus, select:focus { border-color: var(--fg); }
 .hint { font-size: 13px; color: var(--muted); }
 .err { color: var(--bad); font-size: 14px; min-height: 20px; }
 .ok { background: var(--ok-bg); color: var(--ok-fg); border-radius: 10px; padding: 10px 14px; font-size: 14px; }
-.demo { background: var(--warn-bg); color: var(--warn-fg); border-radius: 10px; padding: 10px 14px; font-size: 14px; }
+.demo { background: var(--warn-bg); color: var(--warn-fg); border-radius: 10px; padding: 10px 14px; font-size: 14px; margin-bottom: 16px; }
 .sep { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 13px; }
 .sep::before, .sep::after { content: ""; flex: 1; height: 1px; background: var(--line); }
 
@@ -100,6 +103,54 @@ input:focus, select:focus { border-color: var(--fg); }
 
 @media (max-width: 860px) { .me { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 520px) { .two { grid-template-columns: 1fr; } .top .btn { min-height: 40px; padding: 6px 12px; font-size: 14px; } }
+/* mes informations : lecture seule, puis modification */
+.btn-sm { min-height: 38px; padding: 6px 14px; font-size: 14px; }
+.info-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 4px; }
+.info-head h2 { margin: 0; }
+.info-list { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.info-list > div { background: var(--bg); border-radius: 12px; padding: 12px 14px; min-width: 0; }
+.info-list > .wide { grid-column: 1 / -1; }
+.info-list dt { font-size: 12px; color: var(--muted); letter-spacing: .02em; }
+.info-list dd { margin: 2px 0 0; font-weight: 600; font-size: 16px; overflow-wrap: anywhere; }
+.info-list dd.empty-v { font-weight: 400; color: var(--muted); font-style: italic; }
+.form-acts { display: flex; flex-wrap: wrap; gap: 10px; }
+.box > .ok { margin-bottom: 12px; }
+@media (max-width: 400px) { .info-list { grid-template-columns: minmax(0, 1fr); } }
+/* icône du compte et panneau « Mes informations » */
+.top-acts { display: flex; align-items: center; gap: 10px; }
+.acct-ic { width: 46px; height: 46px; border-radius: 50%; border: 1.5px solid #3a3a3a; background: #1a1a1a; display: grid; place-items: center;
+  cursor: pointer; padding: 0; transition: border-color .2s ease, background .2s ease, transform .15s ease; }
+.acct-ic svg { width: 22px; height: 22px; fill: none; stroke: #f2f2f2; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.acct-ic:hover { border-color: var(--lime); transform: translateY(-1px); }
+.acct-ic[aria-expanded="true"] { background: var(--lime); border-color: var(--lime); }
+.acct-ic[aria-expanded="true"] svg { stroke: #000; }
+.me > .box { grid-column: 1 / -1; }
+.info-box { animation: infoIn .3s cubic-bezier(.2,.8,.2,1); scroll-margin-top: 90px; }
+@keyframes infoIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .info-box { animation: none; } }
+.info-btns { display: flex; align-items: center; gap: 8px; }
+.x-btn { width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid var(--line); background: transparent; color: var(--fg); font: 400 22px/1 var(--font-body); cursor: pointer; }
+.x-btn:hover { border-color: var(--fg); }
+@media (min-width: 900px) { .info-list { grid-template-columns: repeat(4, minmax(0, 1fr)); } .info-list > .wide { grid-column: 1 / -1; } }
+@media (max-width: 420px) { .top .btn { padding: 6px 12px; font-size: 14px; min-height: 40px; } .acct-ic { width: 42px; height: 42px; } }
+/* menu du compte (sous l'icône) */
+.acct-wrap { position: relative; }
+.acct-menu { position: absolute; right: 0; top: calc(100% + 10px); z-index: 50; width: min(290px, calc(100vw - 32px)); background: #fff; color: #111;
+  border-radius: 16px; box-shadow: 0 22px 50px rgba(0,0,0,.35), 0 0 0 1px rgba(0,0,0,.06); padding: 8px; display: grid; gap: 2px;
+  transform-origin: top right; animation: amIn .18s cubic-bezier(.2,.8,.2,1); }
+.acct-menu[hidden] { display: none; }
+@keyframes amIn { from { opacity: 0; transform: scale(.96) translateY(-4px); } to { opacity: 1; transform: none; } }
+.am-head { padding: 10px 12px 12px; border-bottom: 1px solid #eee; margin-bottom: 4px; display: grid; gap: 2px; min-width: 0; }
+.am-head b { font-family: var(--font-display); font-size: 16px; }
+.am-head span { font-size: 13px; color: #666; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.acct-menu button { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: transparent; border: 0; border-radius: 10px;
+  padding: 11px 12px; font: 600 15px var(--font-body); color: #111; cursor: pointer; }
+.acct-menu button:hover, .acct-menu button:focus-visible { background: #f2f2f2; }
+.acct-menu button svg { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.acct-menu .am-out { color: var(--bad); border-top: 1px solid #eee; border-radius: 0 0 10px 10px; margin-top: 4px; padding-top: 13px; }
+.acct-menu .am-out:hover { background: #fdf0f1; }
+.set-h { font-size: 17px; margin: 22px 0 10px; }
+@media (prefers-reduced-motion: reduce) { .acct-menu { animation: none; } }
 </style>
 <script src="theme.js"></script>
 </head>
@@ -107,11 +158,28 @@ input:focus, select:focus { border-color: var(--fg); }
 
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="index.html" aria-label="WASHGO Mobile, accueil">
+    <a class="brand" href="index.html" aria-label="SKINCAR Mobile, accueil">
       <span class="mark" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 28 28"><path d="M14 2C14 2 5 12 5 18a9 9 0 0 0 18 0C23 12 14 2 14 2Z" fill="#101713"/></svg></span>
-      <span class="word">WASHGO<small>MOBILE</small></span>
+      <span class="word">SKINCAR<small>MOBILE</small></span>
     </a>
-    <a class="btn btn-lime" href="index.html#reserver">Réserver</a>
+    <div class="top-acts">
+      <a class="btn btn-lime" href="index.html#reserver">Réserver</a>
+      <!-- icône du compte : ouvre le menu (informations, paramètres, déconnexion) -->
+      <div class="acct-wrap" id="acct-wrap" hidden>
+        <button class="acct-ic" id="acct-ic" type="button" aria-label="Menu du compte" aria-expanded="false" aria-controls="acct-menu" aria-haspopup="menu">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>
+        </button>
+        <div class="acct-menu" id="acct-menu" role="menu" hidden>
+          <div class="am-head"><b id="am-name"></b><span id="am-mail"></span></div>
+          <button type="button" role="menuitem" data-open-panel="info">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>Informations du compte</button>
+          <button type="button" role="menuitem" data-open-panel="settings">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>Paramètres</button>
+          <button type="button" role="menuitem" class="am-out" id="logout">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Se déconnecter</button>
+        </div>
+      </div>
+    </div>
   </div>
 </header>
 
@@ -121,7 +189,7 @@ input:focus, select:focus { border-color: var(--fg); }
   <!-- ===== Connexion / inscription ===== -->
   <section class="auth" id="v-auth" hidden>
     <div>
-      <h1>Votre compte WASHGO</h1>
+      <h1>Votre compte SKINCAR</h1>
       <p class="lead">Enregistrez vos informations une seule fois. Ensuite, pour réserver, vous choisissez juste le service, le jour et l'heure.</p>
     </div>
     <div class="box">
@@ -148,7 +216,7 @@ input:focus, select:focus { border-color: var(--fg); }
         <div class="field"><label for="u-adr">Adresse <span class="opt-l">(quartier, rue, repère)</span></label>
           <input id="u-adr" type="text" autocomplete="street-address" maxlength="300" placeholder="Ex. Agdal, rue Oued Fès, parking de l'immeuble"></div>
         <label class="check" for="u-consent"><input type="checkbox" id="u-consent">
-          <span>J'accepte que WASHGO enregistre ces informations pour mes réservations et me contacte à leur sujet. <a href="index.html#confidentialite">Politique de confidentialité</a></span></label>
+          <span>J'accepte que SKINCAR enregistre ces informations pour mes réservations et me contacte à leur sujet. <a href="index.html#confidentialite">Politique de confidentialité</a></span></label>
         <p class="err" id="up-err" role="alert"></p>
         <button class="btn btn-main btn-block" id="up-btn" type="submit">Créer mon compte</button>
       </form>
@@ -195,14 +263,55 @@ input:focus, select:focus { border-color: var(--fg); }
       </div>
       <div class="acts">
         <a class="btn btn-lime" href="index.html#reserver">Réserver un lavage</a>
-        <button class="btn btn-line" type="button" id="logout">Se déconnecter</button>
       </div>
     </div>
 
-    <div class="box">
-      <h2>Mes informations</h2>
+    <!-- paramètres (ouverts depuis le menu du compte) -->
+    <div class="box info-box" id="me-settings" hidden>
+      <div class="info-head">
+        <h2>Paramètres</h2>
+        <button class="x-btn" type="button" data-close-panel aria-label="Fermer">×</button>
+      </div>
+      <dl class="info-list" style="margin-top:12px">
+        <div class="wide"><dt>Email de connexion</dt><dd id="s-mail"></dd></div>
+      </dl>
+      <h3 class="set-h">Changer le mot de passe</h3>
+      <form id="f-pw2" novalidate>
+        <div class="two">
+          <div class="field"><label for="s-p1">Nouveau mot de passe</label><input id="s-p1" type="password" autocomplete="new-password" minlength="8"></div>
+          <div class="field"><label for="s-p2">Confirmer</label><input id="s-p2" type="password" autocomplete="new-password" minlength="8"></div>
+        </div>
+        <span class="hint">8 caractères minimum.</span>
+        <p class="err" id="s-err" role="alert"></p>
+        <p class="ok" id="s-ok" hidden>Mot de passe modifié.</p>
+        <div class="form-acts"><button class="btn btn-main" type="submit" id="s-btn">Changer le mot de passe</button></div>
+      </form>
+      <h3 class="set-h">Supprimer mon compte</h3>
+      <p class="hint">Pour supprimer votre compte et vos informations, contactez SKINCAR en indiquant l'email de votre compte. Nous le supprimons et vous le confirmons.</p>
+    </div>
+
+    <div class="box info-box" id="me-info" hidden>
+      <div class="info-head">
+        <h2>Mes informations</h2>
+        <div class="info-btns">
+          <button class="btn btn-line btn-sm" type="button" id="me-edit">Modifier</button>
+          <button class="x-btn" type="button" id="me-close" aria-label="Fermer">×</button>
+        </div>
+      </div>
       <p class="hint">Elles remplissent automatiquement le formulaire de réservation. Connecté avec <b id="me-mail"></b>.</p>
-      <form id="f-me" novalidate>
+      <p class="ok" id="me-ok" hidden>Informations enregistrées.</p>
+
+      <!-- affichage (lecture seule) -->
+      <dl class="info-list" id="me-view">
+        <div><dt>Nom</dt><dd id="v-nom"></dd></div>
+        <div><dt>Téléphone</dt><dd id="v-tel"></dd></div>
+        <div><dt>Ville</dt><dd id="v-ville"></dd></div>
+        <div><dt>Véhicule</dt><dd id="v-veh"></dd></div>
+        <div class="wide"><dt>Adresse</dt><dd id="v-adr"></dd></div>
+      </dl>
+
+      <!-- modification (après « Modifier ») -->
+      <form id="f-me" novalidate hidden>
         <div class="field"><label for="m-nom">Nom</label><input id="m-nom" type="text" autocomplete="name" maxlength="100"></div>
         <div class="field"><label for="m-tel">Téléphone</label><input id="m-tel" type="tel" inputmode="tel" autocomplete="tel" maxlength="30"></div>
         <div class="two">
@@ -213,14 +322,16 @@ input:focus, select:focus { border-color: var(--fg); }
         </div>
         <div class="field"><label for="m-adr">Adresse</label><input id="m-adr" type="text" autocomplete="street-address" maxlength="300"></div>
         <p class="err" id="me-err" role="alert"></p>
-        <p class="ok" id="me-ok" hidden>Informations enregistrées.</p>
-        <button class="btn btn-main" type="submit" id="me-btn">Enregistrer</button>
+        <div class="form-acts">
+          <button class="btn btn-main" type="submit" id="me-btn">Enregistrer</button>
+          <button class="btn btn-line" type="button" id="me-cancel">Annuler</button>
+        </div>
       </form>
     </div>
 
-    <div class="box">
+    <div class="box bk-box">
       <h2>Mes réservations</h2>
-      <p class="hint">Le statut se met à jour quand WASHGO traite votre demande.</p>
+      <p class="hint">Le statut se met à jour quand SKINCAR traite votre demande.</p>
       <div class="list" id="bk-list"><p class="empty">Chargement…</p></div>
     </div>
   </section>
@@ -332,15 +443,87 @@ input:focus, select:focus { border-color: var(--fg); }
 
   function openMe() {
     show("v-me");
-    C.current().then(function (u) { $("me-mail").textContent = u ? u.email : ""; });
+    $("acct-wrap").hidden = false; menu(false);
+    // compte.html#infos ou #parametres (depuis le menu de la page d'accueil)
+    var h = (location.hash || "").replace("#", "");
+    panel(h === "infos" ? "info" : h === "parametres" ? "settings" : false);
+    C.current().then(function (u) { var m = u ? u.email : ""; $("me-mail").textContent = m; $("am-mail").textContent = m; $("s-mail").textContent = m; });
     C.getProfile().then(function (p) {
-      p = p || {};
-      $("me-name").textContent = (p.full_name || "").split(" ")[0] || "";
-      $("m-nom").value = p.full_name || ""; $("m-tel").value = p.phone || "";
-      $("m-ville").value = p.city || ""; $("m-veh").value = p.vehicle || ""; $("m-adr").value = p.address || "";
-    }).catch(function () { $("me-err").textContent = "Impossible de charger vos informations. Rechargez la page."; });
+      profile = p || {};
+      $("me-name").textContent = (profile.full_name || "").split(" ")[0] || "";
+      $("am-name").textContent = profile.full_name || "Mon compte";
+      renderInfo(); editInfo(false);
+    }).catch(function () { $("v-nom").textContent = "Impossible de charger vos informations. Rechargez la page."; });
     loadBookings();
   }
+
+  // ---------- mes informations : affichage, puis modification ----------
+  var profile = {};
+  function show1(id, v) {
+    var el = $(id);
+    el.textContent = v || "Non renseigné";
+    el.classList.toggle("empty-v", !v);
+  }
+  function renderInfo() {
+    show1("v-nom", profile.full_name); show1("v-tel", profile.phone); show1("v-ville", profile.city);
+    show1("v-veh", profile.vehicle); show1("v-adr", profile.address);
+  }
+  function editInfo(on) {
+    $("me-view").hidden = on; $("f-me").hidden = !on; $("me-edit").hidden = on;
+    $("me-err").textContent = "";
+    if (on) {
+      $("me-ok").hidden = true;
+      $("m-nom").value = profile.full_name || ""; $("m-tel").value = profile.phone || "";
+      $("m-ville").value = profile.city || ""; $("m-veh").value = profile.vehicle || ""; $("m-adr").value = profile.address || "";
+      try { $("m-nom").focus(); } catch (x) {}
+    }
+  }
+  $("me-edit").addEventListener("click", function () { editInfo(true); });
+  $("me-cancel").addEventListener("click", function () { editInfo(false); });
+
+  // « Mes informations » restent cachées : elles s'ouvrent avec l'icône du compte
+  // panneaux : "info" (Mes informations), "settings" (Paramètres), ou false (tout fermé)
+  function panel(which) {
+    $("me-info").hidden = which !== "info";
+    $("me-settings").hidden = which !== "settings";
+    if (which !== "info") editInfo(false);
+    if (which !== "settings") { $("f-pw2").reset(); $("s-err").textContent = ""; $("s-ok").hidden = true; }
+    var el = which === "info" ? $("me-info") : which === "settings" ? $("me-settings") : null;
+    if (el) { try { el.scrollIntoView({ behavior: "smooth", block: "start" }); } catch (x) {} }
+  }
+  // menu du compte
+  function menu(open) {
+    $("acct-menu").hidden = !open;
+    $("acct-ic").setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  $("acct-ic").addEventListener("click", function (e) { e.stopPropagation(); menu($("acct-menu").hidden); });
+  $("acct-menu").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-open-panel]");
+    if (b) { menu(false); panel(b.getAttribute("data-open-panel")); }
+  });
+  document.addEventListener("click", function (e) { if (!$("acct-menu").hidden && !e.target.closest("#acct-wrap")) menu(false); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !$("acct-menu").hidden) { menu(false); try { $("acct-ic").focus(); } catch (x) {} } });
+  $("me-close").addEventListener("click", function () { panel(false); });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-close-panel]"), function (b) { b.addEventListener("click", function () { panel(false); }); });
+
+  // paramètres : changer le mot de passe
+  $("f-pw2").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var p1 = $("s-p1").value, p2 = $("s-p2").value, err = $("s-err");
+    $("s-ok").hidden = true;
+    if (p1.length < 8) { err.textContent = "Le mot de passe doit faire au moins 8 caractères."; return; }
+    if (p1 !== p2) { err.textContent = "Les deux mots de passe ne sont pas identiques."; return; }
+    err.textContent = "";
+    var btn = $("s-btn"); busy(btn, true, "Enregistrement…");
+    C.updatePassword(p1).then(function () {
+      busy(btn, false, "Changer le mot de passe"); $("f-pw2").reset(); $("s-ok").hidden = false;
+    }).catch(function (x) {
+      busy(btn, false, "Changer le mot de passe");
+      err.textContent = /reauth|recent/i.test((x && x.message) || "") ? "Par sécurité, déconnectez-vous puis reconnectez-vous avant de changer le mot de passe."
+        : /same|different/i.test((x && x.message) || "") ? "Choisissez un mot de passe différent de l'actuel."
+        : "Le changement a échoué. Réessayez.";
+    });
+  });
 
   function loadBookings() {
     var box = $("bk-list");
@@ -363,17 +546,22 @@ input:focus, select:focus { border-color: var(--fg); }
     if (val("m-tel") && val("m-tel").replace(/\D/g, "").length < 9) { err.textContent = "Vérifiez le numéro de téléphone."; return; }
     err.textContent = "";
     var btn = $("me-btn"); busy(btn, true, "Enregistrement…");
-    C.saveProfile({ full_name: val("m-nom"), phone: val("m-tel"), city: val("m-ville"), vehicle: val("m-veh"), address: val("m-adr") })
+    var upd = { full_name: val("m-nom"), phone: val("m-tel"), city: val("m-ville"), vehicle: val("m-veh"), address: val("m-adr") };
+    C.saveProfile(upd)
       .then(function () {
-        busy(btn, false, "Enregistrer"); ok.hidden = false;
-        $("me-name").textContent = val("m-nom").split(" ")[0];
+        busy(btn, false, "Enregistrer");
+        Object.keys(upd).forEach(function (k) { profile[k] = upd[k] || null; });
+        $("me-name").textContent = (upd.full_name || "").split(" ")[0];
+        renderInfo(); editInfo(false);
+        ok.hidden = false;
         setTimeout(function () { ok.hidden = true; }, 3000);
       })
       .catch(function () { busy(btn, false, "Enregistrer"); err.textContent = "L'enregistrement a échoué. Réessayez."; });
   });
 
   $("logout").addEventListener("click", function () {
-    C.signOut().then(function () { tab(false); show("v-auth"); });
+    menu(false);
+    C.signOut().then(function () { panel(false); $("acct-wrap").hidden = true; tab(false); show("v-auth"); });
   });
 
   // ---------- démarrage ----------

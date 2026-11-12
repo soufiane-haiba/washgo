@@ -1,4 +1,4 @@
-/* WASHGO — thème noir + gris clair, piloté en JavaScript.
+/* SKINCAR — thème noir + gris clair, piloté en JavaScript.
    - DARK  : couleurs des parties noires (en-tête, accroche, pied de page, sections noires).
    - LIGHT : couleurs des parties gris clair (sections claires, page admin).
    - Les sections de la page d'accueil alternent automatiquement gris clair / noir.
@@ -33,7 +33,7 @@
     return Object.keys(obj).map(function (k) { return k + ":" + obj[k]; }).join(";");
   }
 
-  var isAdmin = /admin|compte/i.test(location.pathname);
+  var isAdmin = /admin|compte|rejoindre/i.test(location.pathname);
   var root = document.documentElement;
 
   // Pages admin et compte : gris clair avec barre noire. Accueil : base noire.

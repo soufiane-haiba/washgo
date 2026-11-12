@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="fr" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%23B7F36B%27/%3E%3Cpath d=%27M32 10C32 10 16 30 16 41a16 16 0 0 0 32 0C48 30 32 10 32 10Z%27 fill=%27%23101713%27/%3E%3C/svg%3E">
+
+<title>SKINCAR Devenir partenaire</title>
+<meta name="description" content="Vous êtes laveur de voitures à Rabat, Salé ou Salé Al Jadida ? Rejoignez SKINCAR et recevez des clients près de chez vous.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<style>
+/* Devenir partenaire : présentation + formulaire de candidature pour les professionnels du lavage. */
+:root {
+  --ink: #000000; --lime: #B7F36B;
+  --bg: #e8e8e8; --surface: #ffffff; --fg: #111111; --muted: #555555; --line: #d6d6d6;
+  --btn-bg: #111111; --btn-fg: #B7F36B; --focus: #111111; --link: #111111; --bad: #c62d3f;
+  --sel-bg: #e9fbd0; --warn-bg: #fff1cc; --warn-fg: #6b4a00; --ok-bg: #d9f5c2; --ok-fg: #1d5a0a;
+  --font-display: "Space Grotesk", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 var(--font-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.15; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+a { color: var(--link); }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.wrap { margin-inline: auto; padding-inline: clamp(0px, 3vw, 56px); }
+
+/* en-tête */
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 20; background: #000; }
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; background: #000; color: #f2f2f2;
+  margin-inline: calc(-1 * max(16px, env(safe-area-inset-left, 0px))); padding-inline: max(16px, env(safe-area-inset-left, 0px)); }
+.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 12px; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: #f2f2f2; }
+.brand .mark { width: clamp(38px, 9vw, 46px); height: clamp(38px, 9vw, 46px); border-radius: 11px; background: var(--lime); display: grid; place-items: center; flex: none; }
+.brand .word { font-family: var(--font-display); font-weight: 700; font-size: clamp(22px, 5.5vw, 28px); letter-spacing: .02em; line-height: 1; }
+.brand .word small { display: block; font-size: 11px; letter-spacing: .34em; font-weight: 500; color: #a8a8a8; margin-top: 3px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; padding: 10px 22px; border-radius: 10px;
+  font: 600 15px var(--font-body); text-decoration: none; border: 0; cursor: pointer; transition: transform .15s ease, box-shadow .2s ease; white-space: nowrap; }
+.btn:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(0,0,0,.15); }
+.btn[disabled] { opacity: .6; cursor: progress; transform: none; }
+.btn-lime { background: var(--lime); color: #000; }
+.btn-ghost { background: transparent; color: #f2f2f2; border: 1.5px solid #444; }
+.btn-main { background: var(--btn-bg); color: var(--btn-fg); }
+.btn-block { width: 100%; min-height: 56px; font-size: 16px; text-transform: uppercase; letter-spacing: .03em; }
+
+main { padding-block: 28px 70px; }
+
+/* présentation */
+.intro { position: relative; overflow: hidden; isolation: isolate; background: #000; color: #f2f2f2; border-radius: 24px; padding: clamp(26px, 5vw, 60px);
+  display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 28px 40px; align-items: center; }
+.intro::before { content: ""; position: absolute; z-index: -1; width: 620px; height: 620px; right: -180px; top: -260px; background: radial-gradient(circle, rgba(183,243,107,.26), transparent 62%); }
+.eyebrow { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; font-weight: 600; color: var(--lime); margin-bottom: 12px; }
+.intro h1 { font-size: clamp(30px, 5vw, 52px); }
+.intro h1 em { font-style: normal; color: var(--lime); }
+.intro p.sub { color: #b4b4b4; margin-top: 14px; max-width: 48ch; font-size: 17px; }
+.perks { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+.perks li { display: grid; grid-template-columns: 44px 1fr; gap: 14px; align-items: start; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 16px; padding: 14px 16px; }
+.perks .ic { width: 44px; height: 44px; border-radius: 12px; background: var(--lime); display: grid; place-items: center; }
+.perks .ic svg { width: 22px; height: 22px; fill: none; stroke: #000; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.perks b { display: block; font-family: var(--font-display); font-size: 16px; }
+.perks span { color: #b4b4b4; font-size: 14px; }
+
+/* étapes */
+.steps { list-style: none; padding: 0; margin: 28px 0 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; counter-reset: s; }
+.steps li { counter-increment: s; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 20px; }
+.steps li::before { content: "0" counter(s); display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: #000; color: var(--lime);
+  font: 700 14px var(--font-display); margin-bottom: 12px; }
+.steps b { display: block; font-family: var(--font-display); font-size: 17px; }
+.steps span { color: var(--muted); font-size: 14px; }
+
+/* formulaire */
+.formbox { background: var(--surface); border-radius: 22px; padding: clamp(20px, 4vw, 40px); margin-top: 28px; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+.formbox h2 { font-size: clamp(24px, 3.4vw, 32px); }
+.formbox > p.lead { color: var(--muted); margin-top: 6px; }
+form { display: grid; gap: 22px; margin-top: 24px; }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+label, legend { font-size: 14px; font-weight: 600; padding: 0; }
+.opt-l { font-weight: 400; color: var(--muted); }
+input[type="text"], input[type="tel"], input[type="email"], select, textarea {
+  font: 16px var(--font-body); color: var(--fg); background: #f5f5f5; border: 1.5px solid #e2e2e2; border-radius: 10px;
+  padding: 10px 12px; min-height: 48px; width: 100%; min-width: 0; }
+textarea { min-height: 96px; resize: vertical; }
+input:focus, select:focus, textarea:focus { border-color: #111; background: #fff; }
+fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.opts.four { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.opts.three { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.opts.two-c { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.opt { position: relative; min-width: 0; }
+.opt input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.opt span { display: flex; align-items: center; gap: 10px; min-height: 52px; height: 100%; padding: 10px 14px; border: 1.5px solid #e2e2e2; border-radius: 12px;
+  background: #f5f5f5; font-size: 15px; font-weight: 500; transition: border-color .15s ease, background .15s ease; }
+.opt span::before { content: ""; width: 18px; height: 18px; flex: none; border-radius: 5px; border: 1.5px solid #999; background: #fff; }
+.opt input[type="radio"] + span::before { border-radius: 50%; }
+.opt:hover span { border-color: #111; }
+.opt input:checked + span { border-color: #111; background: var(--sel-bg); font-weight: 600; }
+.opt input:checked + span::before { background: #111 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5' fill='none' stroke='%23B7F36B' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 13px no-repeat; border-color: #111; }
+.opt input:focus-visible + span { outline: 3px solid var(--focus); outline-offset: 2px; }
+.bad input[type="text"], .bad input[type="tel"], .bad select { border-color: var(--bad); }
+.bad legend, .bad > label { color: var(--bad); }
+.check { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; font-weight: 400; line-height: 1.5; cursor: pointer; }
+.check input { width: 22px; height: 22px; margin: 0; flex: none; accent-color: #111; }
+.err { color: var(--bad); font-size: 14px; min-height: 20px; }
+.demo { background: var(--warn-bg); color: var(--warn-fg); border-radius: 10px; padding: 10px 14px; font-size: 14px; margin-bottom: 16px; }
+.honey { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); opacity: 0; pointer-events: none; }
+.done { background: var(--surface); border-radius: 22px; padding: clamp(24px, 5vw, 56px); margin-top: 28px; text-align: center; display: grid; gap: 14px; justify-items: center; }
+.done .tick { width: 72px; height: 72px; border-radius: 50%; background: var(--lime); display: grid; place-items: center; }
+.done .tick svg { width: 36px; height: 36px; fill: none; stroke: #000; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.done h2 { font-size: clamp(24px, 4vw, 34px); }
+.done p { color: var(--muted); max-width: 52ch; }
+
+@media (max-width: 860px) {
+  .intro { grid-template-columns: minmax(0, 1fr); }
+  .steps { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 620px) {
+  .grid2, .opts.three, .opts.two-c { grid-template-columns: minmax(0, 1fr); }
+  .opts.four { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .top .btn { padding: 6px 12px; font-size: 14px; min-height: 40px; }
+}
+@media (prefers-reduced-motion: reduce) { .btn { transition: none; } }
+</style>
+<script src="theme.js"></script>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="index.html" aria-label="SKINCAR Mobile, accueil">
+      <span class="mark" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 28 28"><path d="M14 2C14 2 5 12 5 18a9 9 0 0 0 18 0C23 12 14 2 14 2Z" fill="#101713"/></svg></span>
+      <span class="word">SKINCAR<small>MOBILE</small></span>
+    </a>
+    <a class="btn btn-ghost" href="index.html">Retour au site</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="demo" id="demo" hidden>Mode démo : la candidature reste dans ce navigateur et n'est envoyée à personne.</p>
+
+  <section class="intro">
+    <div>
+      <div class="eyebrow">Devenir partenaire</div>
+      <h1>Vous lavez des voitures&nbsp;? <em>Travaillez avec SKINCAR.</em></h1>
+      <p class="sub">SKINCAR reçoit les réservations des clients à Rabat, Salé et Salé Al Jadida, et les confie à des professionnels de confiance. Laissez vos informations, nous vous rappelons.</p>
+    </div>
+    <ul class="perks">
+      <li><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></svg></span>
+        <div><b>Des clients près de chez vous</b><span>Nous vous envoyons des lavages dans les quartiers où vous travaillez.</span></div></li>
+      <li><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></span>
+        <div><b>Selon vos disponibilités</b><span>Vous nous dites quand vous êtes libre, nous vous proposons les lavages sur ces créneaux.</span></div></li>
+      <li><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h3"/></svg></span>
+        <div><b>Le client vous paie directement</b><span>Le paiement se fait avec vous, une fois le lavage terminé.</span></div></li>
+    </ul>
+  </section>
+
+  <ol class="steps">
+    <li><b>Vous remplissez le formulaire</b><span>Deux minutes : vos coordonnées, votre zone et votre matériel.</span></li>
+    <li><b>SKINCAR vous appelle</b><span>Nous faisons connaissance et vérifions ensemble votre façon de travailler.</span></li>
+    <li><b>Vous recevez des lavages</b><span>Une fois validé, nous vous confions des réservations dans votre zone.</span></li>
+  </ol>
+
+  <section class="formbox" id="formbox">
+    <h2>Votre candidature</h2>
+    <p class="lead">Les champs marqués d'un astérisque (*) sont obligatoires.</p>
+
+    <form id="f-app" novalidate>
+      <div class="grid2">
+        <div class="field" id="g-name"><label for="a-name">Nom et prénom *</label><input id="a-name" type="text" autocomplete="name" maxlength="100" placeholder="Ex. Karim El Amrani"></div>
+        <div class="field" id="g-phone"><label for="a-phone">Téléphone (WhatsApp) *</label><input id="a-phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="30" placeholder="Ex. 06 12 34 56 78"></div>
+      </div>
+      <div class="field"><label for="a-email">Email <span class="opt-l">(facultatif)</span></label><input id="a-email" type="email" autocomplete="email" maxlength="200" placeholder="Ex. karim@email.com"></div>
+
+      <fieldset id="g-city">
+        <legend>Villes où vous pouvez travailler * <span class="opt-l">(une ou plusieurs)</span></legend>
+        <div class="opts four">
+          <label class="opt"><input type="checkbox" name="a-city" value="Rabat"><span>Rabat</span></label>
+          <label class="opt"><input type="checkbox" name="a-city" value="Salé"><span>Salé</span></label>
+          <label class="opt"><input type="checkbox" name="a-city" value="Salé Al Jadida"><span>Salé Al Jadida</span></label>
+          <label class="opt"><input type="checkbox" name="a-city" value="Autre"><span>Autre ville</span></label>
+        </div>
+      </fieldset>
+
+      <fieldset id="g-services">
+        <legend>Services que vous savez faire *</legend>
+        <div class="opts four">
+          <label class="opt"><input type="checkbox" name="a-serv" value="Lavage extérieur"><span>Lavage extérieur</span></label>
+          <label class="opt"><input type="checkbox" name="a-serv" value="Lavage intérieur"><span>Lavage intérieur</span></label>
+          <label class="opt"><input type="checkbox" name="a-serv" value="Lavage complet"><span>Lavage complet</span></label>
+          <label class="opt"><input type="checkbox" name="a-serv" value="Nettoyage premium"><span>Nettoyage premium</span></label>
+        </div>
+      </fieldset>
+
+      <fieldset id="g-exp">
+        <legend>Votre expérience *</legend>
+        <div class="opts two-c">
+          <label class="opt"><input type="radio" name="a-exp" value="oui"><span>J'ai de l'expérience</span></label>
+          <label class="opt"><input type="radio" name="a-exp" value="non"><span>Je n'ai pas d'expérience</span></label>
+        </div>
+      </fieldset>
+
+      <fieldset id="g-eq">
+        <legend>Votre matériel *</legend>
+        <div class="opts two-c">
+          <label class="opt"><input type="radio" name="a-eq" value="oui"><span>J'ai mon matériel de lavage</span></label>
+          <label class="opt"><input type="radio" name="a-eq" value="non"><span>Je n'ai pas de matériel</span></label>
+        </div>
+      </fieldset>
+
+      <div class="field"><label for="a-avail">Vos disponibilités</label><input id="a-avail" type="text" maxlength="200" placeholder="Ex. Tous les jours de 9h à 18h, sauf le vendredi"></div>
+      <div class="field"><label for="a-msg">Message <span class="opt-l">(facultatif)</span></label><textarea id="a-msg" maxlength="1000" placeholder="Parlez-nous de vous, de votre façon de travailler…"></textarea></div>
+
+      <div class="field" id="g-consent">
+        <label class="check" for="a-consent"><input type="checkbox" id="a-consent">
+          <span>J'accepte que SKINCAR utilise ces informations pour étudier ma candidature et me contacter à ce sujet. <a href="index.html#confidentialite">Politique de confidentialité</a></span></label>
+      </div>
+      <div class="honey" aria-hidden="true"><label>Ne pas remplir<input id="a-website" type="text" tabindex="-1" autocomplete="off"></label></div>
+
+      <p class="err" id="a-err" role="alert"></p>
+      <button class="btn btn-main btn-block" id="a-send" type="submit">Envoyer ma candidature</button>
+    </form>
+  </section>
+
+  <section class="done" id="done" hidden>
+    <div class="tick" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+    <h2>Merci, votre candidature est envoyée</h2>
+    <p>SKINCAR vous contacte par téléphone ou sur WhatsApp pour faire connaissance. Gardez votre téléphone à portée de main.</p>
+    <a class="btn btn-main" href="index.html">Retour au site</a>
+  </section>
+</main>
+
+<script src="config.js"></script>
+<script src="data.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var W = window.WASHGO;
+  function val(id) { return ($(id).value || "").trim(); }
+  if (W) $("demo").hidden = !!W.live;
+
+  $("f-app").addEventListener("input", function () { $("a-err").textContent = ""; });
+
+  $("f-app").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var err = $("a-err");
+    var services = Array.prototype.slice.call(document.querySelectorAll('input[name="a-serv"]:checked')).map(function (c) { return c.value; });
+    var cities = Array.prototype.slice.call(document.querySelectorAll('input[name="a-city"]:checked')).map(function (c) { return c.value; });
+    var exp = document.querySelector('input[name="a-exp"]:checked');
+    var checks = [
+      ["g-name", val("a-name").length >= 2, "a-name"],
+      ["g-phone", val("a-phone").replace(/\D/g, "").length >= 9, "a-phone"],
+      ["g-city", cities.length > 0, null],
+      ["g-services", services.length > 0, null],
+      ["g-exp", !!exp, null],
+      ["g-eq", !!document.querySelector('input[name="a-eq"]:checked'), null],
+      ["g-consent", $("a-consent").checked, "a-consent"]
+    ];
+    var bad = checks.filter(function (c) { return !c[1]; });
+    checks.forEach(function (c) { $(c[0]).classList.toggle("bad", !c[1]); });
+    var mail = val("a-email");
+    if (mail && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(mail)) { err.textContent = "L'email n'est pas valide (ou laissez-le vide)."; $("a-email").focus(); return; }
+    if (bad.length) {
+      err.textContent = bad.length === 1 ? "Il manque une information (en rouge)." : "Il manque " + bad.length + " informations (en rouge).";
+      try { $(bad[0][0]).scrollIntoView({ block: "center" }); if (bad[0][2]) $(bad[0][2]).focus(); } catch (x) {}
+      return;
+    }
+    if (val("a-website")) { showDone(); return; }                     // robot
+    if (!W || !W.createApplication) { err.textContent = "Le service est indisponible pour le moment. Réessayez dans quelques minutes."; return; }
+
+    var btn = $("a-send"); btn.disabled = true; btn.textContent = "Envoi…";
+    W.createApplication({
+      name: val("a-name"), phone: val("a-phone"), email: mail || null, city: cities[0], cities: cities,
+      zones: null, services: services, experience: exp ? exp.value : null,
+      has_equipment: (document.querySelector('input[name="a-eq"]:checked') || {}).value === "oui", has_water: false, has_transport: false,
+      availability: val("a-avail") || null, message: val("a-msg") || null, consent_at: new Date().toISOString()
+    }).then(showDone).catch(function (x) {
+      btn.disabled = false; btn.textContent = "Envoyer ma candidature";
+      var m = String((x && x.message) || "");
+      err.textContent = x && x.code === "no_table"
+        ? "Les candidatures ne sont pas encore activées sur le site. Réessayez plus tard."
+        : /Failed to fetch|NetworkError|network/i.test(m)
+          ? "Pas de connexion internet. Vérifiez la connexion et réessayez."
+          : "L'envoi a échoué. Réessayez dans un instant." + (m ? " (détail : " + m.trim() + ")" : "");
+      try { console.error("Candidature refusée :", x); } catch (y) {}
+    });
+  });
+
+  function showDone() {
+    $("formbox").hidden = true; $("done").hidden = false;
+    try { $("done").scrollIntoView({ block: "center" }); } catch (x) {}
+  }
+})();
+</script>
+</body>
+</html>

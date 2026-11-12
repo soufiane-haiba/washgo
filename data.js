@@ -1,4 +1,4 @@
-// Couche de données de WASHGO: Supabase si config.js est rempli, sinon mode démo (navigateur).
+// Couche de données de SKINCAR: Supabase si config.js est rempli, sinon mode démo (navigateur).
 (function () {
   var cfg = window.WASHGO_CONFIG || {};
   var live = !!(cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY && window.supabase && window.supabase.createClient);
@@ -89,12 +89,19 @@
 
   var api = { live: live, refCode: refCode };
 
+  // mode démo : même tarif que la base (fonction default_price de setup.sql)
+  function demoPrice(vehicle, service) {
+    var big = vehicle === "SUV / 4x4" || vehicle === "Utilitaire";
+    var t = big ? { "Lavage extérieur": 99, "Lavage intérieur": 120, "Lavage complet": 199, "Nettoyage premium": 349 }
+                : { "Lavage extérieur": 80, "Lavage intérieur": 100, "Lavage complet": 120, "Nettoyage premium": 180 };
+    return t[service] != null ? t[service] : null;
+  }
   api.createBooking = function (fields) {
     var row = Object.assign({}, fields, { ref: refCode() });
     if (live) return insertWithRetry(row, 3);
     var s = load();
     s.bookings.unshift(Object.assign({ id: uuid(), created_at: new Date().toISOString(), status: "New", professional_id: null,
-      price: null, admin_notes: null, completed_at: null, commission_settled: false }, row));
+      admin_notes: null, completed_at: null, commission_settled: false }, row, { price: demoPrice(row.vehicle, row.service) }));
     save();
     return Promise.resolve(row.ref);
   };
@@ -176,8 +183,19 @@
       save();
       return Promise.resolve();
     }
-    if (p.id) { var id = p.id, body = Object.assign({}, p); delete body.id; return sb.from("professionals").update(body).eq("id", id).then(ok); }
-    return sb.from("professionals").insert(p).then(ok);
+    // si la base n'a pas encore la colonne « cities » (setup.sql pas relancé), on enregistre sans elle
+    function run(row) {
+      if (row.id) { var id = row.id, body = Object.assign({}, row); delete body.id; return sb.from("professionals").update(body).eq("id", id); }
+      return sb.from("professionals").insert(row);
+    }
+    var partial = false;
+    return run(p).then(function (r) {
+      if (r.error && /cities/i.test(r.error.message || "") && "cities" in p) {
+        partial = (p.cities || []).length > 1;                   // une seule ville a pu être enregistrée
+        var p2 = Object.assign({}, p); delete p2.cities; return run(p2);
+      }
+      return r;
+    }).then(ok).then(function () { return { partial: partial }; });
   };
   api.deletePro = function (id) {
     if (!live) {
@@ -190,6 +208,57 @@
     return sb.from("professionals").delete().eq("id", id).then(ok);
   };
   api.resetDemo = function () { mem = seed(); save(); return Promise.resolve(); };
+
+  // ---------- candidatures des professionnels (page rejoindre.html) ----------
+  var APP_KEY = "washgo-demo-applications-v1";
+  function demoApps() { try { return JSON.parse(localStorage.getItem(APP_KEY)) || []; } catch (e) { return []; } }
+  function demoSaveApps(a) { try { localStorage.setItem(APP_KEY, JSON.stringify(a)); } catch (e) {} }
+
+  api.createApplication = function (fields) {
+    var row = Object.assign({}, fields, { status: "new" });
+    if (!live) {
+      var a = demoApps();
+      a.unshift(Object.assign({ id: uuid(), created_at: new Date().toISOString(), admin_notes: null }, row));
+      demoSaveApps(a);
+      return Promise.resolve();
+    }
+    // insertion seule : le public ne peut jamais relire les candidatures.
+    // Si la base n'a pas encore les derniers changements de setup.sql, on réessaie sans les champs récents.
+    function attempt(r0, left) {
+      return sb.from("applications").insert(r0).then(function (r) {
+        if (!r.error) return;
+        var m = (r.error.message || "") + " " + (r.error.details || "");
+        if (/relation .*applications|applications.* does not exist|schema cache.*applications/i.test(m) && !/column/i.test(m)) {
+          var e0 = new Error(m); e0.code = "no_table"; throw e0;
+        }
+        if (left > 0 && /cities/i.test(m) && "cities" in r0) { var a = Object.assign({}, r0); delete a.cities; return attempt(a, left - 1); }
+        if (left > 0 && /experience/i.test(m) && r0.experience) { var b = Object.assign({}, r0, { experience: null }); return attempt(b, left - 1); }
+        var e = new Error(m); e.code = r.error.code; throw e;
+      });
+    }
+    return attempt(row, 3);
+  };
+  api.listApplications = function () {
+    if (!live) return Promise.resolve(clone(demoApps()));
+    return sb.from("applications").select("*").order("created_at", { ascending: false }).limit(500).then(ok);
+  };
+  api.updateApplication = function (id, patch) {
+    if (!live) {
+      var a = demoApps();
+      a.forEach(function (x) { if (x.id === id) Object.assign(x, patch); });
+      demoSaveApps(a);
+      return Promise.resolve();
+    }
+    return sb.from("applications").update(patch).eq("id", id).select("id").then(function (r) {
+      var rows = ok(r); if (!rows || !rows.length) throw new Error("not_updated");
+    });
+  };
+  api.deleteApplication = function (id) {
+    if (!live) { demoSaveApps(demoApps().filter(function (x) { return x.id !== id; })); return Promise.resolve(); }
+    return sb.from("applications").delete().eq("id", id).select("id").then(function (r) {
+      var rows = ok(r); if (!rows || !rows.length) throw new Error("not_deleted");
+    });
+  };
 
   // ---------- comptes clients ----------
   // Le profil (nom, téléphone, ville, véhicule, adresse) est enregistré une fois,
@@ -298,12 +367,16 @@
   };
 
   // Mot de passe oublié : envoie un lien par email, qui ramène sur compte.html
-  cust.resetPassword = function (email) {
+  cust.resetPassword = function (email, page) {
     if (!live) return Promise.resolve();
-    return sb.auth.resetPasswordForEmail(email, { redirectTo: pageUrl("compte.html") }).then(function (r) { if (r.error) throw r.error; });
+    return sb.auth.resetPasswordForEmail(email, { redirectTo: pageUrl(page || "compte.html") }).then(function (r) { if (r.error) throw r.error; });
   };
   cust.updatePassword = function (password) {
-    if (!live) return Promise.resolve();
+    if (!live) {
+      var a = demoAccounts(), cur = demoCurrent();
+      if (cur && a[cur]) { a[cur].password = password; demoSaveAccounts(a); }
+      return Promise.resolve();
+    }
     return sb.auth.updateUser({ password: password }).then(function (r) { if (r.error) throw r.error; });
   };
   // Le lien "nouveau mot de passe" est lu dès le chargement, avant que Supabase nettoie l'adresse

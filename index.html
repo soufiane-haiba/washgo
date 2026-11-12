@@ -3,8 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%23B7F36B%27/%3E%3Cpath d=%27M32 10C32 10 16 30 16 41a16 16 0 0 0 32 0C48 30 32 10 32 10Z%27 fill=%27%23101713%27/%3E%3C/svg%3E">
+
 <meta name="claude:viewport-fit-sides" content="cover">
-<title>WASHGO Mobile</title>
+<title>SKINCAR Mobile</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -540,12 +543,142 @@ footer h3 { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; c
 .swipe-hint { display: none; align-items: center; gap: 8px; margin: 14px 0 0; font-size: 13px; color: var(--muted); }
 .swipe-hint i { display: inline-block; width: 22px; height: 2px; background: var(--lime); border-radius: 2px; position: relative; }
 .swipe-hint i::after { content: ""; position: absolute; right: -1px; top: -3px; width: 7px; height: 7px; border-top: 2px solid var(--lime); border-right: 2px solid var(--lime); transform: rotate(45deg); }
+
+/* client connecté : icône du compte et son menu */
+.acct-wrap { position: relative; }
+.acct-ic { width: 46px; height: 46px; border-radius: 50%; border: 1.5px solid #3a3a3a; background: #1a1a1a; display: grid; place-items: center;
+  cursor: pointer; padding: 0; transition: border-color .2s ease, background .2s ease; }
+.acct-ic svg { width: 22px; height: 22px; fill: none; stroke: #f2f2f2; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.acct-ic:hover { border-color: var(--lime); }
+.acct-ic[aria-expanded="true"] { background: var(--lime); border-color: var(--lime); }
+.acct-ic[aria-expanded="true"] svg { stroke: #000; }
+.acct-menu { position: absolute; right: 0; top: calc(100% + 10px); z-index: 50; width: min(290px, calc(100vw - 32px)); background: #fff; color: #111;
+  border-radius: 16px; box-shadow: 0 22px 50px rgba(0,0,0,.45), 0 0 0 1px rgba(0,0,0,.06); padding: 8px; display: grid; gap: 2px;
+  transform-origin: top right; animation: amIn .18s cubic-bezier(.2,.8,.2,1); }
+.acct-menu[hidden] { display: none; }
+@keyframes amIn { from { opacity: 0; transform: scale(.96) translateY(-4px); } to { opacity: 1; transform: none; } }
+.am-head { padding: 10px 12px 12px; border-bottom: 1px solid #eee; margin-bottom: 4px; display: grid; gap: 2px; min-width: 0; }
+.am-head b { font-family: var(--font-display); font-size: 16px; }
+.am-head span { font-size: 13px; color: #666; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.acct-menu a, .acct-menu button { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: transparent; border: 0; border-radius: 10px;
+  padding: 11px 12px; font: 600 15px var(--font-body); color: #111; cursor: pointer; text-decoration: none; }
+.acct-menu a:hover, .acct-menu button:hover, .acct-menu a:focus-visible, .acct-menu button:focus-visible { background: #f2f2f2; }
+.acct-menu svg { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.acct-menu .am-out { color: #c62d3f; border-top: 1px solid #eee; border-radius: 0 0 10px 10px; margin-top: 4px; padding-top: 13px; }
+.acct-menu .am-out:hover { background: #fdf0f1; }
+@media (max-width: 420px) { .acct-ic { width: 40px; height: 40px; } .acct-ic svg { width: 20px; height: 20px; } }
+@media (prefers-reduced-motion: reduce) { .acct-menu { animation: none; } }
+
+/* formulaire de réservation : carte claire sur fond noir (comme la réservation rapide de l'accueil) */
+#reserver .book, #reserver .done {
+  --fg: #111111; --muted: #555555; --line: #d6d6d6; --surface: #ffffff; --bg: #f2f2f2; --field: #f5f5f5;
+  --sel-line: #111111; --sel-bg: #e9fbd0; --link: #111111; --focus: #111111; --bad: #c62d3f;
+  --warn-bg: #fff4d6; --warn-fg: #6b4a00; --btn-bg: #111111; --btn-fg: #B7F36B; --tag: #3a6a0a;
+  background: #ffffff; color: #111111; border: 0; color-scheme: light;
+  box-shadow: 0 30px 70px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.06);
+}
+#reserver .book legend, #reserver .book label { color: #111; }
+#reserver .opt span { background: var(--field); border-color: #e2e2e2; }
+#reserver .opt:hover span { border-color: #111; }
+#reserver .opt input:checked + span { background: var(--sel-bg); border-color: #111; box-shadow: 0 0 0 1px #111 inset; }
+#reserver .opt small { color: #666; }
+#reserver input[type="text"], #reserver input[type="tel"], #reserver input[type="date"], #reserver select, #reserver textarea {
+  background: var(--field); border-color: #e2e2e2; color: #111; }
+#reserver input:focus, #reserver select:focus, #reserver textarea:focus { border-color: #111; background: #fff; }
+#reserver .step-title b { background: #111; color: var(--lime); }
+#reserver .acct { background: #f3fde6; border-color: #b9e48a; color: #111; }
+#reserver .acct.guest { background: #f7f7f7; border-color: #d6d6d6; }
+#reserver .acct a, #reserver .linkbtn { color: #111; }
+#reserver #map { border-color: #e2e2e2; }
+#reserver .btn-line { color: #111; border-color: #d6d6d6; background: #fff; }
+#reserver #send { background: #111; color: var(--lime); }
+#reserver .done .refbox { background: #e9fbd0; color: #111; }
+#reserver .small, #reserver .err:empty { color: #666; }
+
+/* « Quel service ? » : les 4 choix côte à côte */
+#g-service .opts.cols { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+#g-service .opt span { height: 100%; min-height: 64px; }
+@media (max-width: 620px) { #g-service .opts.cols { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* pied de page : bandeau « Travailler avec nous » */
+.f-join { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 24px; margin-top: 36px;
+  padding: 20px 24px; border-radius: 18px; border: 1px solid rgba(183,243,107,.35);
+  background: radial-gradient(120% 140% at 0% 0%, rgba(183,243,107,.14), transparent 60%), #0c0c0c; }
+.f-join b { display: block; font-family: var(--font-display); font-size: 19px; color: #f2f2f2; }
+.f-join span { color: var(--hero-muted); font-size: 14px; }
+.f-join .btn span { color: inherit; font-size: inherit; }
+@media (max-width: 760px) { .f-join { padding: 18px; } .f-join .btn { width: 100%; } }
+
+/* en-tête : bouton « Devenir partenaire » */
+.btn-partner { background: rgba(183,243,107,.08); color: var(--lime); border: 1.5px solid rgba(183,243,107,.55); gap: 8px; }
+.btn-partner svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.btn-partner:hover { background: rgba(183,243,107,.16); border-color: var(--lime); }
+@media (max-width: 1320px) { .nav { gap: 4px 16px; } .nav a { font-size: 14px; } }
+@media (max-width: 1200px) { .nav a[href="#zones"] { display: none; } }
+@media (max-width: 760px) { .btn-partner { display: none; } }
+/* menu du téléphone : lien partenaire bien visible */
+.m-nav > a.m-partner { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; padding: 14px 16px;
+  border: 1.5px solid rgba(183,243,107,.5); border-radius: 14px; background: rgba(183,243,107,.08); }
+.m-partner b { display: block; color: var(--lime); font: 700 17px var(--font-display); }
+.m-partner small { display: block; color: #b0b0b0; font: 400 13px var(--font-body); }
+.m-partner i { font-style: normal; color: var(--lime); font-size: 20px; }
+
+/* ===== téléphone : finitions (sensation d'application) ===== */
+html { -webkit-text-size-adjust: 100%; }
+a, button, label, summary, .veh, .opt { -webkit-tap-highlight-color: transparent; }
+section, #reserver, #tarifs, #faq { scroll-margin-top: 78px; }
+.btn:active { transform: scale(.97); }
+.opt:active span { transform: scale(.98); }
+.fx .veh.rv.in:active, .veh:active { transform: scale(.97); }
+
+@media (max-width: 760px) {
+  /* accueil : l'illustration juste après le titre, puis la réservation rapide */
+  .hero .wrap { grid-template-areas: "text" "scene" "quick"; }
+  .hero .scene { aspect-ratio: 4 / 3; border-radius: 20px; }
+  .perks { flex-wrap: nowrap; overflow-x: auto; margin-inline: -16px; padding: 2px 16px 4px; scrollbar-width: none; }
+  .perks::-webkit-scrollbar { display: none; }
+  .perks li { flex: none; }
+  .quick { border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,.35); }
+
+  /* pourquoi : cartes à faire glisser */
+  .feats { display: grid; grid-auto-flow: column; grid-template-columns: none; grid-auto-columns: 72%; gap: 12px;
+    overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 16px; margin-inline: -16px; padding: 4px 16px 14px; scrollbar-width: none; }
+  .feats::-webkit-scrollbar { display: none; }
+  .feat { scroll-snap-align: start; padding: 20px 18px; }
+  .feat:last-child:nth-child(odd) { grid-column: auto; }
+  .feat h3 { font-size: 16px; }
+  .feat p { font-size: 14px; }
+
+  /* comment ça marche : frise verticale */
+  .steps { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .steps li { position: relative; background: transparent; border: 0; border-radius: 0; padding: 0 0 26px 60px; min-height: 64px; }
+  .steps li::before { position: absolute; left: 0; top: 0; margin: 0; width: 42px; height: 42px; box-shadow: 0 0 0 4px var(--bg); }
+  .steps li::after { content: ""; position: absolute; left: 20px; top: 46px; bottom: 4px; width: 2px; border-radius: 2px;
+    background: linear-gradient(var(--lime), rgba(183,243,107,.15)); }
+  .steps li:last-child { padding-bottom: 0; }
+  .steps li:last-child::after { display: none; }
+  .steps h3 { font-size: 17px; margin: 8px 0 4px; }
+  .steps p { font-size: 14px; }
+
+  /* zones : plus compact */
+  .zone { padding: 14px 16px; }
+  .zone h3 { font-size: 17px; }
+  .zone p { font-size: 13.5px; }
+
+  /* pied de page : informations légales sur une ligne */
+  .f-grid > .legal-links { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; gap: 6px 18px; }
+  .f-grid > .legal-links h3 { flex-basis: 100%; }
+}
+@media (max-width: 360px) {
+  .feats { grid-template-columns: none; grid-auto-columns: 84%; }
+  .steps { grid-template-columns: minmax(0, 1fr); }
+}
 </style>
 <script src="theme.js"></script>
 </head>
 <body>
 
-<!-- Illustrations des véhicules (dessinées pour WASHGO, réutilisées dans toute la page) -->
+<!-- Illustrations des véhicules (dessinées pour SKINCAR, réutilisées dans toute la page) -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
   <defs>
     <linearGradient id="wg-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".55" stop-color="#dcdcdc"/><stop offset="1" stop-color="#a8a8a8"/></linearGradient>
@@ -619,22 +752,38 @@ footer h3 { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; c
 
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="#haut" aria-label="WASHGO Mobile, accueil" data-ta="aria-label:aria_home">
+    <a class="brand" href="#haut" aria-label="SKINCAR Mobile, accueil" data-ta="aria-label:aria_home">
       <span class="mark" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 28 28"><path d="M14 2C14 2 5 12 5 18a9 9 0 0 0 18 0C23 12 14 2 14 2Z" fill="#101713"/></svg></span>
-      <span class="word">WASHGO<small>MOBILE</small></span>
+      <span class="word">SKINCAR<small>MOBILE</small></span>
     </a>
     <nav class="nav" aria-label="Menu">
       <a href="#tarifs">Tarifs</a><a href="#pourquoi">Pourquoi nous</a><a href="#comment">Comment ça marche</a><a href="#zones">Zones</a><a href="#faq">FAQ</a>
     </nav>
     <div class="top-actions">
+      <a class="btn btn-partner" href="rejoindre.html" id="nav-partner">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>Devenir partenaire</a>
       <a class="btn btn-acct" href="compte.html" id="nav-acct">Mon compte</a>
       <a class="btn btn-lime" href="#reserver" data-t="nav_book">Réserver</a>
+      <!-- client connecté : icône du compte avec son menu -->
+      <div class="acct-wrap" id="acct-wrap" hidden>
+        <button class="acct-ic" id="acct-ic" type="button" aria-label="Menu du compte" aria-expanded="false" aria-controls="acct-menu" aria-haspopup="menu">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>
+        </button>
+        <div class="acct-menu" id="acct-menu" role="menu" hidden>
+          <div class="am-head"><b id="am-name">Mon compte</b><span id="am-mail"></span></div>
+          <a role="menuitem" href="compte.html#infos"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>Informations du compte</a>
+          <a role="menuitem" href="compte.html"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Mes réservations</a>
+          <a role="menuitem" href="compte.html#parametres"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>Paramètres</a>
+          <button type="button" role="menuitem" class="am-out" id="am-out"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Se déconnecter</button>
+        </div>
+      </div>
       <button class="menu-btn" id="menu-btn" type="button" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="m-nav"><span></span><span></span><span></span></button>
     </div>
   </div>
   <!-- menu du téléphone -->
   <nav class="m-nav" id="m-nav" aria-label="Menu" hidden>
     <a href="#tarifs">Tarifs</a><a href="#pourquoi">Pourquoi nous</a><a href="#comment">Comment ça marche</a><a href="#zones">Zones</a><a href="#faq">FAQ</a>
+    <a class="m-partner" href="rejoindre.html"><span><b>Devenir partenaire</b><small>Vous lavez des voitures ? Travaillez avec nous</small></span><i aria-hidden="true">→</i></a>
     <div class="m-nav-acts"><a class="btn btn-ghost" href="compte.html">Mon compte</a><a class="btn btn-lime" href="#reserver">Réserver un lavage</a></div>
   </nav>
 </header>
@@ -677,11 +826,11 @@ footer h3 { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; c
         <button class="btn btn-main btn-block" type="submit" data-t="q_btn">Réserver maintenant</button>
       </form>
 
-      <div class="scene" id="scene" role="img" aria-label="Illustration : une voiture lavée sur place par WASHGO, avec jet d'eau et mousse" data-ta="aria-label:scene_aria">
+      <div class="scene" id="scene" role="img" aria-label="Illustration : une voiture lavée sur place par SKINCAR, avec jet d'eau et mousse" data-ta="aria-label:scene_aria">
         <div class="sc-light sc-light-a" aria-hidden="true"></div>
         <div class="sc-light sc-light-b" aria-hidden="true"></div>
         <div class="sc-floor" aria-hidden="true"></div>
-        <div class="sc-word" aria-hidden="true">WASHGO<span>MOBILE</span></div>
+        <div class="sc-word" aria-hidden="true">SKINCAR<span>MOBILE</span></div>
         <svg class="sc-car" id="sc-car" viewBox="0 0 1000 560" aria-hidden="true" focusable="false">
           <defs>
             <linearGradient id="hc-body" x1="0" y1="0" x2="0" y2="1">
@@ -784,7 +933,7 @@ footer h3 { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; c
 
   <div class="wrap">
     <section id="pourquoi">
-      <div class="eyebrow">Pourquoi WASHGO</div>
+      <div class="eyebrow">Pourquoi SKINCAR</div>
       <h2>Le lavage vient à vous</h2>
       <p class="lead">Pas de file d'attente, pas de déplacement. Un professionnel lave votre voiture là où elle est garée.</p>
       <div class="feats">
@@ -840,7 +989,7 @@ footer h3 { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; c
       <h2 data-t="h_h2">De votre demande à la voiture propre</h2>
       <ol class="steps">
         <li><h3 data-t="h1t">Vous réservez</h3><p data-t="h1d">Ville, service, véhicule, adresse, jour et heure.</p></li>
-        <li><h3 data-t="h2t">WASHGO confirme</h3><p data-t="h2d">Nous choisissons le professionnel disponible dans votre zone.</p></li>
+        <li><h3 data-t="h2t">SKINCAR confirme</h3><p data-t="h2d">Nous choisissons le professionnel disponible dans votre zone.</p></li>
         <li><h3 data-t="h3t">Le pro se déplace</h3><p data-t="h3d">Il arrive avec son eau et son matériel et lave sur place.</p></li>
         <li><h3 data-t="h4t">Vous payez le pro</h3><p data-t="h4d">Le paiement se fait directement avec le professionnel, une fois le lavage terminé.</p></li>
       </ol>
@@ -861,8 +1010,8 @@ footer h3 { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; c
       <div class="eyebrow">FAQ</div>
       <h2>Questions fréquentes</h2>
       <div class="faq">
-        <details><summary>Comment se passe un lavage WASHGO ?</summary>
-          <p>Vous réservez en ligne. WASHGO choisit un professionnel disponible dans votre zone et vous contacte pour confirmer. Le professionnel vient à l'adresse indiquée et lave la voiture sur place.</p></details>
+        <details><summary>Comment se passe un lavage SKINCAR ?</summary>
+          <p>Vous réservez en ligne. SKINCAR choisit un professionnel disponible dans votre zone et vous contacte pour confirmer. Le professionnel vient à l'adresse indiquée et lave la voiture sur place.</p></details>
         <details><summary>Dois-je fournir de l'eau ou des produits ?</summary>
           <p>Non. Le professionnel vient avec son eau, ses produits et son matériel.</p></details>
         <details><summary>Où intervenez-vous ?</summary>
@@ -879,7 +1028,7 @@ footer h3 { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; c
     <section id="reserver">
       <div class="eyebrow" data-t="b_eyebrow">Réservation</div>
       <h2 data-t="q_title">Réservez votre lavage</h2>
-      <p class="lead" data-t="b_lead">Remplissez le formulaire. WASHGO reçoit votre demande et vous contacte pour confirmer.</p>
+      <p class="lead" data-t="b_lead">Remplissez le formulaire. SKINCAR reçoit votre demande et vous contacte pour confirmer.</p>
 
       <form class="book" id="form" novalidate>
         <div class="acct" id="acct" hidden></div>
@@ -958,19 +1107,18 @@ footer h3 { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; c
         </div>
 
         <div class="field" id="g-consent">
-          <label class="check" for="consent"><input type="checkbox" id="consent"><span data-t="consent">J'accepte que WASHGO utilise ces informations pour traiter ma réservation et me contacter à ce sujet. <a href="#confidentialite">Politique de confidentialité</a></span></label>
+          <label class="check" for="consent"><input type="checkbox" id="consent"><span data-t="consent">J'accepte que SKINCAR utilise ces informations pour traiter ma réservation et me contacter à ce sujet. <a href="#confidentialite">Politique de confidentialité</a></span></label>
         </div>
 
         <div class="honey" aria-hidden="true"><label>Ne pas remplir<input id="website" type="text" tabindex="-1" autocomplete="off"></label></div>
 
         <p class="err" id="err" role="alert"></p>
         <button class="btn btn-main btn-block" id="send" type="submit" data-t="send">Envoyer ma réservation</button>
-        <p class="small" data-t="b_note">Nous ne confirmons ni le rendez-vous ni le prix final avant d'avoir trouvé un professionnel disponible.</p>
       </form>
 
       <div class="done" id="done" hidden>
         <h3 data-t="d_title">Merci !</h3>
-        <p data-t="d_text">Votre demande a bien été reçue. WASHGO vous contactera pour confirmer votre réservation.</p>
+        <p data-t="d_text">Votre demande a bien été reçue. SKINCAR vous contactera pour confirmer votre réservation.</p>
         <div class="refbox" id="ref"></div>
         <p class="small" data-t="d_keep">Gardez ce numéro de réservation, il vous sera utile si vous nous contactez.</p>
         <button class="btn btn-main" id="again" type="button" data-t="d_again">Nouvelle réservation</button>
@@ -996,13 +1144,13 @@ footer h3 { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; c
     <div class="wrap">
       <div class="f-grid">
         <div class="f-brand">
-          <span class="f-logo"><strong>WASHGO</strong> <span class="lime">MOBILE</span></span>
+          <span class="f-logo"><strong>SKINCAR</strong> <span class="lime">MOBILE</span></span>
           <p><bdi>Your Car. Our Care.</bdi></p>
           <p>Lavage de voiture à domicile, avec un professionnel qui vient chez vous.</p>
         </div>
         <nav aria-label="Pages">
           <h3>Le site</h3>
-          <a href="#tarifs">Tarifs</a><a href="#comment">Comment ça marche</a><a href="#faq">FAQ</a><a href="#reserver">Réserver</a><a href="compte.html">Mon compte</a>
+          <a href="#tarifs">Tarifs</a><a href="#comment">Comment ça marche</a><a href="#faq">FAQ</a><a href="#reserver">Réserver</a><a href="compte.html">Mon compte</a><a href="rejoindre.html">Devenir partenaire</a>
         </nav>
         <div>
           <h3>Zones</h3>
@@ -1013,7 +1161,11 @@ footer h3 { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; c
           <a href="#confidentialite" data-t="f_priv">Politique de confidentialité</a><a href="#mentions-legales" data-t="f_ment">Mentions légales</a>
         </nav>
       </div>
-      <p class="f-copy">© <span id="year">2026</span> WASHGO Mobile</p>
+      <div class="f-join">
+        <div><b>Vous lavez des voitures&nbsp;?</b><span>Rejoignez SKINCAR et recevez des clients près de chez vous.</span></div>
+        <a class="btn btn-lime" href="rejoindre.html">Travailler avec nous <span aria-hidden="true">→</span></a>
+      </div>
+      <p class="f-copy">© <span id="year">2026</span> SKINCAR Mobile</p>
     </div>
   </footer>
 </main>
@@ -1257,15 +1409,32 @@ footer h3 { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; c
     if (meUser) {
       box.className = "acct";
       box.innerHTML = '<span>Bonjour <b></b>, vos informations sont déjà remplies. Choisissez le service, le jour et l\'heure.</span>' +
-        '<span class="acct-links"><a href="compte.html">Mon compte</a><button type="button" class="linkbtn" id="acct-out">Se déconnecter</button></span>';
+        '<span class="acct-links"><a href="compte.html#infos">Modifier mes informations</a></span>';
       box.querySelector("b").textContent = (me && me.full_name) || meUser.email;
-      $("acct-out").addEventListener("click", function () { C.signOut().then(function () { location.reload(); }); });
+      // en-tête : l'icône du compte remplace « Mon compte »
+      $("nav-acct").hidden = true; $("acct-wrap").hidden = false;
+      $("am-name").textContent = (me && me.full_name) || "Mon compte";
+      $("am-mail").textContent = meUser.email || "";
     } else {
       box.className = "acct guest";
       box.innerHTML = '<span>Avec un compte, vos informations se remplissent toutes seules à chaque réservation.</span>' +
         '<span class="acct-links"><a href="compte.html?connexion&amp;retour=reserver">Se connecter</a><a href="compte.html">Créer un compte</a></span>';
     }
   }
+
+  // menu du compte (icône en haut à droite)
+  function acctMenu(open) {
+    $("acct-menu").hidden = !open;
+    $("acct-ic").setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  $("acct-ic").addEventListener("click", function (e) { e.stopPropagation(); acctMenu($("acct-menu").hidden); });
+  document.addEventListener("click", function (e) { if (!$("acct-menu").hidden && !e.target.closest("#acct-wrap")) acctMenu(false); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") acctMenu(false); });
+  $("am-out").addEventListener("click", function () {
+    acctMenu(false);
+    if (C) C.signOut().then(function () { location.reload(); });
+  });
+
   if (C) {
     C.current().then(function (u) {
       meUser = u;
@@ -1285,7 +1454,7 @@ footer h3 { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; c
   var vehs = Array.prototype.slice.call(document.querySelectorAll(".veh"));
   var current = "Citadine";
 
-  // Prix (DH) selon le véhicule — modifiez-les ici
+  // Prix (DH) selon le véhicule — modifiez-les ici ET dans setup.sql (fonction default_price), qui met ce prix automatiquement dans l'admin
   var PRICES = {
     "Citadine":   { "Lavage extérieur": 80, "Lavage intérieur": 100, "Lavage complet": 120, "Nettoyage premium": 180 },
     "Berline":    { "Lavage extérieur": 80, "Lavage intérieur": 100, "Lavage complet": 120, "Nettoyage premium": 180 },

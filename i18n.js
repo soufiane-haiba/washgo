@@ -4,7 +4,7 @@
 window.WASHGO_I18N = { T: {
   fr: {
     lang_label: "Langue",
-    aria_home: "WASHGO Mobile, accueil",
+    aria_home: "SKINCAR Mobile, accueil",
     nav_book: "Réserver",
     h1: "Votre voiture, votre adresse, <em>notre professionnel.</em>",
     sub: "Lavage professionnel à domicile. Le professionnel vient chez vous, au bureau ou au parking, avec son eau et son matériel.",
@@ -16,10 +16,10 @@ window.WASHGO_I18N = { T: {
     date: "Date", time: "Heure", choose: "Choisir",
     q_btn: "Réserver maintenant",
     v_cit: "Citadine", v_ber: "Berline", v_suv: "SUV / 4x4", v_uti: "Utilitaire",
-    scene_aria: "Illustration : une voiture lavée sur place par WASHGO, avec jet d'eau et mousse",
-    scene_alt: "Un professionnel WASHGO lave une voiture",
+    scene_aria: "Illustration : une voiture lavée sur place par SKINCAR, avec jet d'eau et mousse",
+    scene_alt: "Un professionnel SKINCAR lave une voiture",
     s_eyebrow: "Nos services", s_h2: "Quatre niveaux de propreté",
-    s_lead: "Le prix indiqué est un tarif de départ. Le prix final vous est confirmé quand WASHGO a trouvé le professionnel disponible.",
+    s_lead: "Le prix indiqué est un tarif de départ. Le prix final vous est confirmé quand SKINCAR a trouvé le professionnel disponible.",
     sv1: "Lavage extérieur", sv1d: "Nettoyage carrosserie et vitres",
     sv2: "Lavage intérieur", sv2d: "Aspiration et nettoyage intérieur",
     sv3: "Lavage complet", sv3d: "Intérieur + extérieur",
@@ -29,14 +29,14 @@ window.WASHGO_I18N = { T: {
     s_fine: "Tarifs indicatifs, à ajuster selon le véhicule et son état.",
     h_eyebrow: "Comment ça marche", h_h2: "De votre demande à la voiture propre",
     h1t: "Vous réservez", h1d: "Ville, service, véhicule, adresse, jour et heure.",
-    h2t: "WASHGO confirme", h2d: "Nous choisissons le professionnel disponible dans votre zone.",
+    h2t: "SKINCAR confirme", h2d: "Nous choisissons le professionnel disponible dans votre zone.",
     h3t: "Le pro se déplace", h3d: "Il arrive avec son eau et son matériel et lave sur place.",
     h4t: "Vous payez le pro", h4d: "Le paiement se fait directement avec le professionnel, une fois le lavage terminé.",
     z_eyebrow: "Zones", z_h2: "Rabat, Salé, Salé Al Jadida",
     z_lead: "Nous démarrons à Rabat et nous étendons la zone au fur et à mesure. Votre quartier n'est pas cité ? Indiquez-le dans le formulaire, nous vérifions la disponibilité.",
     z_rabat: "Agdal, Hay Riad, Souissi, Océan, Hassan", z_sale: "Tabriquet, Hay Salam, Bettana", z_salej: "Tous les quartiers de Salé Al Jadida",
     b_eyebrow: "Réservation",
-    b_lead: "Remplissez le formulaire. WASHGO reçoit votre demande et vous contacte pour confirmer.",
+    b_lead: "Remplissez le formulaire. SKINCAR reçoit votre demande et vous contacte pour confirmer.",
     demo: "Mode démo : cette réservation reste dans ce navigateur et n'est envoyée à personne.",
     l_city: "Où voulez-vous le lavage ?", l_service: "Quel service ?", l_vehicle: "Type de véhicule", l_address: "Adresse",
     ph_address: "Ex. Agdal, rue Oued Fès, parking de l'immeuble",
@@ -50,14 +50,14 @@ window.WASHGO_I18N = { T: {
     l_name: "Votre nom (facultatif)", ph_name: "Ex. Youssef Benali",
     l_phone: "Téléphone", ph_phone: "Ex. 06 12 34 56 78",
     l_notes: "Notes (facultatif)", ph_notes: "Ex. Code de la résidence, emplacement de la voiture, état particulier",
-    consent: "J'accepte que WASHGO utilise ces informations pour traiter ma réservation et me contacter à ce sujet. <a href=\"#confidentialite\">Politique de confidentialité</a>",
+    consent: "J'accepte que SKINCAR utilise ces informations pour traiter ma réservation et me contacter à ce sujet. <a href=\"#confidentialite\">Politique de confidentialité</a>",
     send: "Envoyer ma réservation", sending: "Envoi en cours…",
     b_note: "Nous ne confirmons ni le rendez-vous ni le prix final avant d'avoir trouvé un professionnel disponible.",
     e_one: "Il manque encore 1 information, repérez la zone en rouge.",
     e_many: "Il manque encore %n informations, repérez les zones en rouge.",
     e_down: "Le service de réservation est indisponible pour le moment. Réessayez dans quelques minutes.",
     e_fail: "L'envoi a échoué. Vérifiez votre connexion et appuyez de nouveau sur le bouton.",
-    d_title: "Merci !", d_text: "Votre demande a bien été reçue. WASHGO vous contactera pour confirmer votre réservation.",
+    d_title: "Merci !", d_text: "Votre demande a bien été reçue. SKINCAR vous contactera pour confirmer votre réservation.",
     d_ref: "Réservation", d_keep: "Gardez ce numéro de réservation, il vous sera utile si vous nous contactez.",
     d_again: "Nouvelle réservation",
     f_nav: "Informations légales", f_priv: "Politique de confidentialité", f_ment: "Mentions légales",
@@ -67,7 +67,7 @@ window.WASHGO_I18N = { T: {
   },
   en: {
     lang_label: "Language",
-    aria_home: "WASHGO Mobile, home",
+    aria_home: "SKINCAR Mobile, home",
     nav_book: "Book",
     h1: "Your car, your address, <em>our professional.</em>",
     sub: "Professional car washing at home. The professional comes to your home, office or car park with their own water and equipment.",
@@ -79,10 +79,10 @@ window.WASHGO_I18N = { T: {
     date: "Date", time: "Time", choose: "Choose",
     q_btn: "Book now",
     v_cit: "City car", v_ber: "Sedan", v_suv: "SUV / 4x4", v_uti: "Van",
-    scene_aria: "Illustration: a WASHGO professional washing a car with a pressure washer",
-    scene_alt: "A WASHGO professional washing a car",
+    scene_aria: "Illustration: a SKINCAR professional washing a car with a pressure washer",
+    scene_alt: "A SKINCAR professional washing a car",
     s_eyebrow: "Our services", s_h2: "Four levels of clean",
-    s_lead: "The price shown is a starting price. The final price is confirmed once WASHGO has found an available professional.",
+    s_lead: "The price shown is a starting price. The final price is confirmed once SKINCAR has found an available professional.",
     sv1: "Exterior wash", sv1d: "Body and window cleaning",
     sv2: "Interior wash", sv2d: "Vacuuming and interior cleaning",
     sv3: "Full wash", sv3d: "Interior + exterior",
@@ -92,14 +92,14 @@ window.WASHGO_I18N = { T: {
     s_fine: "Indicative prices, adjusted according to the vehicle and its condition.",
     h_eyebrow: "How it works", h_h2: "From your request to a clean car",
     h1t: "You book", h1d: "City, service, vehicle, address, day and time.",
-    h2t: "WASHGO confirms", h2d: "We choose the available professional in your area.",
+    h2t: "SKINCAR confirms", h2d: "We choose the available professional in your area.",
     h3t: "The pro comes to you", h3d: "They arrive with their own water and equipment and wash on site.",
     h4t: "You pay the pro", h4d: "Payment is made directly to the professional once the wash is done.",
     z_eyebrow: "Areas", z_h2: "Rabat, Salé, Salé Al Jadida",
     z_lead: "We are starting in Rabat and expanding the area step by step. Your neighbourhood isn't listed? Mention it in the form and we'll check availability.",
     z_rabat: "Agdal, Hay Riad, Souissi, Océan, Hassan", z_sale: "Tabriquet, Hay Salam, Bettana", z_salej: "All neighbourhoods of Salé Al Jadida",
     b_eyebrow: "Booking",
-    b_lead: "Fill in the form. WASHGO receives your request and contacts you to confirm.",
+    b_lead: "Fill in the form. SKINCAR receives your request and contacts you to confirm.",
     demo: "Demo mode: this booking stays in this browser and is not sent to anyone.",
     l_city: "Where do you want the wash?", l_service: "Which service?", l_vehicle: "Vehicle type", l_address: "Address",
     ph_address: "E.g. Agdal, Oued Fès street, building car park",
@@ -113,14 +113,14 @@ window.WASHGO_I18N = { T: {
     l_name: "Your name (optional)", ph_name: "E.g. Youssef Benali",
     l_phone: "Phone", ph_phone: "E.g. 06 12 34 56 78",
     l_notes: "Notes (optional)", ph_notes: "E.g. Building access code, where the car is parked, special condition",
-    consent: "I agree that WASHGO may use this information to process my booking and contact me about it. <a href=\"#confidentialite\">Privacy policy</a>",
+    consent: "I agree that SKINCAR may use this information to process my booking and contact me about it. <a href=\"#confidentialite\">Privacy policy</a>",
     send: "Send my booking", sending: "Sending…",
     b_note: "We confirm neither the appointment nor the final price until we have found an available professional.",
     e_one: "1 piece of information is still missing, look for the area in red.",
     e_many: "%n pieces of information are still missing, look for the areas in red.",
     e_down: "The booking service is unavailable at the moment. Please try again in a few minutes.",
     e_fail: "Sending failed. Check your connection and press the button again.",
-    d_title: "Thank you!", d_text: "Your request has been received. WASHGO will contact you to confirm your booking.",
+    d_title: "Thank you!", d_text: "Your request has been received. SKINCAR will contact you to confirm your booking.",
     d_ref: "Booking", d_keep: "Keep this booking number, you will need it if you contact us.",
     d_again: "New booking",
     f_nav: "Legal information", f_priv: "Privacy policy", f_ment: "Legal notice",
@@ -130,7 +130,7 @@ window.WASHGO_I18N = { T: {
   },
   ar: {
     lang_label: "اللغة",
-    aria_home: "WASHGO Mobile، الصفحة الرئيسية",
+    aria_home: "SKINCAR Mobile، الصفحة الرئيسية",
     nav_book: "احجز",
     h1: "سيارتك، في عنوانك، <em>مع محترفنا.</em>",
     sub: "غسيل احترافي للسيارات في المنزل. يأتي المحترف إلى بيتك أو مكتبك أو موقف السيارات، ومعه الماء والمعدات.",
@@ -142,10 +142,10 @@ window.WASHGO_I18N = { T: {
     date: "التاريخ", time: "الساعة", choose: "اختر",
     q_btn: "احجز الآن",
     v_cit: "سيارة صغيرة", v_ber: "سيارة سيدان", v_suv: "SUV / 4x4", v_uti: "سيارة نفعية",
-    scene_aria: "رسم توضيحي: محترف من WASHGO يغسل سيارة بجهاز الضغط العالي",
-    scene_alt: "محترف من WASHGO يغسل سيارة",
+    scene_aria: "رسم توضيحي: محترف من SKINCAR يغسل سيارة بجهاز الضغط العالي",
+    scene_alt: "محترف من SKINCAR يغسل سيارة",
     s_eyebrow: "خدماتنا", s_h2: "أربعة مستويات من النظافة",
-    s_lead: "السعر المعروض هو سعر انطلاقي. يتم تأكيد السعر النهائي عندما تجد WASHGO محترفًا متاحًا.",
+    s_lead: "السعر المعروض هو سعر انطلاقي. يتم تأكيد السعر النهائي عندما تجد SKINCAR محترفًا متاحًا.",
     sv1: "غسيل خارجي", sv1d: "تنظيف الهيكل والزجاج",
     sv2: "تنظيف داخلي", sv2d: "شفط الغبار وتنظيف الداخل",
     sv3: "غسيل كامل", sv3d: "الداخل + الخارج",
@@ -155,14 +155,14 @@ window.WASHGO_I18N = { T: {
     s_fine: "أسعار إرشادية، تُعدَّل حسب نوع السيارة وحالتها.",
     h_eyebrow: "كيف يعمل", h_h2: "من طلبك إلى سيارة نظيفة",
     h1t: "تحجز أنت", h1d: "المدينة، الخدمة، السيارة، العنوان، اليوم والساعة.",
-    h2t: "WASHGO تؤكد", h2d: "نختار المحترف المتاح في منطقتك.",
+    h2t: "SKINCAR تؤكد", h2d: "نختار المحترف المتاح في منطقتك.",
     h3t: "المحترف يأتي إليك", h3d: "يصل ومعه الماء والمعدات ويغسل السيارة في مكانها.",
     h4t: "تدفع للمحترف", h4d: "يتم الدفع مباشرة للمحترف بعد انتهاء الغسيل.",
     z_eyebrow: "المناطق", z_h2: "الرباط، سلا، سلا الجديدة",
     z_lead: "نبدأ من الرباط ونوسّع المنطقة تدريجيًا. حيّك غير مذكور؟ اكتبه في الاستمارة وسنتحقق من التوفر.",
     z_rabat: "أكدال، حي الرياض، السويسي، المحيط، حسان", z_sale: "تابريكت، حي السلام، بطانة", z_salej: "جميع أحياء سلا الجديدة",
     b_eyebrow: "الحجز",
-    b_lead: "املأ الاستمارة. تتوصل WASHGO بطلبك وتتصل بك للتأكيد.",
+    b_lead: "املأ الاستمارة. تتوصل SKINCAR بطلبك وتتصل بك للتأكيد.",
     demo: "وضع تجريبي: يبقى هذا الحجز في هذا المتصفح ولا يُرسل لأي أحد.",
     l_city: "أين تريد الغسيل؟", l_service: "أي خدمة؟", l_vehicle: "نوع السيارة", l_address: "العنوان",
     ph_address: "مثال: أكدال، زنقة واد فاس، موقف العمارة",
@@ -176,14 +176,14 @@ window.WASHGO_I18N = { T: {
     l_name: "اسمك (اختياري)", ph_name: "مثال: يوسف بنعلي",
     l_phone: "الهاتف", ph_phone: "مثال: 06 12 34 56 78",
     l_notes: "ملاحظات (اختياري)", ph_notes: "مثال: رمز الإقامة، مكان السيارة، حالة خاصة",
-    consent: "أوافق على أن تستعمل WASHGO هذه المعلومات لمعالجة حجزي والاتصال بي بشأنه. <a href=\"#confidentialite\">سياسة الخصوصية</a>",
+    consent: "أوافق على أن تستعمل SKINCAR هذه المعلومات لمعالجة حجزي والاتصال بي بشأنه. <a href=\"#confidentialite\">سياسة الخصوصية</a>",
     send: "إرسال حجزي", sending: "جارٍ الإرسال…",
     b_note: "لا نؤكد الموعد ولا السعر النهائي قبل العثور على محترف متاح.",
     e_one: "ما زالت معلومة واحدة ناقصة، ابحث عن المنطقة الحمراء.",
     e_many: "ما زالت %n معلومات ناقصة، ابحث عن المناطق الحمراء.",
     e_down: "خدمة الحجز غير متاحة حاليًا. أعد المحاولة بعد بضع دقائق.",
     e_fail: "فشل الإرسال. تحقق من اتصالك واضغط على الزر مرة أخرى.",
-    d_title: "شكرًا!", d_text: "تم استلام طلبك. ستتصل بك WASHGO لتأكيد حجزك.",
+    d_title: "شكرًا!", d_text: "تم استلام طلبك. ستتصل بك SKINCAR لتأكيد حجزك.",
     d_ref: "الحجز", d_keep: "احتفظ برقم الحجز هذا، فسيفيدك إذا تواصلت معنا.",
     d_again: "حجز جديد",
     f_nav: "معلومات قانونية", f_priv: "سياسة الخصوصية", f_ment: "الإشعار القانوني",
@@ -198,7 +198,7 @@ window.WASHGO_I18N = { T: {
 legal: {
   fr: {
     privacy: function (n) { return `
-<p>Cette page explique quelles données personnelles WASHGO Mobile collecte quand vous réservez un lavage, et pourquoi. Elle est rédigée selon la loi marocaine n° 09-08 relative à la protection des personnes physiques à l'égard du traitement des données à caractère personnel.</p>
+<p>Cette page explique quelles données personnelles SKINCAR Mobile collecte quand vous réservez un lavage, et pourquoi. Elle est rédigée selon la loi marocaine n° 09-08 relative à la protection des personnes physiques à l'égard du traitement des données à caractère personnel.</p>
 
 <h3>1. Quelles données collectons-nous ?</h3>
 <ul>
@@ -223,7 +223,7 @@ legal: {
 
 <h3>4. Qui reçoit vos données ?</h3>
 <ul>
-<li>L'équipe WASHGO, qui gère les réservations.</li>
+<li>L'équipe SKINCAR, qui gère les réservations.</li>
 <li>Le professionnel à qui votre réservation est confiée. Il reçoit ce dont il a besoin pour venir : prénom ou nom, téléphone, adresse, repère sur la carte, service, véhicule, horaire et notes.</li>
 <li>Nos prestataires techniques : ${n("siteHost", "todo_host")} pour l'hébergement du site et Supabase pour la base de données. Ils traitent les données pour notre compte.</li>
 </ul>
@@ -244,7 +244,7 @@ legal: {
 <p>Nous pouvons mettre à jour cette page. La date de dernière mise à jour figure en haut.</p>`; },
     mentions: function () { return `
 <h3>Notre rôle</h3>
-<p>WASHGO Mobile met en relation des clients et des professionnels indépendants du lavage de voitures à domicile. Le professionnel vient chez vous avec son eau et son matériel. Le rendez-vous et le prix final ne sont confirmés qu'après vérification de la disponibilité d'un professionnel. Le paiement se fait directement auprès du professionnel, une fois le lavage terminé. Les prix affichés sur le site sont des tarifs de départ.</p>
+<p>SKINCAR Mobile met en relation des clients et des professionnels indépendants du lavage de voitures à domicile. Le professionnel vient chez vous avec son eau et son matériel. Le rendez-vous et le prix final ne sont confirmés qu'après vérification de la disponibilité d'un professionnel. Le paiement se fait directement auprès du professionnel, une fois le lavage terminé. Les prix affichés sur le site sont des tarifs de départ.</p>
 
 <h3>Données personnelles</h3>
 <p>Le traitement de vos données est décrit dans la <a href="#confidentialite" data-legal-link>politique de confidentialité</a>.</p>
@@ -257,7 +257,7 @@ legal: {
   },
   en: {
     privacy: function (n) { return `
-<p>This page explains which personal data WASHGO Mobile collects when you book a wash, and why. It is written in line with Moroccan Law No. 09-08 on the protection of individuals with regard to the processing of personal data.</p>
+<p>This page explains which personal data SKINCAR Mobile collects when you book a wash, and why. It is written in line with Moroccan Law No. 09-08 on the protection of individuals with regard to the processing of personal data.</p>
 
 <h3>1. What data do we collect?</h3>
 <ul>
@@ -282,7 +282,7 @@ legal: {
 
 <h3>4. Who receives your data?</h3>
 <ul>
-<li>The WASHGO team, which manages bookings.</li>
+<li>The SKINCAR team, which manages bookings.</li>
 <li>The professional to whom your booking is assigned. They receive what they need to come to you: first name or name, phone, address, pin on the map, service, vehicle, time and notes.</li>
 <li>Our technical providers: ${n("siteHost", "todo_host")} for hosting the site and Supabase for the database. They process the data on our behalf.</li>
 </ul>
@@ -303,7 +303,7 @@ legal: {
 <p>We may update this page. The date of the last update is shown at the top.</p>`; },
     mentions: function () { return `
 <h3>Our role</h3>
-<p>WASHGO Mobile connects customers with independent professionals who wash cars at home. The professional comes to you with their own water and equipment. The appointment and the final price are only confirmed after checking that a professional is available. Payment is made directly to the professional once the wash is done. The prices shown on the site are starting prices.</p>
+<p>SKINCAR Mobile connects customers with independent professionals who wash cars at home. The professional comes to you with their own water and equipment. The appointment and the final price are only confirmed after checking that a professional is available. Payment is made directly to the professional once the wash is done. The prices shown on the site are starting prices.</p>
 
 <h3>Personal data</h3>
 <p>The processing of your data is described in the <a href="#confidentialite" data-legal-link>privacy policy</a>.</p>
@@ -316,7 +316,7 @@ legal: {
   },
   ar: {
     privacy: function (n) { return `
-<p>توضح هذه الصفحة ما هي المعطيات الشخصية التي تجمعها WASHGO Mobile عند حجز غسيل، ولماذا. وقد حُرِّرت وفق القانون المغربي رقم 09-08 المتعلق بحماية الأشخاص الذاتيين تجاه معالجة المعطيات ذات الطابع الشخصي.</p>
+<p>توضح هذه الصفحة ما هي المعطيات الشخصية التي تجمعها SKINCAR Mobile عند حجز غسيل، ولماذا. وقد حُرِّرت وفق القانون المغربي رقم 09-08 المتعلق بحماية الأشخاص الذاتيين تجاه معالجة المعطيات ذات الطابع الشخصي.</p>
 
 <h3>1. ما هي المعطيات التي نجمعها؟</h3>
 <ul>
@@ -341,7 +341,7 @@ legal: {
 
 <h3>4. من يتوصل بمعطياتك؟</h3>
 <ul>
-<li>فريق WASHGO الذي يدبّر الحجوزات.</li>
+<li>فريق SKINCAR الذي يدبّر الحجوزات.</li>
 <li>المحترف الذي يُسند إليه حجزك. يتوصل بما يحتاجه للحضور: الاسم، الهاتف، العنوان، العلامة على الخريطة، الخدمة، السيارة، الموعد والملاحظات.</li>
 <li>مزوّدونا التقنيون: ${n("siteHost", "todo_host")} لاستضافة الموقع وSupabase لقاعدة البيانات. يعالجون المعطيات لحسابنا.</li>
 </ul>
@@ -362,7 +362,7 @@ legal: {
 <p>قد نحدّث هذه الصفحة. يظهر تاريخ آخر تحديث في أعلاها.</p>`; },
     mentions: function () { return `
 <h3>دورنا</h3>
-<p>تربط WASHGO Mobile بين العملاء ومحترفين مستقلين في غسيل السيارات في المنزل. يأتي المحترف إلى مكانك ومعه الماء والمعدات. لا يتم تأكيد الموعد والسعر النهائي إلا بعد التحقق من توفر محترف. يتم الدفع مباشرة للمحترف بعد انتهاء الغسيل. الأسعار المعروضة في الموقع هي أسعار انطلاقية.</p>
+<p>تربط SKINCAR Mobile بين العملاء ومحترفين مستقلين في غسيل السيارات في المنزل. يأتي المحترف إلى مكانك ومعه الماء والمعدات. لا يتم تأكيد الموعد والسعر النهائي إلا بعد التحقق من توفر محترف. يتم الدفع مباشرة للمحترف بعد انتهاء الغسيل. الأسعار المعروضة في الموقع هي أسعار انطلاقية.</p>
 
 <h3>المعطيات الشخصية</h3>
 <p>تُشرح معالجة معطياتك في <a href="#confidentialite" data-legal-link>سياسة الخصوصية</a>.</p>
