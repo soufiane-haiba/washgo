@@ -258,6 +258,125 @@ create trigger bookings_set_price
 -- réservations déjà reçues sans prix : on leur met le tarif du site
 update public.bookings set price = public.default_price(vehicle, service) where price is null;
 
+-- ===== Notifications par email (Resend) : un email à chaque nouvelle réservation / candidature =====
+-- La clé Resend et votre email sont rangés dans une table que personne ne peut lire depuis le site.
+-- Pour les enregistrer (une seule fois, dans SQL Editor, PAS dans ce fichier) :
+--   insert into public.notify_settings (id, resend_api_key, notify_email) values (1, 're_xxxxxxxx', 'vous@email.com')
+--   on conflict (id) do update set resend_api_key = excluded.resend_api_key, notify_email = excluded.notify_email;
+create extension if not exists pg_net with schema extensions;
+
+create table if not exists public.notify_settings (
+  id int primary key default 1 check (id = 1),
+  resend_api_key text,
+  notify_email text,
+  from_email text not null default 'SKINCAR <onboarding@resend.dev>'
+);
+alter table public.notify_settings add column if not exists resend_api_key text;
+alter table public.notify_settings add column if not exists notify_email text;
+alter table public.notify_settings add column if not exists from_email text not null default 'SKINCAR <onboarding@resend.dev>';
+alter table public.notify_settings enable row level security;
+revoke all on public.notify_settings from anon, authenticated;
+
+-- protège le texte envoyé par les visiteurs avant de le mettre dans l'email
+create or replace function public.html_esc(t text)
+returns text
+language sql
+immutable
+as $$
+  select replace(replace(replace(replace(coalesce(t, ''), '&', '&amp;'), '<', '&lt;'), '>', '&gt;'), '"', '&quot;');
+$$;
+
+create or replace function public.notify_email(subject text, rows text[][])
+returns void
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+declare s record; body text := ''; i int;
+begin
+  select * into s from public.notify_settings where id = 1;
+  if s is null or coalesce(s.resend_api_key, '') = '' or coalesce(s.notify_email, '') = '' then return; end if;
+  for i in 1 .. coalesce(array_length(rows, 1), 0) loop
+    body := body || '<tr><td style="padding:6px 14px 6px 0;color:#666;vertical-align:top">' || public.html_esc(rows[i][1])
+                 || '</td><td style="padding:6px 0;font-weight:600">' || public.html_esc(rows[i][2]) || '</td></tr>';
+  end loop;
+  perform net.http_post(
+    url := 'https://api.resend.com/emails',
+    headers := jsonb_build_object('Authorization', 'Bearer ' || s.resend_api_key, 'Content-Type', 'application/json'),
+    body := jsonb_build_object(
+      'from', s.from_email,
+      'to', jsonb_build_array(s.notify_email),
+      'subject', subject,
+      'html', '<div style="font-family:Arial,sans-serif;font-size:15px;color:#111">'
+              || '<h2 style="margin:0 0 14px">' || public.html_esc(subject) || '</h2>'
+              || '<table style="border-collapse:collapse">' || body || '</table>'
+              || '<p style="margin-top:18px;color:#666">Ouvrez le tableau de bord SKINCAR pour la traiter.</p></div>'
+    )
+  );
+exception when others then
+  -- un email qui ne part pas ne doit jamais bloquer une réservation
+  raise warning 'notify_email : %', sqlerrm;
+end;
+$$;
+revoke all on function public.notify_email(text, text[][]) from public, anon, authenticated;
+
+create or replace function public.bookings_notify()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform public.notify_email(
+    'Nouvelle réservation ' || new.ref || ' — ' || new.service,
+    array[
+      array['Référence', new.ref],
+      array['Service', new.service],
+      array['Véhicule', new.vehicle],
+      array['Prix', coalesce(new.price::text || ' DH', '—')],
+      array['Rendez-vous', to_char(new.scheduled_date, 'DD/MM/YYYY') || ' à ' || new.scheduled_time],
+      array['Ville', new.city],
+      array['Adresse', new.address],
+      array['Client', coalesce(new.customer_name, 'Sans nom')],
+      array['Téléphone', new.phone],
+      array['Notes', coalesce(new.notes, '—')]
+    ]
+  );
+  return new;
+end;
+$$;
+drop trigger if exists bookings_notify on public.bookings;
+create trigger bookings_notify after insert on public.bookings
+  for each row execute function public.bookings_notify();
+
+create or replace function public.applications_notify()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform public.notify_email(
+    'Nouvelle candidature — ' || new.name,
+    array[
+      array['Nom', new.name],
+      array['Téléphone', new.phone],
+      array['Email', coalesce(new.email, '—')],
+      array['Villes', coalesce(nullif(array_to_string(new.cities, ', '), ''), new.city)],
+      array['Services', coalesce(nullif(array_to_string(new.services, ', '), ''), '—')],
+      array['Expérience', case new.experience when 'oui' then 'Oui' when 'non' then 'Non' else coalesce(new.experience, '—') end],
+      array['Matériel', case when new.has_equipment then 'Oui' else 'Non' end],
+      array['Disponibilités', coalesce(new.availability, '—')],
+      array['Message', coalesce(new.message, '—')]
+    ]
+  );
+  return new;
+end;
+$$;
+drop trigger if exists applications_notify on public.applications;
+create trigger applications_notify after insert on public.applications
+  for each row execute function public.applications_notify();
+
 -- Votre compte admin (même email que l'utilisateur créé dans Authentication > Users).
 -- Enlevez les "--" des deux lignes ci-dessous et mettez votre email (une seule fois suffit : il reste enregistré ensuite).
 -- insert into public.admins (email) values ('TON_EMAIL@EXEMPLE.COM')

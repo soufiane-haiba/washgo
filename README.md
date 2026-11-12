@@ -50,3 +50,13 @@ After changing them, run `setup.sql` again.
 - The anon key in `config.js` is meant to be public; access is controlled by the RLS rules in `setup.sql`.
 - The public can only create bookings and applications, never read them. Customers only see their own data.
 - Only emails listed in the `admins` table can use the dashboard.
+
+## Email notifications
+
+`setup.sql` emails you each new booking and partner application, through [Resend](https://resend.com) and `pg_net`.
+1. Create a free Resend account with the email that should receive the notifications, then create an API key.
+2. Run `setup.sql` in Supabase SQL Editor.
+3. In SQL Editor (not in a file), run once:
+   `insert into public.notify_settings (id, resend_api_key, notify_email) values (1, 're_…', 'you@email.com') on conflict (id) do update set resend_api_key = excluded.resend_api_key, notify_email = excluded.notify_email;`
+
+Without your own domain verified in Resend, emails can only go to the address of your Resend account.

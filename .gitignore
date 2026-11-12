@@ -12,3 +12,6 @@ desktop.ini
 # Local tools
 node_modules/
 .claude/
+
+# Secrets (clés API) : ne jamais envoyer sur GitHub
+*.local.sql

@@ -700,7 +700,6 @@ dl.info dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
       + '<div class="full" id="p-cities-box"><span class="l" style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">Villes <span class="sub">(une ou plusieurs)</span></span><div class="checks">'
       + CITIES.map(function (c) { return '<label><input type="checkbox" name="p-city" value="' + esc(c) + '"' + (proCities(p).indexOf(c) !== -1 ? " checked" : "") + ">" + esc(c) + "</label>"; }).join("")
       + "</div></div>"
-      + '<div class="full"><label class="l" for="p-zones">Quartiers couverts</label><input id="p-zones" type="text" value="' + esc(p.zones || "") + '" placeholder="Ex. Agdal, Hay Riad"></div>'
       + '<div class="full"><span class="l" style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">Services proposés</span><div class="checks">'
       + SERVICES.map(function (s, i) { return '<label><input type="checkbox" name="p-serv" value="' + esc(s) + '"' + ((p.services || []).indexOf(s) !== -1 ? " checked" : "") + ">" + esc(s) + "</label>"; }).join("")
       + "</div></div>"
@@ -724,7 +723,7 @@ dl.info dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
     var cities = Array.prototype.slice.call(document.querySelectorAll('input[name="p-city"]:checked')).map(function (c) { return c.value; });
     if (!cities.length) { err.textContent = "Choisissez au moins une ville."; return; }
     var services = Array.prototype.slice.call(document.querySelectorAll('input[name="p-serv"]:checked')).map(function (c) { return c.value; });
-    var pro = { name: name, phone: phone, city: cities[0], cities: cities, zones: $("p-zones").value.trim() || null, services: services,
+    var pro = { name: name, phone: phone, city: cities[0], cities: cities, services: services,
       hours: $("p-hours").value.trim() || null, has_equipment: $("p-eq").checked, has_water: $("p-water").checked,
       availability: $("p-avail").value, commission_pct: COMMISSION_PCT, notes: $("p-notes").value.trim() || null };
     if (id) pro.id = id;
