@@ -1,0 +1,14 @@
+# Editor and OS files
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs and temporary files
+*.log
+*.tmp
+*.bak
+
+# Local tools
+node_modules/
+.claude/
