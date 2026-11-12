@@ -1,6 +1,6 @@
 -- SKINCAR Mobile : base de données
 -- Supabase > SQL Editor > New query > coller tout ce fichier > Run.
--- AVANT de lancer: remplacez TON_EMAIL@EXEMPLE.COM (tout en bas) par l'email de votre compte admin.
+-- Pour donner l'accès admin : voir la toute fin du fichier (une seule fois suffit).
 
 create table if not exists public.admins (
   email text primary key
@@ -258,6 +258,7 @@ create trigger bookings_set_price
 -- réservations déjà reçues sans prix : on leur met le tarif du site
 update public.bookings set price = public.default_price(vehicle, service) where price is null;
 
--- Votre compte admin (même email que l'utilisateur créé dans Authentication > Users)
-insert into public.admins (email) values ('soufianehaiba@gmail.com')
-on conflict (email) do nothing;
+-- Votre compte admin (même email que l'utilisateur créé dans Authentication > Users).
+-- Enlevez les "--" des deux lignes ci-dessous et mettez votre email (une seule fois suffit : il reste enregistré ensuite).
+-- insert into public.admins (email) values ('TON_EMAIL@EXEMPLE.COM')
+-- on conflict (email) do nothing;
