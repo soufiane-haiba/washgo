@@ -224,9 +224,6 @@ footer .lime { color: var(--tag); }
 .fx .hero .wrap > div:first-child > *:nth-child(4) { animation-delay: .28s; }
 .fx .quick { animation: rise .8s .2s cubic-bezier(.2,.7,.2,1) backwards; }
 .fx .scene { animation: rise .9s .35s cubic-bezier(.2,.7,.2,1) backwards; }
-.fx .scene svg g[fill="#B7F36B"] path { animation: pulse 2.6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-.fx .scene svg g[fill="#B7F36B"] path:nth-child(2) { animation-delay: -.9s; }
-.fx .scene svg g[fill="#B7F36B"] path:nth-child(3) { animation-delay: -1.7s; }
 .fx .rv { opacity: 0; transform: translateY(26px); transition: opacity .7s ease var(--d, 0ms), transform .7s cubic-bezier(.2,.7,.2,1) var(--d, 0ms); }
 .fx .rv.in { opacity: 1; transform: none; }
 .fx .card.rv.in:hover, .fx .zone.rv.in:hover { transform: translateY(-4px); transition-delay: 0ms; }
@@ -271,12 +268,59 @@ html { scroll-behavior: smooth; }
 .hero .quick { grid-area: quick; grid-template-columns: 1fr 1fr; align-items: end; }
 .hero .quick > h2, .hero .quick > .hint, .hero .quick > .two, .hero .quick > button { grid-column: 1 / -1; }
 .hero .quick .hint { margin-top: -6px; }
-.hero .scene { grid-area: scene; grid-column: auto; align-self: center; aspect-ratio: 720 / 320; }
+.hero .scene { grid-area: scene; grid-column: auto; align-self: stretch; aspect-ratio: auto; min-height: 560px; }
 @media (max-width: 760px) {
   .hero .wrap { grid-template-columns: minmax(0, 1fr); grid-template-areas: "text" "quick" "scene"; }
   .hero .quick { grid-template-columns: 1fr; }
-  .hero .scene { aspect-ratio: 720 / 320; }
+  .hero .scene { min-height: 0; aspect-ratio: 4 / 3.4; }
 }
+
+/* ===== scène animée de l'accueil (dessin vectoriel + canvas : net sur tous les écrans, jusqu'en 4K) ===== */
+.scene { position: relative; isolation: isolate; border-radius: 24px; border: 1px solid #232323;
+  background:
+    radial-gradient(55% 42% at var(--gx, 60%) 36%, rgba(183,243,107,.2), transparent 70%),
+    radial-gradient(38% 28% at 16% 10%, rgba(170,205,255,.1), transparent 70%),
+    linear-gradient(180deg, #0e120f 0%, #080908 58%, #030303 100%); }
+.sc-light { position: absolute; top: -12%; width: 44%; height: 82%; z-index: -1; pointer-events: none; filter: blur(20px);
+  background: linear-gradient(180deg, rgba(255,255,255,.17), transparent 78%); clip-path: polygon(42% 0, 58% 0, 100% 100%, 0 100%); }
+.sc-light-a { left: 6%; opacity: .6; }
+.sc-light-b { right: 4%; opacity: .35; }
+.sc-floor { position: absolute; left: -35%; right: -35%; bottom: -8%; height: 52%; z-index: -1; pointer-events: none;
+  background-image: linear-gradient(rgba(183,243,107,.17) 1px, transparent 1px), linear-gradient(90deg, rgba(183,243,107,.17) 1px, transparent 1px);
+  background-size: 60px 60px; transform: perspective(520px) rotateX(64deg); transform-origin: 50% 0;
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 25%, #000 65%, transparent);
+          mask-image: linear-gradient(180deg, transparent, #000 25%, #000 65%, transparent); }
+.scene .sc-car { position: absolute; z-index: 1; left: 47%; bottom: 9%; width: 128%; height: auto; transform: translateX(-50%);
+  translate: calc(var(--px, 0) * 12px) calc(var(--py, 0) * 6px); filter: drop-shadow(0 30px 40px rgba(0,0,0,.45)); }
+.sc-fx { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; pointer-events: none; }
+.sc-chip { position: absolute; z-index: 3; display: inline-flex; align-items: center; gap: 9px; padding: 9px 15px; border-radius: 999px;
+  font-size: 13px; font-weight: 600; color: #f2f2f2; white-space: nowrap;
+  background: rgba(22,26,23,.55); border: 1px solid rgba(255,255,255,.12); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  box-shadow: 0 12px 30px rgba(0,0,0,.4); translate: calc(var(--px, 0) * -16px) calc(var(--py, 0) * -10px); animation: chipFloat 5s ease-in-out infinite; }
+.sc-chip .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 0 4px rgba(183,243,107,.2); }
+.sc-chip-a { top: 5%; left: 5%; }
+.sc-word { position: absolute; z-index: 0; left: 50%; top: 14%; transform: translateX(-50%); translate: calc(var(--px, 0) * -8px) 0; pointer-events: none;
+  font: 700 clamp(70px, 11vw, 170px)/.9 var(--font-display); letter-spacing: -.03em; color: transparent; -webkit-text-stroke: 1.5px rgba(183,243,107,.22);
+  white-space: nowrap; text-align: center; }
+.sc-word span { display: block; font-size: .42em; letter-spacing: .3em; -webkit-text-stroke: 1px rgba(255,255,255,.14); margin-top: .25em; }
+.sc-chip-b { bottom: 5%; right: 5%; animation-delay: -2.5s; }
+@keyframes chipFloat { 50% { transform: translateY(-8px); } }
+.hc-sweep { animation: sweep 6s 1.8s ease-in-out infinite; }
+@keyframes sweep { 0% { transform: translateX(0); } 45%, 100% { transform: translateX(1500px); } }
+.hc-foam circle { transform-box: fill-box; transform-origin: center; animation: foam 2.8s ease-in-out infinite; }
+.hc-foam circle:nth-child(2n) { animation-delay: -1s; }
+.hc-foam circle:nth-child(3n) { animation-delay: -1.9s; animation-duration: 3.4s; }
+@keyframes foam { 50% { transform: scale(1.1); } }
+.hc-beam { animation: beam 2.6s ease-in-out infinite alternate; }
+@keyframes beam { from { opacity: .45; } to { opacity: 1; } }
+.fx .scene .sc-car { animation: carIn 1.5s .25s cubic-bezier(.2,.8,.2,1) backwards; }
+@keyframes carIn { from { transform: translateX(-150%); opacity: 0; } to { transform: translateX(-50%); opacity: 1; } }
+@media (max-width: 760px) {
+  .sc-chip { font-size: 11px; padding: 7px 11px; }
+  .scene .sc-car { width: 112%; left: 48%; bottom: 3%; }
+  .sc-word { top: 16%; font-size: clamp(56px, 17vw, 110px); }
+}
+@media (prefers-reduced-motion: reduce) { .sc-chip, .hc-sweep, .hc-foam circle, .hc-beam { animation: none; } }
 
 /* ===== nouvelle page d'accueil ===== */
 :root { --check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5' fill='none' stroke='%23000' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
@@ -329,11 +373,15 @@ h2 { font-size: clamp(28px, 4.6vw, 44px); }
 /* tarifs : formules */
 .cards { margin-top: 20px; }
 .pkg { padding: 26px 22px 22px; gap: 10px; }
-.pkg h3 { font-size: 21px; padding-right: 90px; }
+.pkg h3 { font-size: 21px; }
+.pkg.top-pick h3 { padding-right: 96px; }
 .pkg .incl { list-style: none; padding: 0; margin: 6px 0 0; display: grid; gap: 8px; font-size: 15px; }
 .pkg .incl li { display: flex; gap: 10px; align-items: center; }
 .pkg .incl li::before { content: ""; width: 18px; height: 18px; flex: none; border-radius: 50%; background: var(--lime) var(--check) center / 11px no-repeat; }
 .pkg .pkg-go { width: 100%; margin-top: 10px; }
+.price b.bump { animation: bump .45s cubic-bezier(.2,.8,.2,1); }
+@keyframes bump { 0% { transform: translateY(8px); opacity: .2; } 100% { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .price b.bump { animation: none; } }
 .cards .pkg.top-pick { border: 1.5px solid var(--lime); box-shadow: 0 20px 44px rgba(0,0,0,.4); }
 .pkg .badge { position: absolute; top: 18px; right: 18px; background: var(--lime); color: #000; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; }
 
@@ -397,6 +445,101 @@ footer h3 { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; c
 .f-copy { border-top: 1px solid #222; margin-top: 40px; padding-top: 20px; font-size: 13px; }
 @media (max-width: 760px) { .f-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 440px) { .f-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* ===== téléphone : menu, bouton Réserver fixe, sections compactes ===== */
+.menu-btn { display: none; width: 44px; height: 44px; border-radius: 10px; border: 1.5px solid #3a3a3a; background: transparent; cursor: pointer;
+  flex-direction: column; align-items: center; justify-content: center; gap: 5px; padding: 0; }
+.menu-btn span { display: block; width: 20px; height: 2px; border-radius: 2px; background: #f2f2f2; transition: transform .25s ease, opacity .2s ease; }
+.menu-btn[aria-expanded="true"] span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.menu-btn[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+.menu-btn[aria-expanded="true"] span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+.m-nav { position: absolute; left: 0; right: 0; top: 100%; background: #000; border-bottom: 1px solid #222; box-shadow: 0 20px 40px rgba(0,0,0,.5);
+  padding: 8px max(16px, env(safe-area-inset-left, 0px)) 18px; display: grid; }
+.m-nav[hidden] { display: none; }
+.m-nav > a { color: #f2f2f2; text-decoration: none; font: 600 18px var(--font-display); padding: 14px 4px; border-bottom: 1px solid #1c1c1c; }
+.m-nav > a:active { color: var(--lime); }
+.m-nav-acts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+.m-cta { position: fixed; z-index: 30; left: 16px; right: 16px; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); display: none;
+  align-items: center; justify-content: center; gap: 10px; min-height: 54px; border-radius: 14px; background: var(--lime); color: #000;
+  font: 700 16px var(--font-body); text-decoration: none; box-shadow: 0 14px 34px rgba(0,0,0,.45), 0 0 0 1px rgba(0,0,0,.2);
+  transform: translateY(140%); transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+.m-cta.show { transform: none; }
+
+@media (max-width: 1040px) {
+  .menu-btn { display: inline-flex; }
+}
+@media (max-width: 600px) {
+  .top .btn-acct { display: none; }
+}
+@media (max-width: 760px) {
+  .m-cta { display: flex; }
+  section { padding-block: 48px; }
+  h2 { font-size: clamp(26px, 7.4vw, 34px); }
+  .lead { font-size: 15px; }
+  .hero .wrap { padding-block: 28px 36px; row-gap: 22px; }
+  .hero h1 { font-size: clamp(32px, 9.6vw, 44px); }
+  .hero p.sub { font-size: 16px; margin-top: 14px; }
+  .perks { gap: 8px; margin-top: 16px; }
+  .perks li { font-size: 12.5px; padding: 6px 12px 6px 7px; }
+  .perks li::before { width: 18px; height: 18px; background-size: 11px; }
+  .quick { padding: 20px; }
+
+  /* pourquoi : 2 colonnes compactes */
+  .feats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 22px; }
+  .feat { padding: 16px 14px; gap: 6px; border-radius: 16px; }
+  .feat .ic { width: 40px; height: 40px; border-radius: 12px; margin-bottom: 4px; }
+  .feat .ic svg { width: 21px; height: 21px; }
+  .feat h3 { font-size: 15px; }
+  .feat p { font-size: 13px; line-height: 1.45; }
+  .feat:last-child:nth-child(odd) { grid-column: 1 / -1; }
+
+  /* tarifs : formules à faire glisser */
+  .vehicles { gap: 10px; margin-top: 22px; }
+  .veh { border-radius: 16px; }
+  .veh small { font-size: 11.5px; }
+  .sub-h { margin-top: 32px; }
+  #tarifs .cards { display: grid; grid-auto-flow: column; grid-template-columns: none; grid-auto-columns: 82%; gap: 12px; overflow-x: auto;
+    scroll-snap-type: x mandatory; scroll-padding-inline: 16px; padding: 4px 16px 14px; margin-inline: -16px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  #tarifs .cards::-webkit-scrollbar { display: none; }
+  #tarifs .cards > .pkg { scroll-snap-align: start; }
+  #tarifs .swipe-hint { display: flex; }
+
+  /* étapes : 2 x 2 */
+  .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 22px; }
+  .steps li { padding: 16px 14px; border-radius: 16px; }
+  .steps li::before { width: 36px; height: 36px; font-size: 13px; margin-bottom: 10px; }
+  .steps h3 { font-size: 15px; }
+  .steps p { font-size: 13px; line-height: 1.45; }
+
+  /* zones, FAQ, appel à l'action */
+  .zgrid { gap: 10px; margin-top: 22px; }
+  .zone { padding: 14px 16px; }
+  .zone h3 { font-size: 19px; margin-bottom: 2px; }
+  .faq { margin-top: 22px; gap: 8px; }
+  .faq details { padding: 0 16px; border-radius: 14px; }
+  .faq summary { font-size: 15.5px; padding: 16px 0; }
+  .faq summary::after { width: 28px; height: 28px; font-size: 19px; }
+  .cta { border-radius: 22px; padding: 26px 22px; gap: 10px; }
+  .cta-acts .btn { flex: 1 1 auto; }
+
+  /* formulaire */
+  .book { padding: 18px 16px; gap: 22px; border-radius: 16px; }
+  .opts.cols { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .opts.cols .opt span { padding: 8px 12px; font-size: 14px; }
+  #map { height: 240px; }
+
+  /* pied de page */
+  footer .wrap { padding-block: 40px calc(96px + env(safe-area-inset-bottom, 0px)); }
+  .f-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px 18px; }
+  .f-grid > .f-brand { grid-column: 1 / -1; }
+}
+@media (max-width: 360px) {
+  .opts.cols, .feats, .steps { grid-template-columns: minmax(0, 1fr); }
+  .feat:last-child:nth-child(odd) { grid-column: auto; }
+}
+.swipe-hint { display: none; align-items: center; gap: 8px; margin: 14px 0 0; font-size: 13px; color: var(--muted); }
+.swipe-hint i { display: inline-block; width: 22px; height: 2px; background: var(--lime); border-radius: 2px; position: relative; }
+.swipe-hint i::after { content: ""; position: absolute; right: -1px; top: -3px; width: 7px; height: 7px; border-top: 2px solid var(--lime); border-right: 2px solid var(--lime); transform: rotate(45deg); }
 </style>
 <script src="theme.js"></script>
 </head>
@@ -486,9 +629,18 @@ footer h3 { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; c
     <div class="top-actions">
       <a class="btn btn-acct" href="compte.html" id="nav-acct">Mon compte</a>
       <a class="btn btn-lime" href="#reserver" data-t="nav_book">Réserver</a>
+      <button class="menu-btn" id="menu-btn" type="button" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="m-nav"><span></span><span></span><span></span></button>
     </div>
   </div>
+  <!-- menu du téléphone -->
+  <nav class="m-nav" id="m-nav" aria-label="Menu" hidden>
+    <a href="#tarifs">Tarifs</a><a href="#pourquoi">Pourquoi nous</a><a href="#comment">Comment ça marche</a><a href="#zones">Zones</a><a href="#faq">FAQ</a>
+    <div class="m-nav-acts"><a class="btn btn-ghost" href="compte.html">Mon compte</a><a class="btn btn-lime" href="#reserver">Réserver un lavage</a></div>
+  </nav>
 </header>
+
+<!-- bouton Réserver toujours visible sur téléphone -->
+<a class="m-cta" id="m-cta" href="#reserver" aria-hidden="true" tabindex="-1">Réserver un lavage <span aria-hidden="true">→</span></a>
 
 <main id="haut">
   <div class="hero">
@@ -525,81 +677,107 @@ footer h3 { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; c
         <button class="btn btn-main btn-block" type="submit" data-t="q_btn">Réserver maintenant</button>
       </form>
 
-      <div class="scene" id="scene">
-        <svg viewBox="300 40 720 320" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration : un professionnel WASHGO lave une voiture avec un nettoyeur haute pression" data-ta="aria-label:scene_aria">
+      <div class="scene" id="scene" role="img" aria-label="Illustration : une voiture lavée sur place par WASHGO, avec jet d'eau et mousse" data-ta="aria-label:scene_aria">
+        <div class="sc-light sc-light-a" aria-hidden="true"></div>
+        <div class="sc-light sc-light-b" aria-hidden="true"></div>
+        <div class="sc-floor" aria-hidden="true"></div>
+        <div class="sc-word" aria-hidden="true">WASHGO<span>MOBILE</span></div>
+        <svg class="sc-car" id="sc-car" viewBox="0 0 1000 560" aria-hidden="true" focusable="false">
           <defs>
-            <radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#B7F36B" stop-opacity=".28"/><stop offset="1" stop-color="#B7F36B" stop-opacity="0"/></radialGradient>
-          </defs>
-          <circle cx="560" cy="190" r="200" fill="url(#glow)"/>
-          <rect y="328" width="1200" height="32" fill="#16201a"/>
-          <path d="M0 328H1200" stroke="#B7F36B" stroke-opacity=".4" stroke-width="2"/>
-          <g stroke="#2b3a33" stroke-width="4" stroke-linecap="round"><path d="M60 346h70M250 346h70M440 346h70M630 346h70M820 346h70M1010 346h70"/></g>
-          <ellipse cx="520" cy="330" rx="260" ry="9" fill="#000" opacity=".4"/>
-
-          <!-- voiture -->
-          <g transform="translate(-50 0)">
-            <path d="M335 270V232Q335 214 355 210L420 196L500 186L560 138Q570 130 588 130H690Q712 130 725 146L760 196L775 200Q792 204 792 224V270Z" fill="#F4F5F2"/>
-            <path d="M335 246H792V272H335Z" fill="#cfd6cc"/>
-            <circle cx="430" cy="290" r="47" fill="#0d140f"/><circle cx="700" cy="290" r="47" fill="#0d140f"/>
-            <path d="M515 186L566 146H600V186Z" fill="#26352d"/>
-            <path d="M612 146H688Q700 146 708 156L736 186H612Z" fill="#26352d"/>
-            <path d="M524 180L563 150" stroke="#B7F36B" stroke-opacity=".6" stroke-width="3" stroke-linecap="round"/>
-            <path d="M604 150V262" stroke="#aab4ab" stroke-width="2"/>
-            <rect x="618" y="198" width="26" height="6" rx="3" fill="#aab4ab"/>
-            <rect x="337" y="220" width="16" height="9" rx="3" fill="#B7F36B"/>
-            <circle cx="430" cy="290" r="38" fill="#101713"/><circle cx="430" cy="290" r="21" fill="#aeb8b0"/><circle cx="430" cy="290" r="7" fill="#101713"/>
-            <circle cx="700" cy="290" r="38" fill="#101713"/><circle cx="700" cy="290" r="21" fill="#aeb8b0"/><circle cx="700" cy="290" r="7" fill="#101713"/>
-            <!-- mousse -->
-            <g fill="#ffffff" stroke="#B7F36B" stroke-opacity=".55" stroke-width="1.5">
-              <circle cx="625" cy="126" r="12"/><circle cx="647" cy="121" r="15"/><circle cx="670" cy="127" r="11"/><circle cx="656" cy="112" r="9"/><circle cx="634" cy="112" r="8"/>
-              <circle cx="445" cy="190" r="10"/><circle cx="466" cy="183" r="12"/><circle cx="487" cy="186" r="9"/><circle cx="456" cy="175" r="7"/>
-              <circle cx="752" cy="197" r="9"/><circle cx="770" cy="200" r="10"/>
-              <circle cx="560" cy="228" r="8"/><circle cx="676" cy="236" r="9"/>
+            <linearGradient id="hc-body" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#ffffff"/><stop offset=".38" stop-color="#eef0ee"/><stop offset=".62" stop-color="#c9cdca"/><stop offset="1" stop-color="#8d928f"/>
+            </linearGradient>
+            <linearGradient id="hc-side" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#000" stop-opacity=".22"/><stop offset=".18" stop-color="#000" stop-opacity="0"/><stop offset=".82" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".18"/>
+            </linearGradient>
+            <linearGradient id="hc-glass" x1="0" y1="0" x2=".6" y2="1">
+              <stop offset="0" stop-color="#55646e"/><stop offset=".45" stop-color="#1c252b"/><stop offset="1" stop-color="#070a0c"/>
+            </linearGradient>
+            <radialGradient id="hc-rim" cx=".42" cy=".38" r=".7">
+              <stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#cfd3d0"/><stop offset="1" stop-color="#7d827f"/>
+            </radialGradient>
+            <linearGradient id="hc-shine" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".75"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
+            </linearGradient>
+            <radialGradient id="hc-head" cx=".7" cy=".5" r=".8">
+              <stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#eaffc9"/><stop offset="1" stop-color="#B7F36B"/>
+            </radialGradient>
+            <radialGradient id="hc-beam" cx="0" cy=".5" r="1">
+              <stop offset="0" stop-color="#eaffc9" stop-opacity=".55"/><stop offset="1" stop-color="#eaffc9" stop-opacity="0"/>
+            </radialGradient>
+            <radialGradient id="hc-foam" cx=".35" cy=".3" r=".75">
+              <stop offset="0" stop-color="#ffffff"/><stop offset=".7" stop-color="#f1f5f2"/><stop offset="1" stop-color="#c9d2cc"/>
+            </radialGradient>
+            <linearGradient id="hc-fade" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/>
+            </linearGradient>
+            <mask id="hc-refl-mask" maskUnits="userSpaceOnUse" x="0" y="380" width="1000" height="180">
+              <rect x="0" y="380" width="1000" height="180" fill="url(#hc-fade)"/>
+            </mask>
+            <clipPath id="hc-clip">
+              <path d="M70 300C70 262 82 240 120 230L190 214C232 162 282 122 352 114L600 110C650 110 690 122 730 152L800 206C860 214 920 226 946 246C962 258 968 280 962 300L958 322C956 332 948 336 938 336H92C78 336 70 328 70 316Z"/>
+            </clipPath>
+            <g id="hc-wheel">
+              <circle r="63" fill="#0b0b0b"/>
+              <circle r="58" fill="none" stroke="#1f1f1f" stroke-width="5"/>
+              <circle r="44" fill="#1a1a1a"/>
+              <path d="M-30-22A37 37 0 0 1 4-37" fill="none" stroke="#B7F36B" stroke-width="9" stroke-linecap="round"/>
+              <g fill="url(#hc-rim)">
+                <path d="M-6-9L-10-42H10L6-9Z"/><path d="M-6-9L-10-42H10L6-9Z" transform="rotate(72)"/><path d="M-6-9L-10-42H10L6-9Z" transform="rotate(144)"/>
+                <path d="M-6-9L-10-42H10L6-9Z" transform="rotate(216)"/><path d="M-6-9L-10-42H10L6-9Z" transform="rotate(288)"/>
+              </g>
+              <circle r="43" fill="none" stroke="#e9ece9" stroke-width="3.5"/>
+              <circle r="12" fill="#222"/><circle r="12" fill="none" stroke="#B7F36B" stroke-width="2.5"/>
+              <path d="M-52-26A58 58 0 0 1-20-55" fill="none" stroke="#fff" stroke-opacity=".18" stroke-width="3" stroke-linecap="round"/>
             </g>
-            <g stroke="#bcd0ff" stroke-opacity=".7" stroke-width="3" stroke-linecap="round"><path d="M640 150v44M668 152v30M556 214v22M690 206v26"/></g>
-          </g>
+            <g id="hc-car">
+              <!-- carrosserie -->
+              <path d="M70 300C70 262 82 240 120 230L190 214C232 162 282 122 352 114L600 110C650 110 690 122 730 152L800 206C860 214 920 226 946 246C962 258 968 280 962 300L958 322C956 332 948 336 938 336H92C78 336 70 328 70 316Z" fill="url(#hc-body)"/>
+              <path d="M70 300C70 262 82 240 120 230L190 214C232 162 282 122 352 114L600 110C650 110 690 122 730 152L800 206C860 214 920 226 946 246C962 258 968 280 962 300L958 322C956 332 948 336 938 336H92C78 336 70 328 70 316Z" fill="url(#hc-side)"/>
+              <!-- vitres -->
+              <path d="M214 216C250 172 292 140 354 132L472 129V216Z" fill="url(#hc-glass)"/>
+              <path d="M488 129L598 127C640 127 676 140 706 164L752 210L488 216Z" fill="url(#hc-glass)"/>
+              <path d="M472 128H488V218H472Z" fill="#111"/>
+              <path d="M262 206L330 140H372L292 206Z M520 206L585 132H612L548 206Z" fill="#fff" opacity=".09"/>
+              <path d="M214 216C250 172 292 140 354 132L600 128C642 128 678 141 708 165L752 210" fill="none" stroke="#0d0d0d" stroke-width="5" stroke-linejoin="round"/>
+              <!-- lignes de caisse -->
+              <path d="M118 236C320 226 640 224 940 250" fill="none" stroke="#fff" stroke-opacity=".85" stroke-width="3"/>
+              <path d="M124 246C320 238 640 238 938 262" fill="none" stroke="#000" stroke-opacity=".12" stroke-width="2"/>
+              <path d="M332 222L326 300M480 220L476 300M700 216L694 300" fill="none" stroke="#000" stroke-opacity=".22" stroke-width="2"/>
+              <rect x="392" y="238" width="34" height="7" rx="3.5" fill="#2a2a2a"/><rect x="598" y="238" width="34" height="7" rx="3.5" fill="#2a2a2a"/>
+              <!-- bas de caisse et filet lime -->
+              <path d="M72 300H962L958 322C956 332 948 336 938 336H92C78 336 72 328 72 316Z" fill="#1b1b1b"/>
+              <path d="M76 288C360 286 660 286 960 290" fill="none" stroke="#B7F36B" stroke-width="5" stroke-linecap="round"/>
+              <!-- rétro, phares, feux -->
+              <path d="M736 196C744 182 768 179 777 191L773 207L739 209Z" fill="#161616"/>
+              <path d="M898 232C930 236 950 245 958 258L910 258Z" fill="url(#hc-head)"/>
+              <path d="M72 262L112 254L114 278L72 284Z" fill="#e5383b"/><path d="M76 266L108 260" stroke="#ff9a9a" stroke-width="2"/>
+              <path d="M928 292H962L960 308H926Z" fill="#0c0c0c"/>
+              <!-- passages de roue -->
+              <path d="M174 336V318A76 76 0 0 1 326 318V336Z M684 336V318A76 76 0 0 1 836 318V336Z" fill="#0a0a0a"/>
+              <use href="#hc-wheel" x="250" y="318"/><use href="#hc-wheel" x="760" y="318"/>
+            </g>
+          </defs>
 
-          <!-- jet d'eau -->
-          <g fill="none" stroke="#bcd0ff" stroke-linecap="round">
-            <path d="M786 220Q740 130 652 128" stroke-width="5" opacity=".95"/>
-            <path d="M786 222Q742 140 656 134" stroke-width="2.5" opacity=".6" stroke-dasharray="2 9"/>
-            <path d="M784 218Q736 122 650 122" stroke-width="2.5" opacity=".6" stroke-dasharray="2 9"/>
-          </g>
-          <g fill="#bcd0ff" opacity=".85"><circle cx="646" cy="140" r="3"/><circle cx="634" cy="150" r="2.5"/><circle cx="700" cy="112" r="3"/><circle cx="716" cy="124" r="2.5"/><circle cx="690" cy="152" r="2"/></g>
-
-          <!-- professionnel -->
-          <g transform="translate(-40 36)">
-            <ellipse cx="900" cy="294" rx="40" ry="7" fill="#000" opacity=".35"/>
-            <rect x="880" y="226" width="18" height="64" rx="8" fill="#2b3a33"/><rect x="904" y="226" width="18" height="64" rx="8" fill="#2b3a33"/>
-            <rect x="873" y="280" width="29" height="13" rx="6" fill="#0b0f0d"/><rect x="902" y="280" width="29" height="13" rx="6" fill="#0b0f0d"/>
-            <path d="M868 212C892 240 912 236 934 264" fill="none" stroke="#7f9086" stroke-width="6" stroke-linecap="round"/>
-            <rect x="932" y="254" width="42" height="38" rx="7" fill="#B7F36B"/><rect x="939" y="261" width="20" height="12" rx="2" fill="#101713" opacity=".85"/>
-            <circle cx="942" cy="294" r="6" fill="#0b0f0d"/><circle cx="966" cy="294" r="6" fill="#0b0f0d"/>
-            <path d="M878 172L860 206" stroke="#9ed653" stroke-width="12" stroke-linecap="round"/><circle cx="858" cy="208" r="6" fill="#c98f60"/>
-            <rect x="872" y="156" width="56" height="78" rx="16" fill="#B7F36B"/>
-            <rect x="872" y="196" width="56" height="8" fill="#101713" opacity=".85"/>
-            <rect x="894" y="146" width="12" height="12" fill="#c98f60"/>
-            <circle cx="900" cy="134" r="16" fill="#c98f60"/>
-            <path d="M883 130Q884 112 902 112Q918 112 918 128V131H883Z" fill="#101713"/>
-            <path d="M883 124H918" stroke="#B7F36B" stroke-width="3"/>
-            <path d="M884 129L868 132Q866 135 870 135L886 135Z" fill="#101713"/>
-            <path d="M866 210L826 184" stroke="#cfd6cc" stroke-width="5" stroke-linecap="round"/>
-            <path d="M862 207L848 198" stroke="#101713" stroke-width="8" stroke-linecap="round"/>
-            <circle cx="826" cy="184" r="4" fill="#B7F36B"/>
-            <path d="M880 170L846 200" stroke="#a5e04f" stroke-width="12" stroke-linecap="round"/><circle cx="844" cy="202" r="6.5" fill="#c98f60"/>
-          </g>
-
-          <!-- reflets et bulles -->
-          <g fill="#B7F36B">
-            <path d="M305 196l3-7 7-3-7-3-3-7-3 7-7 3 7 3z"/>
-            <path d="M590 100l2.5-6 6-2.5-6-2.5-2.5-6-2.5 6-6 2.5 6 2.5z"/>
-            <path d="M706 168l2-5 5-2-5-2-2-5-2 5-5 2 5 2z"/>
-          </g>
-          <g fill="none" stroke="#bcd0ff" stroke-width="2" opacity=".6">
-            <circle class="b" cx="600" cy="62" r="9"/><circle class="b" cx="690" cy="80" r="6"/><circle class="b" cx="540" cy="90" r="5"/>
-            <circle class="b" cx="745" cy="64" r="8"/><circle class="b" cx="500" cy="60" r="4"/><circle class="b" cx="810" cy="96" r="5"/>
+          <!-- ombre au sol -->
+          <ellipse cx="510" cy="384" rx="470" ry="16" fill="#000" opacity=".55"/>
+          <!-- reflet sur le sol mouillé -->
+          <g mask="url(#hc-refl-mask)" opacity=".55"><use href="#hc-car" transform="translate(0 762) scale(1 -1)"/></g>
+          <!-- faisceau des phares -->
+          <path class="hc-beam" d="M955 250L1000 205V300Z" fill="url(#hc-beam)"/>
+          <g class="hc-body"><use href="#hc-car"/></g>
+          <!-- reflet qui balaie la carrosserie -->
+          <g clip-path="url(#hc-clip)"><g transform="skewX(-20)"><rect class="hc-sweep" x="-160" y="60" width="150" height="320" fill="url(#hc-shine)"/></g></g>
+          <!-- mousse -->
+          <g class="hc-foam" fill="url(#hc-foam)">
+            <circle cx="400" cy="112" r="16"/><circle cx="424" cy="104" r="21"/><circle cx="452" cy="110" r="15"/><circle cx="474" cy="104" r="18"/><circle cx="500" cy="112" r="12"/>
+            <circle cx="820" cy="210" r="13"/><circle cx="842" cy="206" r="17"/><circle cx="866" cy="214" r="12"/>
+            <circle cx="150" cy="226" r="10"/><circle cx="168" cy="220" r="13"/><circle cx="186" cy="224" r="9"/>
           </g>
         </svg>
+        <canvas class="sc-fx" id="sc-fx" aria-hidden="true"></canvas>
+        <div class="sc-chip sc-chip-a" aria-hidden="true"><span class="dot"></span>Eau et produits inclus</div>
+        <div class="sc-chip sc-chip-b" aria-hidden="true"><span class="dot"></span>Chez vous, au bureau, au parking</div>
       </div>
     </div>
   </div>
@@ -653,6 +831,7 @@ footer h3 { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; c
           <div class="price"><span data-t="from">à partir de</span> <b data-t="p180">180 DH</b></div>
           <button class="btn btn-line pkg-go" type="button" data-service="Nettoyage premium">Réserver</button></article>
       </div>
+      <p class="swipe-hint" aria-hidden="true"><i></i> Glissez pour voir les autres formules</p>
       <p class="fine" data-t="s_fine">Tarifs indicatifs, à ajuster selon le véhicule et son état.</p>
     </section>
 
@@ -1106,11 +1285,44 @@ footer h3 { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; c
   var vehs = Array.prototype.slice.call(document.querySelectorAll(".veh"));
   var current = "Citadine";
 
+  // Prix (DH) selon le véhicule — modifiez-les ici
+  var PRICES = {
+    "Citadine":   { "Lavage extérieur": 80, "Lavage intérieur": 100, "Lavage complet": 120, "Nettoyage premium": 180 },
+    "Berline":    { "Lavage extérieur": 80, "Lavage intérieur": 100, "Lavage complet": 120, "Nettoyage premium": 180 },
+    "SUV / 4x4":  { "Lavage extérieur": 99, "Lavage intérieur": 120, "Lavage complet": 199, "Nettoyage premium": 349 },
+    "Utilitaire": { "Lavage extérieur": 99, "Lavage intérieur": 120, "Lavage complet": 199, "Nettoyage premium": 349 }
+  };
+  window.WASHGO_PRICES = PRICES;
+
+  function showPrices(v) {
+    var list = PRICES[v];
+    if (!list) return;
+    // cartes des formules
+    Array.prototype.forEach.call(document.querySelectorAll(".pkg"), function (card) {
+      var go = card.querySelector(".pkg-go"), b = card.querySelector(".price b");
+      if (!go || !b) return;
+      var p = list[go.getAttribute("data-service")];
+      if (p == null) return;
+      b.removeAttribute("data-t");
+      b._cu = null;                                // arrête le compteur animé en cours
+      if (b.textContent !== p + " DH") {
+        b.textContent = p + " DH";
+        b.classList.remove("bump"); void b.offsetWidth; b.classList.add("bump");
+      }
+    });
+    // choix du service dans le formulaire de réservation
+    Object.keys(list).forEach(function (s) {
+      var sm = document.querySelector('input[name="service"][value="' + s + '"] + span small');
+      if (sm) { sm.removeAttribute("data-t"); sm.textContent = "dès " + list[s] + " DH"; }
+    });
+  }
+
   function pickVeh(v, fromForm) {
     if (!v) return;
     current = v;
     vehs.forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-veh") === v ? "true" : "false"); });
     $("veh-label").textContent = "pour " + v;
+    showPrices(v);
     if (fromForm) return;
     var r = document.querySelector('input[name="vehicule"][value="' + v + '"]');
     if (r) { r.checked = true; $("g-vehicule").classList.remove("bad"); }
@@ -1134,7 +1346,228 @@ footer h3 { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; c
   if ($("q-vehicule")) $("q-vehicule").addEventListener("change", function () { pickVeh(this.value, true); });
   document.addEventListener("wg:vehicle", function (e) { pickVeh(e.detail, true); });
 
+  showPrices(current);
+
+  // ---- menu du téléphone ----
+  var mb = $("menu-btn"), mn = $("m-nav");
+  function menu(open) {
+    if (!mb || !mn) return;
+    mn.hidden = !open;
+    mb.setAttribute("aria-expanded", open ? "true" : "false");
+    mb.setAttribute("aria-label", open ? "Fermer le menu" : "Ouvrir le menu");
+  }
+  if (mb && mn) {
+    mb.addEventListener("click", function () { menu(mn.hidden); });
+    mn.addEventListener("click", function (e) { if (e.target.closest("a")) menu(false); });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") menu(false); });
+    document.addEventListener("click", function (e) { if (!mn.hidden && !e.target.closest(".top")) menu(false); });
+    window.addEventListener("resize", function () { if (window.innerWidth > 1040) menu(false); });
+  }
+
+  // ---- bouton « Réserver » fixe en bas (téléphone) : visible après l'accueil, caché sur le formulaire et le pied de page ----
+  var cta = $("m-cta"), heroEl = document.querySelector(".hero"), seen = {};
+  if (cta && heroEl && "IntersectionObserver" in window) {
+    var watch = [heroEl, $("reserver"), document.querySelector("footer")].filter(Boolean);
+    var cio = new IntersectionObserver(function (es) {
+      es.forEach(function (en) { seen[en.target === heroEl ? "hero" : en.target.tagName === "FOOTER" ? "foot" : "form"] = en.isIntersecting; });
+      var show = !seen.hero && !seen.form && !seen.foot;
+      cta.classList.toggle("show", show);
+      cta.setAttribute("aria-hidden", show ? "false" : "true");
+      cta.tabIndex = show ? 0 : -1;
+    }, { threshold: 0 });
+    watch.forEach(function (el) { cio.observe(el); });
+  }
   if ($("year")) $("year").textContent = new Date().getFullYear();
+})();
+</script>
+<script>
+// ---------- scène de l'accueil : jet d'eau, éclaboussures, mousse, gouttes (canvas, net jusqu'en 4K) ----------
+(function () {
+  var scene = document.getElementById("scene"), canvas = document.getElementById("sc-fx"), car = document.getElementById("sc-car");
+  if (!scene || !canvas || !car || !canvas.getContext) return;
+  var still = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var ctx = canvas.getContext("2d");
+  var W = 0, H = 0, dpr = 1;
+
+  function resize() {
+    W = scene.clientWidth; H = scene.clientHeight;
+    dpr = Math.min(window.devicePixelRatio || 1, 3);           // jusqu'à 3x : écrans 4K / Retina
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  resize();
+  window.addEventListener("resize", resize);
+
+  // ---- parallaxe : la scène suit doucement la souris ----
+  var hero = scene.closest(".hero") || scene, tx = 0, ty = 0, px = 0, py = 0;
+  if (!still) {
+    hero.addEventListener("pointermove", function (e) {
+      var r = scene.getBoundingClientRect();
+      tx = Math.max(-1, Math.min(1, (e.clientX - (r.left + r.width / 2)) / (r.width / 2)));
+      ty = Math.max(-1, Math.min(1, (e.clientY - (r.top + r.height / 2)) / (r.height / 2)));
+    }, { passive: true });
+    hero.addEventListener("pointerleave", function () { tx = 0; ty = 0; });
+  }
+
+  // ---- géométrie de la voiture (coordonnées du dessin : 1000 x 560) ----
+  var ROOF = [[120, 230], [190, 214], [262, 160], [352, 114], [600, 110], [680, 128], [730, 152], [800, 206], [880, 222], [946, 246]];
+  var GROUND = 383, SILL = 336;
+  var FOAM = [[424, 104], [474, 104], [842, 206], [168, 220]];
+  var box = { x: 0, y: 0, s: 1 };
+  function measure() {
+    var a = scene.getBoundingClientRect(), b = car.getBoundingClientRect();
+    box.x = b.left - a.left; box.y = b.top - a.top; box.s = b.width / 1000;
+  }
+  function X(v) { return box.x + v * box.s; }
+  function Y(v) { return box.y + v * box.s; }
+  function roofY(vx) {
+    for (var i = 1; i < ROOF.length; i++) {
+      if (vx <= ROOF[i][0]) {
+        var a = ROOF[i - 1], b = ROOF[i], k = (vx - a[0]) / (b[0] - a[0]);
+        return a[1] + (b[1] - a[1]) * k;
+      }
+    }
+    return ROOF[ROOF.length - 1][1];
+  }
+  function rnd(a, b) { return a + Math.random() * (b - a); }
+
+  var stream = [], drops = [], bubbles = [], ripples = [], drips = [];
+  var MAX = 700, t0 = null, last = 0, running = false, visible = true, raf = 0;
+
+  function tick(now) {
+    raf = 0;
+    if (!canvas.isConnected) return;                           // remplacée par hero.jpg
+    if (t0 === null) { t0 = now; last = now; }
+    var dt = Math.min(0.05, (now - last) / 1000), t = (now - t0) / 1000;
+    last = now;
+
+    px += (tx - px) * 0.06; py += (ty - py) * 0.06;
+    scene.style.setProperty("--px", px.toFixed(3));
+    scene.style.setProperty("--py", py.toFixed(3));
+    scene.style.setProperty("--gx", (60 + px * 12).toFixed(1) + "%");
+
+    measure();
+    var s = box.s, g = 1400 * s;                               // gravité proportionnelle à la taille du dessin
+    ctx.clearRect(0, 0, W, H);
+
+    // le jet commence quand la voiture est arrivée
+    var on = t > 1.6;
+    // point visé : balaie le toit et le capot
+    var vx = 610 + 290 * Math.sin(t * 0.42), vy = roofY(vx) - 4;
+    var hx = X(vx), hy = Y(vy);
+    // buse : en haut à droite, avec un léger mouvement de main
+    var nx = W * 0.93 + Math.sin(t * 1.3) * 6, ny = H * 0.07 + Math.cos(t * 1.7) * 5;
+    var cx = (nx + hx) / 2 + 40 * s, cy = Math.min(ny, hy) - 60 * s;
+
+    if (on) {
+      // lance
+      ctx.lineCap = "round";
+      ctx.strokeStyle = "#1a1a1a"; ctx.lineWidth = Math.max(6, 13 * s);
+      ctx.beginPath(); ctx.moveTo(W + 30, ny - 50); ctx.lineTo(nx, ny); ctx.stroke();
+      ctx.strokeStyle = "#B7F36B"; ctx.lineWidth = Math.max(3, 6 * s);
+      ctx.beginPath(); ctx.moveTo(nx + (W + 30 - nx) * 0.25, ny - 12); ctx.lineTo(nx + (W + 30 - nx) * 0.32, ny - 15); ctx.stroke();
+
+      // jet : halo + coeur
+      var layers = [[18, "rgba(190,225,255,.10)"], [7, "rgba(205,232,255,.32)"], [2.4, "rgba(255,255,255,.9)"]];
+      for (var L = 0; L < layers.length; L++) {
+        ctx.strokeStyle = layers[L][1]; ctx.lineWidth = Math.max(1, layers[L][0] * s);
+        ctx.beginPath(); ctx.moveTo(nx, ny); ctx.quadraticCurveTo(cx, cy, hx, hy); ctx.stroke();
+      }
+
+      // gouttes qui filent dans le jet
+      for (var e = 0; e < 6 && stream.length < 160; e++) stream.push({ u: Math.random() * 0.15, sp: rnd(1.6, 2.4), j: rnd(-1, 1) });
+      // brume à l'impact
+      var mg = ctx.createRadialGradient(hx, hy, 0, hx, hy, 90 * s);
+      mg.addColorStop(0, "rgba(220,238,255," + (0.22 + 0.06 * Math.sin(t * 9)) + ")"); mg.addColorStop(1, "rgba(220,238,255,0)");
+      ctx.fillStyle = mg; ctx.beginPath(); ctx.arc(hx, hy, 90 * s, 0, Math.PI * 2); ctx.fill();
+    }
+
+    ctx.fillStyle = "rgba(235,245,255,.9)";
+    for (var i = stream.length - 1; i >= 0; i--) {
+      var p = stream[i];
+      p.u += p.sp * dt;
+      if (p.u >= 1 || !on) {
+        stream.splice(i, 1);
+        if (on && drops.length < MAX) {
+          for (var k = 0; k < 3; k++) {
+            var ang = rnd(-Math.PI * 0.95, -Math.PI * 0.05);
+            var v = rnd(120, 420) * s;
+            drops.push({ x: hx + rnd(-8, 8) * s, y: hy, vx: Math.cos(ang) * v, vy: Math.sin(ang) * v, r: rnd(0.8, 2.6) * Math.max(0.6, s * 1.6), a: 1 });
+          }
+        }
+        continue;
+      }
+      var u = p.u, iu = 1 - u;
+      var qx = iu * iu * nx + 2 * iu * u * cx + u * u * hx, qy = iu * iu * ny + 2 * iu * u * cy + u * u * hy;
+      ctx.beginPath(); ctx.arc(qx + p.j * 3 * s, qy, Math.max(0.7, 1.6 * s), 0, Math.PI * 2); ctx.fill();
+    }
+
+    // éclaboussures
+    var gy = Y(GROUND);
+    for (i = drops.length - 1; i >= 0; i--) {
+      var d = drops[i];
+      d.vy += g * dt; d.x += d.vx * dt; d.y += d.vy * dt;
+      if (d.y >= gy) {
+        if (Math.random() < 0.25 && ripples.length < 60) ripples.push({ x: d.x, y: gy + rnd(0, 18) * s, r: 2 * s, a: 0.55 });
+        drops.splice(i, 1); continue;
+      }
+      ctx.fillStyle = "rgba(225,240,255," + (0.85 * d.a) + ")";
+      ctx.beginPath(); ctx.ellipse(d.x, d.y, d.r, d.r * 1.35, Math.atan2(d.vy, d.vx) + Math.PI / 2, 0, Math.PI * 2); ctx.fill();
+    }
+
+    // gouttes qui tombent du bas de caisse
+    if (on && Math.random() < 9 * dt && drips.length < 40) {
+      var dx = rnd(110, 930);
+      if (Math.abs(dx - 250) > 80 && Math.abs(dx - 760) > 80) drips.push({ x: dx, y: SILL, v: 0, r: rnd(1.4, 2.6) });
+    }
+    for (i = drips.length - 1; i >= 0; i--) {
+      var q = drips[i];
+      q.v += 1400 * dt; q.y += q.v * dt;
+      if (q.y >= GROUND) { ripples.push({ x: X(q.x), y: Y(GROUND) + rnd(2, 14) * s, r: 2 * s, a: 0.6 }); drips.splice(i, 1); continue; }
+      ctx.fillStyle = "rgba(225,240,255,.8)";
+      ctx.beginPath(); ctx.ellipse(X(q.x), Y(q.y), q.r * s * 1.4, q.r * s * 2.2, 0, 0, Math.PI * 2); ctx.fill();
+    }
+
+    // ronds dans l'eau au sol
+    ctx.lineWidth = Math.max(0.8, 1.6 * s);
+    for (i = ripples.length - 1; i >= 0; i--) {
+      var rp = ripples[i];
+      rp.r += 60 * s * dt; rp.a -= 0.9 * dt;
+      if (rp.a <= 0) { ripples.splice(i, 1); continue; }
+      ctx.strokeStyle = "rgba(200,230,255," + rp.a + ")";
+      ctx.beginPath(); ctx.ellipse(rp.x, rp.y, rp.r, rp.r * 0.22, 0, 0, Math.PI * 2); ctx.stroke();
+    }
+
+    // bulles de mousse qui montent
+    if (Math.random() < 7 * dt && bubbles.length < 50) {
+      var f = FOAM[Math.floor(Math.random() * FOAM.length)];
+      bubbles.push({ x: X(f[0] + rnd(-25, 25)), y: Y(f[1] - 10), r: rnd(3, 10) * Math.max(0.5, s * 1.4), vy: rnd(18, 45) * s, ph: rnd(0, 6), life: 0, max: rnd(1.8, 3.6) });
+    }
+    for (i = bubbles.length - 1; i >= 0; i--) {
+      var bb = bubbles[i];
+      bb.life += dt;
+      if (bb.life >= bb.max) { bubbles.splice(i, 1); continue; }
+      bb.y -= bb.vy * dt;
+      var bxp = bb.x + Math.sin(bb.ph + bb.life * 3) * 6 * s, al = Math.min(1, (bb.max - bb.life) * 2) * 0.75;
+      ctx.lineWidth = Math.max(0.8, 1.3 * s);
+      ctx.strokeStyle = "rgba(255,255,255," + al + ")"; ctx.fillStyle = "rgba(220,245,200," + (al * 0.12) + ")";
+      ctx.beginPath(); ctx.arc(bxp, bb.y, bb.r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "rgba(255,255,255," + al + ")";
+      ctx.beginPath(); ctx.arc(bxp - bb.r * 0.35, bb.y - bb.r * 0.35, Math.max(0.6, bb.r * 0.22), 0, Math.PI * 2); ctx.fill();
+    }
+
+    if (running) raf = requestAnimationFrame(tick);
+  }
+
+  function start() { if (!running && !still && visible && !document.hidden) { running = true; last = performance.now(); if (!raf) raf = requestAnimationFrame(tick); } }
+  function stop() { running = false; if (raf) { cancelAnimationFrame(raf); raf = 0; } }
+
+  if (still) return;                                           // "réduire les animations" : scène fixe
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(function (es) { visible = es[0].isIntersecting; if (visible) start(); else stop(); }, { threshold: 0.05 }).observe(scene);
+  }
+  document.addEventListener("visibilitychange", function () { if (document.hidden) stop(); else start(); });
+  start();
 })();
 </script>
 <script>
@@ -1156,8 +1589,10 @@ footer h3 { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; c
   function countUp(el) {
     var m = /^(\d+)(.*)$/.exec(el.textContent.trim());
     if (!m) return;
-    var end = +m[1], suf = m[2], t0 = null;
+    var end = +m[1], suf = m[2], t0 = null, tok = {};
+    el._cu = tok;                                   // annulé si le prix change pendant le comptage
     function step(ts) {
+      if (el._cu !== tok) return;
       if (t0 === null) t0 = ts;
       var k = Math.min(1, (ts - t0) / 900), e = 1 - Math.pow(1 - k, 3);
       el.textContent = Math.round(end * e) + suf;
@@ -1181,15 +1616,6 @@ footer h3 { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; c
   var top = document.querySelector(".top");
   function onScroll() { if (top) top.classList.toggle("scrolled", (window.pageYOffset || 0) > 8); }
   window.addEventListener("scroll", onScroll, { passive: true }); onScroll();
-
-  // 3) la voiture arrive dans la scène
-  try {
-    var car = document.querySelector("#scene svg > g");
-    if (car && car.animate) {
-      car.animate([{ transform: "translate(-330px, 0)", opacity: 0 }, { transform: "translate(-50px, 0)", opacity: 1 }],
-        { duration: 1300, easing: "cubic-bezier(.2,.8,.2,1)", delay: 250, fill: "backwards" });
-    }
-  } catch (x) {}
 
   // 4) effet de vague sous le doigt sur les boutons
   document.addEventListener("pointerdown", function (e) {

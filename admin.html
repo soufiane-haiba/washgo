@@ -82,6 +82,23 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .btn-line { background: transparent; color: var(--fg); border: 1.5px solid var(--line); }
 .btn-top { background: transparent; color: var(--bar-fg); border: 1.5px solid #3a4a3f; min-height: 36px; padding: 4px 12px; }
 .btn-danger { background: transparent; color: var(--bad); border: 1.5px solid var(--bad); }
+.btn-danger.btn-danger-on { background: var(--bad); color: #fff; }
+/* commission 20 % et chiffres des professionnels */
+.split { display: flex; flex-wrap: wrap; gap: 6px 22px; background: #111; color: #f2f2f2; border-radius: 10px; padding: 10px 14px; font-size: 14px; }
+.split .sub { color: #b0b0b0; }
+.split b { color: #B7F36B; margin-left: 6px; }
+.split span + span b { color: #fff; }
+.pcard.clickable { cursor: pointer; transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease; }
+.pcard.clickable:hover { border-color: #111; box-shadow: 0 10px 24px rgba(0,0,0,.1); transform: translateY(-2px); }
+.kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 4px 0; }
+.kpis > div { background: var(--bg); border-radius: 10px; padding: 8px 10px; min-width: 0; }
+.kpis span { display: block; font-size: 11px; color: var(--muted); letter-spacing: .02em; }
+.kpis b { font-family: var(--font-display); font-size: 17px; font-variant-numeric: tabular-nums; }
+.kpis.big { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+.kpis.big > div { padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); }
+.kpis.big b { font-size: 22px; }
+.lime-t { background: #111; color: #B7F36B; border-radius: 6px; padding: 0 6px; }
+.kpis b.due { color: var(--bad); }
 .btn-sm { min-height: 36px; padding: 4px 12px; font-size: 13px; }
 .btn[disabled] { opacity: .5; cursor: default; }
 
@@ -151,9 +168,9 @@ tfoot td { font-weight: 600; background: color-mix(in srgb, var(--fg) 4%, transp
   padding: calc(22px + env(safe-area-inset-top, 0px)) max(18px, env(safe-area-inset-right, 0px)) calc(28px + env(safe-area-inset-bottom, 0px)) 22px; display: grid; gap: 16px; align-content: start; }
 .sheet h2 { font-size: 22px; }
 .sheet .head { display: flex; justify-content: space-between; gap: 12px; align-items: start; }
-.info { display: grid; grid-template-columns: 110px 1fr; gap: 6px 12px; font-size: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
-.info dt { color: var(--muted); }
-.info dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+dl.info { display: grid; grid-template-columns: 110px 1fr; gap: 6px 12px; font-size: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+dl.info dt { color: var(--muted); }
+dl.info dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
 .fgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .fgrid .full { grid-column: 1 / -1; }
 .checks { display: flex; flex-wrap: wrap; gap: 8px 16px; }
@@ -165,11 +182,48 @@ tfoot td { font-weight: 600; background: color-mix(in srgb, var(--fg) 4%, transp
 
 @media (max-width: 560px) {
   .fgrid { grid-template-columns: 1fr; }
-  .info { grid-template-columns: 1fr; gap: 0; }
-  .info dt { margin-top: 8px; font-size: 12px; }
+  dl.info { grid-template-columns: 1fr; gap: 0; }
+  dl.info dt { margin-top: 8px; font-size: 12px; }
   .who span { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+/* ===== téléphone : réservations en cartes, chiffres bien rangés ===== */
+@media (max-width: 700px) {
+  main { padding-block: 16px 48px; }
+  .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: 16px; }
+  .tiles > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .tile { padding: 12px 14px; }
+  .tile .v { font-size: 24px; }
+  .tabs { margin-inline: -16px; padding-inline: 16px; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .bar { flex-direction: column; align-items: stretch; }
+  .search { max-width: none; }
+  .chips { flex-wrap: nowrap; overflow-x: auto; margin-inline: -16px; padding: 0 16px 4px; scrollbar-width: none; }
+  .chips::-webkit-scrollbar { display: none; }
+  .chip { flex: none; }
+  /* liste des réservations : une carte par réservation */
+  #bk-list { background: transparent; border: 0; overflow: visible; }
+  #bk-list table, #bk-list tbody { display: block; min-width: 0; }
+  #bk-list thead { display: none; }
+  #bk-list tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; background: var(--surface); border: 1px solid var(--line);
+    border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; }
+  #bk-list tr.is-new { box-shadow: inset 4px 0 0 var(--fg); }
+  #bk-list tr.is-new td:first-child { box-shadow: none; }
+  #bk-list td { padding: 0; border: 0; }
+  #bk-list td:nth-child(7) { grid-column: 2; grid-row: 1; text-align: right; }
+  #bk-list td:nth-child(2), #bk-list td:nth-child(5) { grid-column: 1; }
+  #bk-list td:nth-child(3), #bk-list td:nth-child(6) { grid-column: 2; text-align: right; }
+  #bk-list td:nth-child(4) { grid-column: 1 / -1; }
+  #bk-list td .clip { max-width: none; white-space: normal; }
+  #bk-list td:nth-child(2) { font-weight: 600; }
+  #bk-list td:nth-child(6)::before { content: "Pro"; display: block; color: var(--muted); font-size: 11px; }
+  #bk-list tr { row-gap: 10px; }
+  /* fenêtre de détail : plein écran */
+  .sheet { width: 100%; }
+  .sheet .actions .btn { flex: 1 1 auto; }
+  .sheet .actions .btn-danger { margin-left: 0 !important; flex-basis: 100%; }
+  .pro-list, #pro-list { grid-template-columns: minmax(0, 1fr); }
+}
 </style>
 <script src="theme.js"></script>
 </head>
@@ -240,7 +294,7 @@ tfoot td { font-weight: 600; background: color-mix(in srgb, var(--fg) 4%, transp
         <p class="sub">Seules les réservations terminées comptent.</p>
       </div>
       <div class="tablewrap" id="comm-list"></div>
-      <p class="note">La commission est calculée avec le taux actuel de chaque professionnel. Le client paie le professionnel directement, le professionnel reverse ensuite la commission à WASHGO.</p>
+      <p class="note">La commission WASHGO est toujours de 20 % du prix final. Le client paie le professionnel directement, le professionnel reverse ensuite la commission à WASHGO. Cliquez sur un professionnel dans l’onglet « Professionnels » pour voir son détail.</p>
     </section>
 
     <section id="v-clients" hidden>
@@ -296,9 +350,33 @@ tfoot td { font-weight: 600; background: color-mix(in srgb, var(--fg) 4%, transp
     return '<a href="https://www.google.com/maps/search/?api=1&amp;query=' + q + '" target="_blank" rel="noopener">Voir sur la carte</a> · <a href="https://www.google.com/maps/dir/?api=1&amp;destination=' + q + '" target="_blank" rel="noopener">Itinéraire</a>';
   }
   function proById(id) { return state.pros.filter(function (p) { return p.id === id; })[0] || null; }
-  function commissionOf(b) {
-    var pro = proById(b.professional_id), pct = pro ? Number(pro.commission_pct) : 15;
-    return (Number(b.price) || 0) * pct / 100;
+  function proByName(name) {
+    var n = String(name || "").trim().toLowerCase();
+    return n ? state.pros.filter(function (p) { return String(p.name || "").trim().toLowerCase() === n; })[0] || null : null;
+  }
+  // Nom affiché : la fiche du professionnel si elle existe, sinon le nom tapé à la main
+  function proName(b) { var p = proById(b.professional_id); return p ? p.name : (b.professional_name || ""); }
+  // Commission WASHGO : toujours 20 % du prix final (modifiable ici, à un seul endroit)
+  var COMMISSION_PCT = 20;
+  function commissionOf(b) { return round2((Number(b.price) || 0) * COMMISSION_PCT / 100); }
+  function round2(n) { return Math.round(n * 100) / 100; }
+  // Chiffres d'un professionnel : lavages terminés, chiffre d'affaires, commission, part du pro, reste à recevoir
+  function proStats(list) {
+    var r = { n: 0, ca: 0, comm: 0, due: 0 };
+    list.forEach(function (b) {
+      if (b.status !== "Completed") return;
+      var c = commissionOf(b);
+      r.n++; r.ca += Number(b.price) || 0; r.comm += c;
+      if (!b.commission_settled) r.due += c;
+    });
+    r.ca = round2(r.ca); r.comm = round2(r.comm); r.due = round2(r.due); r.part = round2(r.ca - r.comm);
+    return r;
+  }
+  function bookingsOfPro(p) {
+    var n = String(p.name || "").trim().toLowerCase();
+    return state.bookings.filter(function (b) {
+      return b.professional_id === p.id || (!b.professional_id && n && String(b.professional_name || "").trim().toLowerCase() === n);
+    });
   }
 
   // ---------- chargement ----------
@@ -339,7 +417,7 @@ tfoot td { font-weight: 600; background: color-mix(in srgb, var(--fg) 4%, transp
       if (state.filter === "open") { if (b.status === "Completed" || b.status === "Cancelled") return false; }
       else if (state.filter !== "all" && b.status !== state.filter) return false;
       if (!q) return true;
-      return [b.ref, b.customer_name, b.phone, b.address, b.city, b.service].join(" ").toLowerCase().indexOf(q) !== -1;
+      return [b.ref, b.customer_name, b.phone, b.address, b.city, b.service, proName(b)].join(" ").toLowerCase().indexOf(q) !== -1;
     });
   }
   function renderChips() {
@@ -362,14 +440,14 @@ tfoot td { font-weight: 600; background: color-mix(in srgb, var(--fg) 4%, transp
     if (!rows.length) { $("bk-list").innerHTML = '<div class="empty">Aucune réservation ne correspond à ce filtre.</div>'; return; }
     $("bk-list").innerHTML = "<table><thead><tr><th>Réf.</th><th>Quand</th><th>Client</th><th>Lieu</th><th>Service</th><th>Professionnel</th><th>Statut</th></tr></thead><tbody>"
       + rows.map(function (b) {
-        var pro = proById(b.professional_id);
+        var pn = proName(b);
         return '<tr class="' + (b.status === "New" ? "is-new" : "") + '" data-open="' + esc(b.id) + '">'
           + '<td><button class="linklike" type="button" data-open="' + esc(b.id) + '">' + esc(b.ref) + '</button><div class="sub">reçue ' + esc(fmtDT(b.created_at)) + "</div></td>"
           + "<td>" + esc(fmtDate(b.scheduled_date)) + '<div class="sub">' + esc(b.scheduled_time) + "</div></td>"
           + "<td>" + esc(b.customer_name || "Sans nom") + '<div class="sub">' + esc(b.phone) + "</div></td>"
           + '<td><div class="clip">' + esc(b.city) + '</div><div class="sub clip">' + esc(b.address) + (b.latitude != null ? " · repère" : "") + "</div></td>"
           + "<td>" + esc(b.service) + '<div class="sub">' + esc(b.vehicle) + "</div></td>"
-          + "<td>" + (pro ? esc(pro.name) : '<span class="sub">À assigner</span>') + "</td>"
+          + "<td>" + (pn ? esc(pn) : '<span class="sub">À assigner</span>') + "</td>"
           + "<td>" + pill(b.status) + (b.price ? '<div class="sub">' + esc(money(b.price)) + "</div>" : "") + "</td></tr>";
       }).join("") + "</tbody></table>";
   }
@@ -380,15 +458,23 @@ tfoot td { font-weight: 600; background: color-mix(in srgb, var(--fg) 4%, transp
   function openBooking(id) {
     var b = state.bookings.filter(function (x) { return x.id === id; })[0];
     if (!b) return;
-    var sameCity = state.pros.filter(function (p) { return p.city === b.city; });
-    var others = state.pros.filter(function (p) { return p.city !== b.city; });
+    // liste des professionnels enregistrés (même ville d'abord)
+    // professionnel actuel : sa fiche, sinon une fiche au même nom, sinon le nom gardé sans fiche
+    var cur = proById(b.professional_id) || (b.professional_name ? proByName(b.professional_name) : null);
+    var legacyName = !cur && (b.professional_name || b.professional_id) ? (b.professional_name || "Professionnel supprimé") : null;
     function opt(p) {
-      var hint = p.services && p.services.indexOf(b.service) === -1 ? " · ne propose pas ce service" : "";
-      return '<option value="' + esc(p.id) + '"' + (p.id === b.professional_id ? " selected" : "") + ">" + esc(p.name) + " · " + esc(p.city) + " · " + esc(AVAIL[p.availability] || "") + esc(hint) + "</option>";
+      var hint = p.services && p.services.length && p.services.indexOf(b.service) === -1 ? " · ne propose pas ce service" : "";
+      return '<option value="' + esc(p.id) + '"' + (cur && p.id === cur.id ? " selected" : "") + ">" + esc(p.name) + " · " + esc(AVAIL[p.availability] || "") + esc(hint) + "</option>";
     }
-    var proOpts = '<option value="">Aucun</option>'
-      + (sameCity.length ? '<optgroup label="' + esc(b.city) + '">' + sameCity.map(opt).join("") + "</optgroup>" : "")
-      + (others.length ? '<optgroup label="Autres villes">' + others.map(opt).join("") + "</optgroup>" : "");
+    var same = state.pros.filter(function (p) { return p.city === b.city; }), other = state.pros.filter(function (p) { return p.city !== b.city; });
+    var proOpts = '<option value="" disabled' + (cur || legacyName ? "" : " selected") + ">Choisir le professionnel…</option>"
+      + (same.length ? '<optgroup label="' + esc(b.city) + '">' + same.map(opt).join("") + "</optgroup>" : "")
+      + (other.length ? '<optgroup label="Autres villes">' + other.map(opt).join("") + "</optgroup>" : "")
+      + (legacyName ? '<option value="nom:' + esc(legacyName) + '" selected>' + esc(legacyName) + " (sans fiche)</option>" : "");
+    var legacy = !!legacyName;
+    var proField = state.pros.length || legacy
+      ? '<select id="f-pro">' + proOpts + "</select>"
+      : '<input type="hidden" id="f-pro" value=""><p class="sub">Aucun professionnel enregistré. <button class="linklike" type="button" data-goto="pros">Ajouter un professionnel</button></p>';
     var statusOpts = STATUS.map(function (s) { return '<option value="' + s[0] + '"' + (s[0] === b.status ? " selected" : "") + ">" + s[1] + "</option>"; }).join("");
 
     openSheet(
@@ -407,29 +493,54 @@ tfoot td { font-weight: 600; background: color-mix(in srgb, var(--fg) 4%, transp
       + '<div class="fgrid">'
       + '<div><label class="l" for="f-status">Statut</label><select id="f-status">' + statusOpts + "</select></div>"
       + '<div><label class="l" for="f-price">Prix final (DH)</label><input id="f-price" type="number" min="0" step="1" inputmode="decimal" value="' + esc(b.price == null ? "" : b.price) + '"></div>'
-      + '<div class="full"><label class="l" for="f-pro">Professionnel</label><select id="f-pro">' + proOpts + "</select></div>"
+      + '<div class="full split" id="f-split"></div>'
+      + '<div class="full"><label class="l" for="f-pro">Professionnel qui fait le lavage</label>' + proField + "</div>"
       + '<div class="full"><label class="l" for="f-notes">Notes internes</label><textarea id="f-notes">' + esc(b.admin_notes || "") + "</textarea></div></div>"
       + '<p class="err" id="f-err" role="alert"></p>'
-      + '<div class="actions"><button class="btn btn-main" id="f-save" type="button" data-save="' + esc(b.id) + '">Enregistrer</button><button class="btn btn-line" type="button" data-close>Fermer</button></div>'
+      + '<div class="actions"><button class="btn btn-main" id="f-save" type="button" data-save="' + esc(b.id) + '">Enregistrer</button><button class="btn btn-line" type="button" data-close>Fermer</button>'
+      + '<button class="btn btn-danger" id="f-del" type="button" data-bdel="' + esc(b.id) + '" style="margin-left:auto">Supprimer la réservation</button></div>'
     );
+    // répartition en direct : 20 % pour WASHGO, le reste pour le professionnel
+    function split() {
+      var v = Number($("f-price").value);
+      $("f-split").innerHTML = $("f-price").value.trim() === "" || isNaN(v) || v < 0
+        ? '<span class="sub">Entrez le prix final : la commission WASHGO de ' + COMMISSION_PCT + " % est calculée automatiquement.</span>"
+        : "<span>Commission WASHGO (" + COMMISSION_PCT + " %) <b>" + esc(money(v * COMMISSION_PCT / 100)) + "</b></span>"
+          + "<span>Part du professionnel <b>" + esc(money(v - v * COMMISSION_PCT / 100)) + "</b></span>";
+    }
+    $("f-price").addEventListener("input", split);
+    split();
   }
 
+  // Message clair quand Supabase refuse un enregistrement
+  function why(x) {
+    var m = String((x && (x.message || x.details || x.hint)) || "");
+    if (x && x.code === "rls") return "Enregistrement refusé : votre email n'est pas dans la table « admins ». Vérifiez la dernière ligne de setup.sql puis relancez-le dans Supabase.";
+    if (/row-level security|permission denied/i.test(m)) return "Enregistrement refusé par Supabase (droits). Relancez setup.sql dans Supabase (SQL Editor > Run) avec votre email admin.";
+    if (/does not exist|schema cache|column/i.test(m)) return "La base Supabase n'est pas à jour. Ouvrez Supabase > SQL Editor, collez tout setup.sql et cliquez Run. (Détail : " + m + ")";
+    if (/JWT|expired|session/i.test(m)) return "Votre session a expiré. Rechargez la page et reconnectez-vous.";
+    if (/Failed to fetch|NetworkError|network/i.test(m)) return "Pas de connexion internet. Vérifiez la connexion et réessayez.";
+    return "L'enregistrement a échoué." + (m ? " Détail : " + m : " Réessayez.");
+  }
   function saveBooking(id) {
     var b = state.bookings.filter(function (x) { return x.id === id; })[0];
     if (!b) return;
     var err = $("f-err");
     function fail(m) { err.textContent = m; }
-    var status = $("f-status").value, pro = $("f-pro").value || null, raw = $("f-price").value.trim();
+    var status = $("f-status").value, raw = $("f-price").value.trim();
+    var sel = $("f-pro").value || "", legacyName = sel.indexOf("nom:") === 0 ? sel.slice(4) : null;
+    var match = legacyName ? null : proById(sel);
+    var pro = match ? match.id : legacyName;
     var price = raw === "" ? null : Number(raw);
     if (raw !== "" && (isNaN(price) || price < 0)) return fail("Le prix n'est pas valide.");
     if (pro && status === "New") status = "Assigned";
-    if (!pro && NEEDS_PRO.indexOf(status) !== -1) return fail("Choisissez un professionnel pour ce statut.");
+    if (!pro && NEEDS_PRO.indexOf(status) !== -1) return fail("Choisissez le professionnel qui fait le lavage.");
     if (status === "Completed" && !price) return fail("Entrez le prix final avant de marquer le lavage comme terminé.");
-    var patch = { status: status, professional_id: pro, price: price, admin_notes: $("f-notes").value.trim() || null,
+    var patch = { status: status, professional_id: match ? match.id : null, professional_name: match ? match.name : (legacyName || null), price: price, admin_notes: $("f-notes").value.trim() || null,
       completed_at: status === "Completed" ? (b.completed_at || new Date().toISOString()) : null };
     $("f-save").disabled = true; $("f-save").textContent = "Enregistrement…";
-    D.updateBooking(id, patch).then(function () { closeSheet(); return refresh(); }).catch(function () {
-      fail("L'enregistrement a échoué. Réessayez.");
+    D.updateBooking(id, patch).then(function () { closeSheet(); return refresh(); }).catch(function (x) {
+      fail(why(x));
       $("f-save").disabled = false; $("f-save").textContent = "Enregistrer";
     });
   }
@@ -438,14 +549,67 @@ tfoot td { font-weight: 600; background: color-mix(in srgb, var(--fg) 4%, transp
   function renderPros() {
     if (!state.pros.length) { $("pro-list").innerHTML = '<div class="empty tablewrap" style="grid-column:1/-1">Aucun professionnel. Ajoutez le premier pour pouvoir lui assigner des réservations.</div>'; return; }
     $("pro-list").innerHTML = state.pros.map(function (p) {
-      return '<article class="pcard"><h3><span>' + esc(p.name) + '</span><span class="pill ' + (AVAIL_CLS[p.availability] || "off") + '">' + esc(AVAIL[p.availability] || "") + "</span></h3>"
+      var st = proStats(bookingsOfPro(p));
+      return '<article class="pcard clickable" data-prostats="' + esc(p.id) + '" tabindex="0" role="button" aria-label="Voir les chiffres de ' + esc(p.name) + '">'
+        + '<h3><span>' + esc(p.name) + '</span><span class="pill ' + (AVAIL_CLS[p.availability] || "off") + '">' + esc(AVAIL[p.availability] || "") + "</span></h3>"
         + '<div class="row"><b>' + esc(p.city) + "</b>" + (p.zones ? " · " + esc(p.zones) : "") + "</div>"
         + '<div class="row">' + esc(p.phone) + (p.hours ? " · " + esc(p.hours) : "") + "</div>"
-        + '<div class="row">' + esc((p.services || []).join(", ") || "Aucun service") + "</div>"
-        + '<div class="row">Commission <b>' + esc(p.commission_pct) + " %</b> · " + (p.has_equipment ? "matériel" : "sans matériel") + " · " + (p.has_water ? "eau" : "sans eau") + "</div>"
-        + '<div class="actions"><button class="btn btn-line btn-sm" type="button" data-pro="' + esc(p.id) + '">Modifier</button>'
+        + '<div class="kpis"><div><span>Chiffre d\'affaires</span><b>' + esc(money(st.ca)) + "</b></div>"
+        + "<div><span>Ma commission (" + COMMISSION_PCT + " %)</span><b class=\"lime-t\">" + esc(money(st.comm)) + "</b></div>"
+        + "<div><span>Lavages terminés</span><b>" + st.n + "</b></div>"
+        + "<div><span>Reste à recevoir</span><b" + (st.due > 0 ? ' class="due"' : "") + ">" + esc(money(st.due)) + "</b></div></div>"
+        + '<div class="actions"><button class="btn btn-main btn-sm" type="button" data-prostats="' + esc(p.id) + '">Voir le détail</button>'
+        + '<button class="btn btn-line btn-sm" type="button" data-pro="' + esc(p.id) + '">Modifier</button>'
         + '<a class="btn btn-line btn-sm" target="_blank" rel="noopener" href="' + esc(waLink(p.phone)) + '">WhatsApp</a></div></article>';
     }).join("");
+  }
+
+  // Détail d'un professionnel : ses chiffres (tout, ce mois, cette semaine) et la liste de ses lavages
+  function openProStats(id, period) {
+    var p = proById(id);
+    if (!p) return;
+    period = period || "all";
+    var all = bookingsOfPro(p).slice().sort(function (a, c) { return String(c.scheduled_date) < String(a.scheduled_date) ? -1 : 1; });
+    var now = new Date(), wk = new Date(now); wk.setDate(now.getDate() - ((now.getDay() + 6) % 7)); wk.setHours(0, 0, 0, 0);
+    function inP(b) {
+      if (period === "all") return true;
+      var d = new Date(b.completed_at || (b.scheduled_date + "T12:00:00"));
+      if (period === "week") return d >= wk;
+      return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+    }
+    var list = all.filter(inP), st = proStats(list);
+    var unsettled = list.filter(function (b) { return b.status === "Completed" && !b.commission_settled; }).map(function (b) { return b.id; });
+    var tabs = [["all", "Depuis le début"], ["month", "Ce mois"], ["week", "Cette semaine"]].map(function (t) {
+      return '<button class="chip" type="button" data-pstat="' + esc(id) + '" data-period="' + t[0] + '" aria-pressed="' + (t[0] === period) + '">' + t[1] + "</button>";
+    }).join("");
+    var rows = list.length ? list.map(function (b) {
+      var c = b.status === "Completed" ? commissionOf(b) : null;
+      return "<tr><td>" + esc(fmtDate(b.scheduled_date)) + '<div class="sub">' + esc(b.ref) + "</div></td>"
+        + "<td>" + esc(b.service) + '<div class="sub">' + esc(b.customer_name || "Sans nom") + "</div></td>"
+        + "<td>" + pill(b.status) + "</td>"
+        + '<td class="num">' + (b.price ? esc(money(b.price)) : "—") + "</td>"
+        + '<td class="num">' + (c != null ? esc(money(c)) + (b.commission_settled ? '<div class="sub">réglée</div>' : '<div class="sub">à recevoir</div>') : "—") + "</td></tr>";
+    }).join("") : '<tr><td colspan="5" class="sub">Aucun lavage sur cette période.</td></tr>';
+
+    openSheet(
+      '<div class="head"><div><h2>' + esc(p.name) + '</h2><p class="sub">' + esc(p.city) + " · " + esc(p.phone) + "</p></div>" + pill2(p) + "</div>"
+      + '<div class="chips" style="margin-bottom:14px">' + tabs + "</div>"
+      + '<div class="kpis big">'
+      + "<div><span>Chiffre d'affaires</span><b>" + esc(money(st.ca)) + "</b></div>"
+      + "<div><span>Ma commission (" + COMMISSION_PCT + ' %)</span><b class="lime-t">' + esc(money(st.comm)) + "</b></div>"
+      + "<div><span>Part du professionnel</span><b>" + esc(money(st.part)) + "</b></div>"
+      + "<div><span>Lavages terminés</span><b>" + st.n + "</b></div>"
+      + "<div><span>Reste à recevoir</span><b" + (st.due > 0 ? ' class="due"' : "") + ">" + esc(money(st.due)) + "</b></div></div>"
+      + (unsettled.length ? '<p style="margin:14px 0 4px"><button class="btn btn-main btn-sm" type="button" data-psettle="' + esc(id) + '" data-period="' + period + '">Il m\'a payé ' + esc(money(st.due)) + " : marquer réglé</button></p>" : "")
+      + '<h3 style="font-size:16px;margin:18px 0 8px">Ses lavages</h3>'
+      + '<div class="tablewrap"><table style="min-width:0"><thead><tr><th>Date</th><th>Service</th><th>Statut</th><th class="num">Prix final</th><th class="num">Commission</th></tr></thead><tbody>' + rows + "</tbody></table></div>"
+      + '<p class="sub" style="margin-top:10px">Seuls les lavages « Terminé » comptent dans le chiffre d\'affaires et la commission.</p>'
+      + '<div class="actions" style="margin-top:16px"><button class="btn btn-line" type="button" data-pro="' + esc(id) + '">Modifier la fiche</button><button class="btn btn-line" type="button" data-close>Fermer</button></div>'
+    );
+    // garde la liste des réservations à régler pour le bouton
+    $("sheet").setAttribute("data-unsettled", unsettled.join(","));
+  }
+  function pill2(p) { return '<span class="pill ' + (AVAIL_CLS[p.availability] || "off") + '">' + esc(AVAIL[p.availability] || "") + "</span>";
   }
 
   function openPro(id) {
@@ -462,7 +626,7 @@ tfoot td { font-weight: 600; background: color-mix(in srgb, var(--fg) 4%, transp
       + SERVICES.map(function (s, i) { return '<label><input type="checkbox" name="p-serv" value="' + esc(s) + '"' + ((p.services || []).indexOf(s) !== -1 ? " checked" : "") + ">" + esc(s) + "</label>"; }).join("")
       + "</div></div>"
       + '<div><label class="l" for="p-hours">Horaires</label><input id="p-hours" type="text" value="' + esc(p.hours || "") + '"></div>'
-      + '<div><label class="l" for="p-comm">Commission WASHGO (%)</label><input id="p-comm" type="number" min="0" max="100" step="0.5" value="' + esc(p.commission_pct) + '"></div>'
+      + '<div><span class="l" style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">Commission WASHGO</span><p style="padding-top:10px"><b>' + COMMISSION_PCT + ' %</b> du prix final</p></div>'
       + '<div><label class="l" for="p-avail">Disponibilité</label><select id="p-avail">' + Object.keys(AVAIL).map(function (k) { return '<option value="' + k + '"' + (k === p.availability ? " selected" : "") + ">" + AVAIL[k] + "</option>"; }).join("") + "</select></div>"
       + '<div class="checks" style="align-self:end"><label><input type="checkbox" id="p-eq"' + (p.has_equipment ? " checked" : "") + '>A son matériel</label><label><input type="checkbox" id="p-water"' + (p.has_water ? " checked" : "") + '>Apporte son eau</label></div>'
       + '<div class="full"><label class="l" for="p-notes">Notes internes</label><textarea id="p-notes">' + esc(p.notes || "") + "</textarea></div></div>"
@@ -473,18 +637,19 @@ tfoot td { font-weight: 600; background: color-mix(in srgb, var(--fg) 4%, transp
   }
   function savePro(id) {
     var err = $("p-err");
-    var name = $("p-name").value.trim(), phone = $("p-phone").value.trim(), pct = Number($("p-comm").value);
+    var name = $("p-name").value.trim(), phone = $("p-phone").value.trim();
     if (!name) { err.textContent = "Entrez le nom du professionnel."; return; }
     if (phone.replace(/\D/g, "").length < 9) { err.textContent = "Entrez un numéro de téléphone valide."; return; }
-    if (isNaN(pct) || pct < 0 || pct > 100) { err.textContent = "La commission doit être entre 0 et 100 %."; return; }
+    var twin = proByName(name);
+    if (twin && twin.id !== id) { err.textContent = "Un professionnel porte déjà ce nom. Ajoutez par exemple l'initiale du nom de famille."; return; }
     var services = Array.prototype.slice.call(document.querySelectorAll('input[name="p-serv"]:checked')).map(function (c) { return c.value; });
     var pro = { name: name, phone: phone, city: $("p-city").value, zones: $("p-zones").value.trim() || null, services: services,
       hours: $("p-hours").value.trim() || null, has_equipment: $("p-eq").checked, has_water: $("p-water").checked,
-      availability: $("p-avail").value, commission_pct: pct, notes: $("p-notes").value.trim() || null };
+      availability: $("p-avail").value, commission_pct: COMMISSION_PCT, notes: $("p-notes").value.trim() || null };
     if (id) pro.id = id;
     $("p-save").disabled = true;
-    D.savePro(pro).then(function () { closeSheet(); return refresh(); }).catch(function () {
-      err.textContent = "L'enregistrement a échoué. Réessayez."; $("p-save").disabled = false;
+    D.savePro(pro).then(function () { closeSheet(); return refresh(); }).catch(function (x) {
+      err.textContent = why(x); $("p-save").disabled = false;
     });
   }
 
@@ -502,8 +667,11 @@ tfoot td { font-weight: 600; background: color-mix(in srgb, var(--fg) 4%, transp
   function commRows() {
     var by = {};
     state.bookings.forEach(function (b) {
-      if (b.status !== "Completed" || !b.professional_id || !inPeriod(b)) return;
-      var r = by[b.professional_id] || (by[b.professional_id] = { id: b.professional_id, n: 0, ca: 0, comm: 0, due: 0, ids: [] });
+      if (b.status !== "Completed" || !inPeriod(b)) return;
+      // regroupé par fiche, sinon par nom tapé à la main
+      var key = b.professional_id || (b.professional_name ? "nom:" + b.professional_name.trim().toLowerCase() : "");
+      if (!key) return;
+      var r = by[key] || (by[key] = { id: key, name: proName(b), n: 0, ca: 0, comm: 0, due: 0, ids: [] });
       var c = commissionOf(b);
       r.n++; r.ca += Number(b.price) || 0; r.comm += c;
       if (!b.commission_settled) { r.due += c; r.ids.push(b.id); }
@@ -518,7 +686,7 @@ tfoot td { font-weight: 600; background: color-mix(in srgb, var(--fg) 4%, transp
       var pro = proById(r.id);
       tot.n += r.n; tot.ca += r.ca; tot.comm += r.comm; tot.due += r.due;
       var asking = state.settleAsk === r.id;
-      return "<tr><td>" + esc(pro ? pro.name : "Professionnel supprimé") + '<div class="sub">taux ' + esc(pro ? pro.commission_pct : 15) + " %</div></td>"
+      return "<tr><td>" + esc(pro ? pro.name : (r.name || "Professionnel supprimé")) + '<div class="sub">commission ' + COMMISSION_PCT + " %</div></td>"
         + '<td class="num">' + r.n + '</td><td class="num">' + money(r.ca) + '</td><td class="num">' + money(r.comm) + '</td><td class="num">' + money(r.ca - r.comm) + "</td>"
         + '<td class="num"><b>' + money(r.due) + "</b></td>"
         + '<td class="num">' + (r.ids.length ? '<button class="btn ' + (asking ? "btn-main" : "btn-line") + ' btn-sm" type="button" data-settle="' + esc(r.id) + '">' + (asking ? "Confirmer le règlement" : "Marquer réglé") + "</button>" : '<span class="pill ok">Réglé</span>') + "</td></tr>";
@@ -563,7 +731,14 @@ tfoot td { font-weight: 600; background: color-mix(in srgb, var(--fg) 4%, transp
   $("q").addEventListener("input", function () { state.q = $("q").value; renderBookings(); });
   $("bk-list").addEventListener("click", function (e) { var o = e.target.closest("[data-open]"); if (o) openBooking(o.getAttribute("data-open")); });
   $("pro-add").addEventListener("click", function () { openPro(null); });
-  $("pro-list").addEventListener("click", function (e) { var b = e.target.closest("[data-pro]"); if (b) openPro(b.getAttribute("data-pro")); });
+  $("pro-list").addEventListener("click", function (e) {
+    if (e.target.closest("a")) return;                                   // WhatsApp
+    var b = e.target.closest("[data-pro]"); if (b) { openPro(b.getAttribute("data-pro")); return; }
+    var s = e.target.closest("[data-prostats]"); if (s) openProStats(s.getAttribute("data-prostats"));
+  });
+  $("pro-list").addEventListener("keydown", function (e) {
+    if ((e.key === "Enter" || e.key === " ") && e.target.matches && e.target.matches(".pcard[data-prostats]")) { e.preventDefault(); openProStats(e.target.getAttribute("data-prostats")); }
+  });
   $("period").addEventListener("change", function () { state.period = $("period").value; state.settleAsk = null; renderComm(); });
   $("comm-list").addEventListener("click", function (e) {
     var b = e.target.closest("[data-settle]"); if (!b) return;
@@ -573,7 +748,35 @@ tfoot td { font-weight: 600; background: color-mix(in srgb, var(--fg) 4%, transp
   $("overlay").addEventListener("click", function (e) {
     if (e.target === $("overlay") || e.target.closest("[data-close]")) { closeSheet(); return; }
     var s = e.target.closest("[data-save]"); if (s) { saveBooking(s.getAttribute("data-save")); return; }
+    var bd = e.target.closest("[data-bdel]");
+    if (bd) {
+      // 1er clic : demande de confirmation ; 2e clic : suppression définitive
+      if (bd.getAttribute("data-armed") !== "1") {
+        bd.setAttribute("data-armed", "1"); bd.textContent = "Confirmer : supprimer définitivement";
+        bd.classList.add("btn-danger-on");
+        return;
+      }
+      bd.disabled = true; bd.textContent = "Suppression…";
+      D.deleteBooking(bd.getAttribute("data-bdel")).then(function () { closeSheet(); return refresh(); }).catch(function () {
+        bd.disabled = false; bd.removeAttribute("data-armed"); bd.classList.remove("btn-danger-on"); bd.textContent = "Supprimer la réservation";
+        $("f-err").textContent = "La suppression a échoué. Réessayez.";
+      });
+      return;
+    }
     var ps = e.target.closest("[data-psave]"); if (ps) { savePro(ps.getAttribute("data-psave") || null); return; }
+    var gt = e.target.closest("[data-goto]"); if (gt) { closeSheet(); showTab(gt.getAttribute("data-goto")); openPro(null); return; }
+    var pe = e.target.closest("[data-pro]"); if (pe) { openPro(pe.getAttribute("data-pro")); return; }
+    var pst = e.target.closest("[data-pstat]"); if (pst) { openProStats(pst.getAttribute("data-pstat"), pst.getAttribute("data-period")); return; }
+    var pse = e.target.closest("[data-psettle]");
+    if (pse) {
+      var ids = ($("sheet").getAttribute("data-unsettled") || "").split(",").filter(Boolean);
+      if (!ids.length) return;
+      if (pse.getAttribute("data-armed") !== "1") { pse.setAttribute("data-armed", "1"); pse.textContent = "Confirmer : il m'a bien payé"; return; }
+      var pid = pse.getAttribute("data-psettle"), per = pse.getAttribute("data-period");
+      pse.disabled = true;
+      D.settle(ids).then(refresh).then(function () { openProStats(pid, per); }).catch(function () { pse.disabled = false; pse.textContent = "Échec, réessayez"; });
+      return;
+    }
     var pd = e.target.closest("[data-pdel]");
     if (pd) {
       if (pd.getAttribute("data-armed") !== "1") { pd.setAttribute("data-armed", "1"); pd.textContent = "Confirmer la suppression"; return; }

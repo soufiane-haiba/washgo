@@ -16,7 +16,7 @@ window.WASHGO_I18N = { T: {
     date: "Date", time: "Heure", choose: "Choisir",
     q_btn: "Réserver maintenant",
     v_cit: "Citadine", v_ber: "Berline", v_suv: "SUV / 4x4", v_uti: "Utilitaire",
-    scene_aria: "Illustration : un professionnel WASHGO lave une voiture avec un nettoyeur haute pression",
+    scene_aria: "Illustration : une voiture lavée sur place par WASHGO, avec jet d'eau et mousse",
     scene_alt: "Un professionnel WASHGO lave une voiture",
     s_eyebrow: "Nos services", s_h2: "Quatre niveaux de propreté",
     s_lead: "Le prix indiqué est un tarif de départ. Le prix final vous est confirmé quand WASHGO a trouvé le professionnel disponible.",

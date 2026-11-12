@@ -18,7 +18,7 @@ create table if not exists public.professionals (
   has_equipment boolean not null default true,
   has_water boolean not null default true,
   availability text not null default 'available' check (availability in ('available', 'busy', 'unavailable')),
-  commission_pct numeric(5,2) not null default 15 check (commission_pct between 0 and 100),
+  commission_pct numeric(5,2) not null default 20 check (commission_pct between 0 and 100),
   notes text
 );
 
@@ -51,6 +51,8 @@ alter table public.bookings add column if not exists longitude double precision;
 alter table public.bookings add column if not exists consent_at timestamptz;
 -- Compte client qui a fait la réservation (vide si réservation sans compte)
 alter table public.bookings add column if not exists user_id uuid references auth.users(id) on delete set null;
+-- Nom du professionnel tapé à la main dans le tableau de bord
+alter table public.bookings add column if not exists professional_name text check (char_length(coalesce(professional_name, '')) <= 100);
 create index if not exists bookings_user_idx on public.bookings (user_id);
 
 -- Comptes clients : informations enregistrées une fois, reprises à chaque réservation
@@ -109,6 +111,7 @@ create policy "site: creer une reservation" on public.bookings
     (user_id is null or user_id = auth.uid())
     and status = 'New'
     and professional_id is null
+    and professional_name is null
     and price is null
     and admin_notes is null
     and completed_at is null
@@ -163,5 +166,5 @@ create policy "admin: tout sur les professionnels" on public.professionals
   with check (public.is_admin());
 
 -- Votre compte admin (même email que l'utilisateur créé dans Authentication > Users)
-insert into public.admins (email) values ('TON_EMAIL@EXEMPLE.COM')
+insert into public.admins (email) values ('soufianehaiba@gmail.com')
 on conflict (email) do nothing;

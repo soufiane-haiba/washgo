@@ -124,7 +124,32 @@
       save();
       return Promise.resolve();
     }
-    return sb.from("bookings").update(patch).eq("id", id).then(ok);
+    // .select() : vérifie que la ligne a vraiment été modifiée (sinon les règles RLS l'ont bloquée sans erreur)
+    function run(p) { return sb.from("bookings").update(p).eq("id", id).select("id"); }
+    return run(patch).then(function (r) {
+      // base pas encore mise à jour (colonne professional_name absente) : on enregistre sans ce champ
+      if (r.error && /professional_name/.test(r.error.message || "")) {
+        var p2 = Object.assign({}, patch); delete p2.professional_name;
+        return run(p2);
+      }
+      return r;
+    }).then(function (r) {
+      var rows = ok(r);
+      if (!rows || !rows.length) { var e = new Error("Aucune ligne modifiée : ce compte n'a pas les droits admin (table admins dans setup.sql)."); e.code = "rls"; throw e; }
+    });
+  };
+  api.deleteBooking = function (id) {
+    if (!live) {
+      var s = load();
+      s.bookings = s.bookings.filter(function (b) { return b.id !== id; });
+      save();
+      return Promise.resolve();
+    }
+    // .select() permet de vérifier que la ligne a vraiment été supprimée (sinon les règles RLS l'ont bloquée)
+    return sb.from("bookings").delete().eq("id", id).select("id").then(function (r) {
+      var rows = ok(r);
+      if (!rows || !rows.length) throw new Error("not_deleted");
+    });
   };
   api.settle = function (ids) {
     if (!live) {

@@ -3,6 +3,6 @@
 // La clé "anon public" peut être publique: la sécurité vient des règles RLS de setup.sql.
 // N'utilisez JAMAIS la clé "service_role" ici.
 window.WASHGO_CONFIG = {
-  SUPABASE_URL: "",
-  SUPABASE_ANON_KEY: ""
+  SUPABASE_URL: "https://vzxxtftyylqdompwzaho.supabase.co",
+  SUPABASE_ANON_KEY: "sb_publishable_gflppmUo5xhhkjqcwoZXBw_wNmW90ZY"
 };
